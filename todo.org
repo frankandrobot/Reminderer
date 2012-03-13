@@ -1,0 +1,29 @@
+* Backend classes
+** Appointment class
+  + dayOfWeek = MO, TU, WE, etc
+  + date
+  + time
+  + repeat = NONE, WEEKLY, MONTHLY, etc
+  + allDay = TRUE, FALSE
+** Input Interface
+  + takes an appointment in "natural" language and returns
+    an Appointment object
+** MySQLBackEnd class
+  + a mySql-lite DB that stores appointments
+  + has methods to add/delete/update DB
+  + need to make sure that we synchronize access to DB
+** Android Service
+  + runs in the background
+  + gives notifications when an event is due
+** Synchronizer class
+  + synchronizes calendars between Dropbox, Google, etc
+  + different classes for each service
+* Frontend
+** Android widget
+ + allows input
+ + shows day's appointments
+ + shows appointments due in 1 week
+ + customizable
+** GUI
+ + shows a calendar
+ + allows editing of appointments
