@@ -1,10 +1,23 @@
 * Backend classes
-** Appointment class
-  + dayOfWeek = MO, TU, WE, etc
-  + date
-  + time
-  + repeat = NONE, WEEKLY, MONTHLY, etc
-  + allDay = TRUE, FALSE
+** Appointment Interface
+*** Appointment class
+This is the class used for appointments.
+**** Variables
+    + dayOfWeek = MO, TU, WE, etc
+    + date
+    + time
+    + repeat = NONE, WEEKLY, MONTHLY, etc
+    + allDay = TRUE, FALSE
+    + tags
+**** Methods
+The only gotcha is deleting an appointment that repeats. Does the user
+delete all occurrences? all occurrences before given date? or after
+given date?
+*** LocationAppt class
+A LocationAppt is "due" whenever the user is near the specified location.
+   + tags
+   + location
+   + radius (in miles)
 ** Input Interface
   + takes an appointment in "natural" language and returns
     an Appointment object
@@ -12,12 +25,15 @@
   + a mySql-lite DB that stores appointments
   + has methods to add/delete/update DB
   + need to make sure that we synchronize access to DB
-** Android Service
+** ReminderService (Android Service)
   + runs in the background
   + gives notifications when an event is due
 ** Synchronizer class
   + synchronizes calendars between Dropbox, Google, etc
   + different classes for each service
+** LocationService (Android service)
+  + runs in background
+  + uses GPS to tell you if you are near location of locationAppt
 * Frontend
 ** Android widget
  + allows input
