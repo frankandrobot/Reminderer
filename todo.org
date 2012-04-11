@@ -16,6 +16,11 @@ Date = 05/01/2012 8pm
    + May 1, 2002
    + 1 May 2002
    + standard user locale. Ex: 12/05/01 vs 05/01/12
+ + Both
+   + all of these combined. Note that some of these might be
+     confusing. Ex:
+     + 24 May 1 - may 24 @ 1am or May 1 @ midnight?
+ + 
 **** Appointments
 <Task> <<at> <Date>> <every <repeat interval>> 
 buy eggs Monday - defaults to 9am
