@@ -23,14 +23,16 @@ Date = 05/01/2012 8pm
  + Day of the week
    + Monday - next monday at 9am
    + Monday 8pm 
+ + Fast forward
+   + in two weeks
+   + in 1 month
 **** Appointments
-<Task> <<at> <Date>> <every <repeat interval>> 
-buy eggs Monday - defaults to 9am
+buy eggs 8pm
+buy eggs Monday
 buy eggs Monday 8pm
-buy eggs every Monday - defaults to 9am
-buy eggs every Monday 8pm
-buy eggs next Monday 7pm
-buy eggs in 2 weeks
+buy eggs 05/01 8pm
+buy eggs in two weeks 8pm
+buy eggs 8pm every Monday
 *** MyDate class
 Based on built-in Date and Calendar class. Combines them to
 allow Date arithmetic
