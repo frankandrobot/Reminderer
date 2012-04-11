@@ -1,6 +1,20 @@
 * Backend classes
 ** Appointment Interface
 *** Examples
+**** Dates
+Date = 05/01/2012 8pm
+ + Just time
+   + 8pm - defaults to current day or next day if past 8
+   + 8:00pm - default time notation
+   + 24 - also supports 24-hour format
+ + Just date
+   + 1 May - defaults to 9am
+   + May 1
+   + 05/01
+   + 05/01/2012 
+   + May 1, 2002
+   + 1 May 2002
+**** Appointments
 <Task> <<at> <Date>> <every <repeat interval>> 
 buy eggs Monday - defaults to 9am
 buy eggs Monday 8pm
