@@ -1,18 +1,44 @@
 * Backend classes
 ** Appointment Interface
 *** Appointment class
-This is the class used for appointments.
+This is the main class used for appointments.
 **** Variables
     + dayOfWeek = MO, TU, WE, etc
     + date
-    + time
-    + repeat = NONE, WEEKLY, MONTHLY, etc
-    + allDay = TRUE, FALSE
+    + startTime
+    + endTime
+    + allDay = true, false
     + tags
 **** Methods
-The only gotcha is deleting an appointment that repeats. Does the user
-delete all occurrences? all occurrences before given date? or after
-given date?
+    + constructor
+    + Static createAppointment()
+    + usual setters and getters
+    + addTags() - adds tags to existing set of tags
+    + getStartTime(), getEndTime()
+      + if allDay == true then always return startTime =
+        12am and endTime = 12pm
+*** RepeatingAppointment class
+Inherits from the Appointment class. 
+**** Variables
+    + repeat = WEEKLY, MONTHLY, etc
+    + startDate = null or Date
+    + endDate = null or Date
+**** Methods
+    + Static createRepeatingAppointment()
+    + usual setters and getters
+
+The only gotcha is deleting a repeating appointment. Does the user
+delete all occurrences? all occurrences before given date?
+or after a given date?
+
+Deleting all occurrences is the simple case. Just mark that
+object for deletion. 
+
+Originally, startDate = date appointment was created and endDate = null. 
+If deleting all occurrences after date, set endDate = new date.
+If deleting all occureences before date, set startDate = new
+date.
+
 *** LocationAppt class
 A LocationAppt is "due" whenever the user is near the specified location.
    + tags
