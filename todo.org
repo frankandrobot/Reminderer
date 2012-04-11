@@ -20,7 +20,9 @@ Date = 05/01/2012 8pm
    + all of these combined. Note that some of these might be
      confusing. Ex:
      + 24 May 1 - may 24 @ 1am or May 1 @ midnight?
- + 
+ + Day of the week
+   + Monday - next monday at 9am
+   + Monday 8pm 
 **** Appointments
 <Task> <<at> <Date>> <every <repeat interval>> 
 buy eggs Monday - defaults to 9am
