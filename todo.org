@@ -34,8 +34,14 @@ buy eggs 05/01 8pm
 buy eggs in two weeks 8pm
 buy eggs 8pm every Monday
 *** MyDate class
-Based on built-in Date and Calendar class. Combines them to
+Based on built-in Calendar class. Combines them to
 allow Date arithmetic
+**** TODO Investigate flyweight design pattern
+ + Using a Calendar object for every appointment is likely
+   to use more memory than using a string
+ + We can use one static Calendar to share among them all.
+   However, the problem is that this isn't thread safe.
+ + Need to investigate the flyweight design pattern
 *** Appointment class
 This is the main class used for appointments.
 **** Variables
@@ -74,7 +80,6 @@ Originally, startDate = date appointment was created and endDate = null.
 If deleting all occurrences after date, set endDate = new date.
 If deleting all occureences before date, set startDate = new
 date.
-
 *** LocationAppt class
 A LocationAppt is "due" whenever the user is near the specified location.
    + tags
