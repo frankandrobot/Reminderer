@@ -20,7 +20,7 @@ public class MyDateFormat {
     static Object lock = new Object();
     Resources resources;
 
-    MyDateFormat(Context context) {
+    public MyDateFormat(Context context) {
 	//setup formatters
 	longFormatter = DateFormat.getDateInstance(DateFormat.LONG);
 	medFormatter = DateFormat.getDateInstance(DateFormat.MEDIUM);
@@ -28,7 +28,7 @@ public class MyDateFormat {
 	pos = new ParsePosition(0);
 	simpleDateFormatter = new SimpleDateFormat();
 	//setup resources
-	Resources res = context.getResources();
+	resources = context.getResources();
     }
 
     public String[] parse(final String input) {
