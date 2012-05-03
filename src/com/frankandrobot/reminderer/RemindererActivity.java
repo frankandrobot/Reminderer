@@ -12,8 +12,16 @@ public class RemindererActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
 	super.onCreate(savedInstanceState);
 	setContentView(R.layout.main);
+	stringTester("June 2, 2003<--this should work");
+	stringTester("6/2<--this should work");
+	stringTester("Jun 2, 2003<---this should work");
+	stringTester("Jun 2<---this should work");
+	stringTester("hello June 2<---this should fail");
+    }
+    
+    private void stringTester(final String string) {
 	MyDateFormat form = new MyDateFormat(this);
-	String[] date = form.parse("June 2, 2003 this should work");
+	String[] date = form.parse(string);
 	if (date == null)
 	    Log.d("R", "date is null");
 	else
