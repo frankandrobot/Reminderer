@@ -13,7 +13,7 @@ public class GrammarClasses {
 		
 	}
 
-	public static class Day extends GrammarInterpreter.Terminal {
-		
-	}
+//	public static class Day extends GrammarInterpreter.Terminal {
+//		
+//	}
 }

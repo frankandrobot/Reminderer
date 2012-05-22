@@ -4,6 +4,8 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.frankandrobot.reminderer.R;
+
 import android.content.Context;
 import android.content.res.Resources;
 
@@ -23,14 +25,37 @@ public interface MyDateTimeFormat {
 	 * Looks for dates only (02/12, Monday, Jun 2, etc)
 	 * 
 	 * @author uri
-	 *
+	 * 
 	 */
 	public class DateFormat implements MyDateTimeFormat {
 		Resources resources;
 		DateFormatStrategy parser;
 
 		public DateFormat(Context context) {
-			parser = new DateFormatStrategy.BruteForce(context);
+			parser = new DateFormatStrategy.BruteForce(context,
+					new DateFormatStrategy.DateInstance(), R.array.date_format);
+
+		}
+
+		public String[] find(final String input) {
+			return parser.find(input);
+
+		}
+	}
+
+	/**
+	 * Looks for time only
+	 * 
+	 * @author uri
+	 * 
+	 */
+	public class TimeFormat implements MyDateTimeFormat {
+		Resources resources;
+		DateFormatStrategy parser;
+
+		public TimeFormat(Context context) {
+			parser = new DateFormatStrategy.BruteForce(context,
+					new DateFormatStrategy.TimeInstance(), R.array.time_format);
 
 		}
 

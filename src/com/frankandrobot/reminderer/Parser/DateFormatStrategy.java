@@ -37,23 +37,27 @@ public interface DateFormatStrategy {
 	public String[] find(final String input);
 
 	public class BruteForce implements DateFormatStrategy {
+		DateFormatInstance dateFormat;
 		DateFormat longFormatter, medFormatter, shortFormatter;
 		SimpleDateFormat simpleDateFormatter;
+		int customFormatResourceId;
 		DateStringPair dateStringPair;
 		String[] customFormatPattern;
 		ParsePosition pos;
 		static Object lock = new Object();
 		Resources resources;
 
-		public BruteForce(Context context) {
+		public BruteForce(Context context, DateFormatInstance dateFormat, int customFormatResourceId) {
+			this.dateFormat = dateFormat;
+			this.customFormatResourceId = customFormatResourceId;
 			initialize(context);
 		}
 
 		public void initialize(Context context) {
 			// setup formatters
-			longFormatter = DateFormat.getDateInstance(DateFormat.LONG);
-			medFormatter = DateFormat.getDateInstance(DateFormat.MEDIUM);
-			shortFormatter = DateFormat.getDateInstance(DateFormat.SHORT);
+			longFormatter = dateFormat.getInstance(DateFormat.LONG);
+			medFormatter = dateFormat.getInstance(DateFormat.MEDIUM);
+			shortFormatter = dateFormat.getInstance(DateFormat.SHORT);
 			simpleDateFormatter = new SimpleDateFormat();
 			pos = new ParsePosition(0);
 			// setup resources
@@ -75,7 +79,7 @@ public interface DateFormatStrategy {
 				// if DateFormat failed try the simpleDateFormatter
 				if (dateStringPair == null) {
 					customFormatPattern = resources
-							.getStringArray(R.array.date_format);
+							.getStringArray(customFormatResourceId);
 					for (int i = 0; i < customFormatPattern.length; i++) {
 						simpleDateFormatter
 								.applyPattern(customFormatPattern[i]);
@@ -117,6 +121,25 @@ public interface DateFormatStrategy {
 		}
 	}
 
+	public interface DateFormatInstance {
+		DateFormat getInstance(int style);
+	}
+	
+	public class DateInstance implements DateFormatInstance {
+
+		public DateFormat getInstance(int style) {
+			return DateFormat.getDateInstance(style);
+		}
+		
+	}
+
+	public class TimeInstance implements DateFormatInstance {
+
+		public DateFormat getInstance(int style) {
+			return DateFormat.getTimeInstance(style);
+		}
+		
+	}
 }
 
 class DateStringPair {

@@ -25,7 +25,7 @@ public class RemindererActivity extends Activity {
 	}
 
 	private void stringTester(final String string) {
-		MyDateFormat form = new MyDateFormat(this);
+		MyDateTimeFormat.DateFormat form = new MyDateTimeFormat.DateFormat(this);
 		String[] date = form.find(string);
 		if (date == null)
 			Log.d("R", "date is null");
