@@ -10,13 +10,33 @@ import com.frankandrobot.reminderer.R;
 import android.content.Context;
 import android.content.res.Resources;
 
-public interface ParserStrategy {
+/**
+ * Do NOT call this interface directly. Use MyDateFormat.
+ * 
+ * @author uri
+ * 
+ */
+public interface DateFormatStrategy {
 
+	/**
+	 * Don't forget to set this otherwise you'll get a null ptr exception The
+	 * parser uses the context to get the system resources
+	 * 
+	 * @param context
+	 */
 	public void initialize(Context context);
 
-	public String[] parse(final String input);
+	/**
+	 * Looks for a date at the start of the string. If match found returns a
+	 * string array. The first element is the match. The second element is the
+	 * remaining string. Otherwise, returns null.
+	 * 
+	 * @param input
+	 * @return
+	 */
+	public String[] find(final String input);
 
-	public class BruteForce implements ParserStrategy {
+	public class BruteForce implements DateFormatStrategy {
 		DateFormat longFormatter, medFormatter, shortFormatter;
 		SimpleDateFormat simpleDateFormatter;
 		DateStringPair dateStringPair;
@@ -40,7 +60,7 @@ public interface ParserStrategy {
 			resources = context.getResources();
 		}
 
-		public String[] parse(final String input) {
+		public String[] find(final String input) {
 			synchronized (lock) {
 				pos.setIndex(0);
 				dateStringPair = null;

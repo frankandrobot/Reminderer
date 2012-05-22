@@ -26,7 +26,7 @@ public class RemindererActivity extends Activity {
 
 	private void stringTester(final String string) {
 		MyDateFormat form = new MyDateFormat(this);
-		String[] date = form.parse(string);
+		String[] date = form.find(string);
 		if (date == null)
 			Log.d("R", "date is null");
 		else
@@ -34,7 +34,7 @@ public class RemindererActivity extends Activity {
 	}
 
 	private void parseTester(final String string) {
-		TaskParser parser = new TaskParser();
+		MetaGrammarParser parser = new MetaGrammarParser();
 		boolean rslt = parser.parse(string);
 		Log.d("R", string + " is " + rslt);
 	}
