@@ -1,29 +1,48 @@
 package com.frankandrobot.reminderer.Parser;
 
 import java.util.LinkedList;
-import com.frankandrobot.reminderer.Parser.MetaGrammarParser.Context;
+
+import android.content.Context;
+
+import com.frankandrobot.reminderer.Parser.MetaGrammarParser;
 
 /**
- * This implements the Interpreter design pattern. OThe MetaGrammarParser
- * constructs objects of this interface
+ * This implements the Interpreter design pattern. The MetaGrammarParser
+ * constructs objects of this interface.
+ * 
+ * "Generic" classes are here. Locale specific classes are in GrammarClasses.
  * 
  * @author uri
  * 
  */
-public interface GrammarInterpreter {
-
-	public boolean parse(Context context);
-
-	public boolean interpret(Context context);
-
-	static MetaGrammarParser g = new MetaGrammarParser();
+public class GrammarInterpreter {
+	Context context;
 	static public Finder lBracket = new Finder("\\[");
 	static public Finder rBracket = new Finder("\\]");
 	static public Finder lParens = new Finder("\\(");
 	static public Finder rParens = new Finder("\\)");
 	static public Finder whiteSpace = new Finder("[ \t]+");
 
-	public class Task implements GrammarInterpreter {
+	/**
+	 * Terminal classes are the only classes that actually use the Context
+	 * 
+	 * @param context
+	 */
+	GrammarInterpreter(Context context) {
+		this.context = context;
+	}
+
+	Context getApplicationContext() { return context; }
+	
+	public interface Expression {
+
+		public boolean parse(MetaGrammarParser.GrammarContext context);
+
+		public boolean interpret(MetaGrammarParser.GrammarContext context);
+
+	}
+
+	public class Task implements Expression {
 		String task;
 		Commands commands;
 
@@ -34,7 +53,7 @@ public interface GrammarInterpreter {
 		/*
 		 * Gets the task and the commands from the context
 		 */
-		public boolean parse(Context context) {
+		public boolean parse(MetaGrammarParser.GrammarContext context) {
 			int curPos = 0;
 			while (!commands.parse(context)) { // current pos is not a command
 												// so
@@ -55,13 +74,13 @@ public interface GrammarInterpreter {
 			return commands.parse(context);
 		}
 
-		public boolean interpret(Context context) {
+		public boolean interpret(MetaGrammarParser.GrammarContext context) {
 			// TODO Auto-generated method stub
 			return false;
 		}
 	}
 
-	public class Commands implements GrammarInterpreter {
+	public class Commands implements Expression {
 		LinkedList<Command> commands;
 
 		Commands(LinkedList<Command> commands) {
@@ -71,7 +90,7 @@ public interface GrammarInterpreter {
 			}
 		}
 
-		public boolean parse(Context context) {
+		public boolean parse(MetaGrammarParser.GrammarContext context) {
 			// save position
 			int curPos = context.getPos();
 			for (Command com : commands) {
@@ -83,31 +102,31 @@ public interface GrammarInterpreter {
 			return true;
 		}
 
-		public boolean interpret(Context context) {
+		public boolean interpret(MetaGrammarParser.GrammarContext context) {
 			// TODO Auto-generated method stub
 			return false;
 		}
 
 	}
 
-	public class Command implements GrammarInterpreter {
+	public class Command implements Expression {
 		Token token;
 
 		Command(Token token) {
 			this.token = token;
 		}
 
-		public boolean parse(Context context) {
+		public boolean parse(MetaGrammarParser.GrammarContext context) {
 			return token.parse(context);
 		}
 
-		public boolean interpret(Context context) {
+		public boolean interpret(MetaGrammarParser.GrammarContext context) {
 			// TODO Auto-generated method stub
 			return false;
 		}
 	}
 
-	public class BinaryOperator implements GrammarInterpreter {
+	public class BinaryOperator implements Expression {
 		Token a;
 		Token b;
 		Finder op;
@@ -118,67 +137,70 @@ public interface GrammarInterpreter {
 			this.b = b;
 		}
 
-		public boolean parse(Context context) {
+		public boolean parse(MetaGrammarParser.GrammarContext context) {
 			return a.parse(context) && op.find(context) && b.parse(context);
 		}
 
-		public boolean interpret(Context context) {
+		public boolean interpret(MetaGrammarParser.GrammarContext context) {
 			// TODO Auto-generated method stub
 			return false;
 		}
 	}
 
-	public class UnaryOperator implements GrammarInterpreter {
+	public class UnaryOperator implements Expression {
 		Token expr;
 		Finder op;
+
+		UnaryOperator() {
+		}
 
 		UnaryOperator(String op, Token expr) {
 			this.op = new Finder(op);
 			this.expr = expr;
 		}
 
-		public boolean parse(Context context) {
+		public boolean parse(MetaGrammarParser.GrammarContext context) {
 			return op.find(context) && expr.parse(context);
 		}
 
-		public boolean interpret(Context context) {
+		public boolean interpret(MetaGrammarParser.GrammarContext context) {
 			// TODO Auto-generated method stub
 			return false;
 		}
 
 	}
 
-	public class Token implements GrammarInterpreter {
-		GrammarInterpreter token;
+	public class Token implements Expression {
+		Expression token;
 
 		// can be one of terminal or unary operator
-		Token(GrammarInterpreter token) {
+		Token(Expression token) {
 			this.token = token;
 		}
 
-		public boolean parse(Context context) {
+		public boolean parse(MetaGrammarParser.GrammarContext context) {
 			return token.parse(context);
 		}
 
-		public boolean interpret(Context context) {
+		public boolean interpret(MetaGrammarParser.GrammarContext context) {
 			// TODO Auto-generated method stub
 			return false;
 		}
 
 	}
 
-	public class Terminal implements GrammarInterpreter {
+	public class Terminal implements Expression {
 		Finder value;
 
 		Terminal(String value) {
 			this.value = new Finder(value);
 		}
 
-		public boolean parse(Context context) {
+		public boolean parse(MetaGrammarParser.GrammarContext context) {
 			return value.find(context);
 		}
 
-		public boolean interpret(Context context) {
+		public boolean interpret(MetaGrammarParser.GrammarContext context) {
 			// TODO Auto-generated method stub
 			return false;
 		}

@@ -2,7 +2,7 @@ package com.frankandrobot.reminderer.Parser;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import android.content.Context;
 
 /**
  * This class parses the meta grammar
@@ -11,12 +11,12 @@ import java.util.regex.Pattern;
  *
  */
 public class MetaGrammarParser {
-	public class Context {
+	static public class GrammarContext {
 		int pos;
 		String original;
 		String context;
 	
-		Context(String input) {
+		GrammarContext(String input) {
 			original = new String(input);
 			context = new String(input);
 			pos = 0;
@@ -49,7 +49,9 @@ public class MetaGrammarParser {
 		}
 	}
 	
-	Context context;
+	GrammarContext context;
+	Context androidContext;
+	
 	Finder lBracket, rBracket, lParens, rParens;
 	Finder whiteSpace, whiteSpaceOrEnd;
 	
@@ -62,12 +64,16 @@ public class MetaGrammarParser {
 		whiteSpaceOrEnd = new Finder("[ \t]+|$");
 	}
 
-	public void setContext(String input) {
-		context = new Context(input);
+	public void setGrammarContext(String input) {
+		context = new GrammarContext(input);
 	}
 
+	public void setAndroidContext(Context context) {
+		androidContext = context;
+	}
+	
 	public boolean parse(String input) {
-		context = new Context(input.trim());
+		context = new GrammarContext(input.trim());
 		int curPos = 0;
 		while(!commands()) { //current pos is not a command so
 			//gobble the token

@@ -31,6 +31,8 @@ public interface DateFormatStrategy {
 	 * string array. The first element is the match. The second element is the
 	 * remaining string. Otherwise, returns null.
 	 * 
+	 * Don't forget to initialize the context first!
+	 *  
 	 * @param input
 	 * @return
 	 */
@@ -47,10 +49,20 @@ public interface DateFormatStrategy {
 		static Object lock = new Object();
 		Resources resources;
 
-		public BruteForce(Context context, DateFormatInstance dateFormat, int customFormatResourceId) {
+		public BruteForce(DateFormatInstance dateFormat) {
 			this.dateFormat = dateFormat;
-			this.customFormatResourceId = customFormatResourceId;
+			setFormatResourceId();
+		}
+
+		public BruteForce(Context context, DateFormatInstance dateFormat) {
+			this.dateFormat = dateFormat;
+			setFormatResourceId();
 			initialize(context);
+		}
+
+		private void setFormatResourceId() {
+			if(dateFormat instanceof DateInstance) customFormatResourceId = R.array.date_format;
+			if(dateFormat instanceof TimeInstance) customFormatResourceId = R.array.time_format;		
 		}
 
 		public void initialize(Context context) {
@@ -124,13 +136,13 @@ public interface DateFormatStrategy {
 	public interface DateFormatInstance {
 		DateFormat getInstance(int style);
 	}
-	
+
 	public class DateInstance implements DateFormatInstance {
 
 		public DateFormat getInstance(int style) {
 			return DateFormat.getDateInstance(style);
 		}
-		
+
 	}
 
 	public class TimeInstance implements DateFormatInstance {
@@ -138,7 +150,7 @@ public interface DateFormatStrategy {
 		public DateFormat getInstance(int style) {
 			return DateFormat.getTimeInstance(style);
 		}
-		
+
 	}
 }
 
