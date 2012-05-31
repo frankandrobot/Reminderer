@@ -46,7 +46,8 @@ public class GrammarInterpreter {
 		String task;
 		Commands commands;
 
-		Task(Commands commands) {
+		Task(String task, Commands commands) {
+			this.task = new String(task);
 			this.commands = commands;
 		}
 
@@ -126,6 +127,22 @@ public class GrammarInterpreter {
 		}
 	}
 
+	public class OptionalCommand extends Command {
+
+		OptionalCommand(Token token) {
+			super(token);
+			// TODO Auto-generated constructor stub
+		}
+		
+		public boolean parse(MetaGrammarParser.GrammarContext context) {
+			int pos = context.getPos();
+			if ( super.parse(context) ) return true;
+			context.setPos(pos);
+			return true;
+		}
+		
+	}
+	
 	public class BinaryOperator implements Expression {
 		Token a;
 		Token b;

@@ -1,7 +1,11 @@
 package com.frankandrobot.reminderer.Parser;
 
+import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.frankandrobot.reminderer.Parser.GrammarInterpreter.Expression;
+
 import android.content.Context;
 
 /**
@@ -51,6 +55,8 @@ public class MetaGrammarParser {
 	
 	GrammarContext context;
 	Context androidContext;
+	GrammarInterpreter grammar;
+	LinkedList<GrammarInterpreter.Command> commands;
 	
 	Finder lBracket, rBracket, lParens, rParens;
 	Finder whiteSpace, whiteSpaceOrEnd;
@@ -62,6 +68,7 @@ public class MetaGrammarParser {
 		rParens = new Finder("\\)");
 		whiteSpace = new Finder("[ \t]+");
 		whiteSpaceOrEnd = new Finder("[ \t]+|$");
+		commands = new LinkedList<GrammarInterpreter.Command>();
 	}
 
 	public void setGrammarContext(String input) {
@@ -70,12 +77,13 @@ public class MetaGrammarParser {
 
 	public void setAndroidContext(Context context) {
 		androidContext = context;
+		grammar = new GrammarInterpreter(androidContext);
 	}
 	
-	public boolean parse(String input) {
+	Expression parse(String input) {
 		context = new GrammarContext(input.trim());
 		int curPos = 0;
-		while(!commands()) { //current pos is not a command so
+		while(commands()==null) { //current pos is not a command so
 			//gobble the token
 			if (whiteSpace.find(context)) {
 				context.gobble(whiteSpace);
@@ -88,12 +96,12 @@ public class MetaGrammarParser {
 		}
 		//did we find a task?
 		String task = context.getOriginal().substring(0, curPos);
-		if ( task.trim().equals("") ) return false;
+		if ( task.trim().equals("") ) return null;
 		context.setPos(curPos);
-		return commands();
+		return grammar.new Task(task,commands());
 	}
 
-	boolean commands() {
+	GrammarInterpreter.Commands commands() {
 		// save position
 		int curPos = context.getPos();
 		// [ command ] commands
@@ -101,6 +109,7 @@ public class MetaGrammarParser {
 			context.gobble(lBracket); // gobble [
 			if (command() && rBracket.find(context)) {
 				context.gobble(rBracket); // gobble ]
+				commands.add(new OptionalCommand())
 				return true;
 			} else
 				// reset context
@@ -148,10 +157,11 @@ public class MetaGrammarParser {
 	}
 
 	// token: T | "(" command ")" | "[" U "]" token | U token
-	boolean token() {
+	GrammarInterpreter.Expression token() {
 		int curPos = context.getPos();
-		if (T())
-			return true;
+		GrammarInterpreter.Terminal t = T();
+		if (t != null)
+			return grammar.new Token(t);
 		if (lParens.find(context)) {
 			context.gobble(lParens); // gobble (
 			if (command() && rParens.find(context)) {
@@ -174,42 +184,49 @@ public class MetaGrammarParser {
 		return false;
 	}
 
-	boolean T() {
+	GrammarInterpreter.Terminal T() {
 		//TODO 
 		//This is temporary. The terminals should be stored in a locale-dependent XML file
 		Pattern p = Pattern
 				.compile("[ \t]*day|[ \t]*tomorrow|[ \t]*today|[ \t]*date|[ \t]*time");
 		Matcher m = p.matcher(context.getContext());
 		if (m.find() && m.start() == 0) {
+			//get actual terminal
+			String terminal = context.getContext().substring(0,m.end()).trim();
+			//remove term from context
 			context.gobble(m.end());
-			return true;
+			return grammar.new Terminal(terminal);
 		}
-		return false;
+		return null;
 	}
 
 	// U: next | repeats | on | at
-	boolean U() {
+	GrammarInterpreter.UnaryOperator U() {
 		//TODO
 		//Ditto
 		Pattern p = Pattern.compile("[ \t]*next|[ \t]*repeats|[ \t]*on|[ \t]*at");
 		Matcher m = p.matcher(context.getContext());
 		if (m.find() && m.start()==0) {
+			//get actual op
+			String op = context.getContext().substring(0,m.end()).trim();
+			//remove op from context
 			context.gobble(m.end());
-			return true;
+			return grammar.new UnaryOperator(op,null);
 		}
-		return false;
+		return null;
 	}
+	
 	// B: "|"
-	boolean B() {
+	GrammarInterpreter.BinaryOperator B() {
 		//TODO
 		//The | is NOT defined in XML. However, there may be other binary ops defined in XML1
 		Pattern p = Pattern.compile("[ \t]*\\|");
 		Matcher m = p.matcher(context.getContext());
 		if (m.find() && m.start() == 0) {
 			context.gobble(m.end());
-			return true;
+			return grammar.new BinaryOperator(null,"|",null);
 		}
-		return false;
+		return null;
 	}
 
 }

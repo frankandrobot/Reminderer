@@ -126,3 +126,21 @@ conjunction with DateFormat.
 ** GUI
  + shows a calendar
  + allows editing of appointments
+* GUI
+** issues
+ + its been done already in stock app and others but the
+   issue is the interface---needs to be user-friendly
+ + easy to zoom out/in. 
+ + easy to add/edit events right on the calendar
+** Daily
+** Weekly
+** Monthly
+** Yearly
+* Ideas
+ + For example, task is "buy milk" then app should remind
+   you whn you are near a grocery store
+   + categorize objects. Example, "milk" is "grocery"
+     category. Birthday is an event. 
+   + this is related to mike's idea --- for birthday,
+     recommend restaurants or movies, etc.
+
