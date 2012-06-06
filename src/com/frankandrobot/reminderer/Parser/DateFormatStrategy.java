@@ -32,11 +32,20 @@ public interface DateFormatStrategy {
 	 * remaining string. Otherwise, returns null.
 	 * 
 	 * Don't forget to initialize the context first!
-	 *  
+	 * 
 	 * @param input
 	 * @return
 	 */
 	public String[] find(final String input);
+
+	/**
+	 * Returns a date if the input string represents a date. Otherwise returns
+	 * null.
+	 * 
+	 * @param input
+	 * @return
+	 */
+	public Date parse(final String input);
 
 	public class BruteForce implements DateFormatStrategy {
 		DateFormatInstance dateFormat;
@@ -61,8 +70,10 @@ public interface DateFormatStrategy {
 		}
 
 		private void setFormatResourceId() {
-			if(dateFormat instanceof DateInstance) customFormatResourceId = R.array.date_format;
-			if(dateFormat instanceof TimeInstance) customFormatResourceId = R.array.time_format;		
+			if (dateFormat instanceof DateInstance)
+				customFormatResourceId = R.array.date_format;
+			if (dateFormat instanceof TimeInstance)
+				customFormatResourceId = R.array.time_format;
 		}
 
 		public void initialize(Context context) {
@@ -77,36 +88,32 @@ public interface DateFormatStrategy {
 		}
 
 		public String[] find(final String input) {
-			synchronized (lock) {
-				pos.setIndex(0);
-				dateStringPair = null;
-				// first try to match the long format
-				dateStringPair = parseAndFormat(input, pos, longFormatter);
-				// then try the med format
-				if (dateStringPair == null)
-					dateStringPair = parseAndFormat(input, pos, medFormatter);
-				// then try the short format
-				if (dateStringPair == null)
-					dateStringPair = parseAndFormat(input, pos, shortFormatter);
-				// if DateFormat failed try the simpleDateFormatter
-				if (dateStringPair == null) {
-					customFormatPattern = resources
-							.getStringArray(customFormatResourceId);
-					for (int i = 0; i < customFormatPattern.length; i++) {
-						simpleDateFormatter
-								.applyPattern(customFormatPattern[i]);
-						dateStringPair = parseAndFormat(input, pos,
-								simpleDateFormatter);
-						if (dateStringPair != null)
-							break;
-					}
+			dateStringPair = null;
+			// first try to match the long format
+			dateStringPair = parseAndFormat(input, pos, longFormatter);
+			// then try the med format
+			if (dateStringPair == null)
+				dateStringPair = parseAndFormat(input, pos, medFormatter);
+			// then try the short format
+			if (dateStringPair == null)
+				dateStringPair = parseAndFormat(input, pos, shortFormatter);
+			// if DateFormat failed try the simpleDateFormatter
+			if (dateStringPair == null) {
+				customFormatPattern = resources
+						.getStringArray(customFormatResourceId);
+				for (int i = 0; i < customFormatPattern.length; i++) {
+					simpleDateFormatter.applyPattern(customFormatPattern[i]);
+					dateStringPair = parseAndFormat(input, pos,
+							simpleDateFormatter);
+					if (dateStringPair != null)
+						break;
 				}
-				// if its still null then everything failed so return null
-				if (dateStringPair == null)
-					return null;
-				return new String[] { dateStringPair.dateString,
-						input.substring(pos.getIndex()) };
 			}
+			// if its still null then everything failed so return null
+			if (dateStringPair == null)
+				return null;
+			return new String[] { dateStringPair.dateString,
+					input.substring(pos.getIndex()) };
 
 		}
 
@@ -124,12 +131,43 @@ public interface DateFormatStrategy {
 		 */
 		static private DateStringPair parseAndFormat(String input,
 				ParsePosition pos, DateFormat formatter) {
+			pos.setIndex(0);
 			DateStringPair ds = new DateStringPair();
 			ds.date = formatter.parse(input, pos);
 			if (ds.date == null)
 				return null;
 			ds.dateString = formatter.format(ds.date);
 			return ds;
+		}
+
+		public Date parse(String input) {
+			Date date = null;
+			// first try to match the long format
+			pos.setIndex(0);
+			date = longFormatter.parse(input, pos);
+			// then try the med format
+			if (date == null) {
+				pos.setIndex(0);
+				date = medFormatter.parse(input, pos);
+			}
+			// then try the short format
+			if (date == null) {
+				pos.setIndex(0);
+				date = shortFormatter.parse(input, pos);
+			}
+			// if DateFormat failed try the simpleDateFormatter
+			if (date == null) {
+				customFormatPattern = resources
+						.getStringArray(customFormatResourceId);
+				for (int i = 0; i < customFormatPattern.length; i++) {
+					simpleDateFormatter.applyPattern(customFormatPattern[i]);
+					pos.setIndex(0);
+					date = simpleDateFormatter.parse(input, pos);
+					if (date != null)
+						break;
+				}
+			}
+			return date;
 		}
 	}
 

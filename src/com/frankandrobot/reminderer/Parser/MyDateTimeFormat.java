@@ -21,6 +21,15 @@ public interface MyDateTimeFormat {
 	 */
 	public String[] find(final String input);
 
+	/**
+	 * Returns a date if the input string represents a date. Otherwise, returns
+	 * null.
+	 * 
+	 * @param input
+	 * @return
+	 */
+	public Date parse(final String input);
+
 	public void setContext(Context context);
 
 	/**
@@ -51,6 +60,10 @@ public interface MyDateTimeFormat {
 
 		public void setContext(Context context) {
 			parser.initialize(context);
+		}
+
+		public Date parse(String input) {
+			return parser.parse(input);
 		}
 	}
 
@@ -84,6 +97,10 @@ public interface MyDateTimeFormat {
 			parser.initialize(context);
 
 		}
+
+		public Date parse(String input) {
+			return parser.parse(input);
+		}
 	}
 
 	/**
@@ -116,6 +133,10 @@ public interface MyDateTimeFormat {
 
 		public void setContext(Context context) {
 			// dont do anything, context not needed
+		}
+
+		public Date parse(String input) {
+			return sdf.parse(input,new ParsePosition(0));
 		}
 	}
 }
