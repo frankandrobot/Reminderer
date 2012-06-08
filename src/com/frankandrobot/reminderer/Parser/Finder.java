@@ -8,10 +8,12 @@ import com.frankandrobot.reminderer.Parser.MetaGrammarParser.GrammarContext;
 public class Finder {
 	Pattern p;
 	Matcher m;
+	String val;
 	
 	Finder() {}
 
 	Finder(String expr) {
+		val = new String(expr);
 		p = Pattern.compile("[ \t]*" + expr);
 	}
 
@@ -35,5 +37,9 @@ public class Finder {
 
 	int end() {
 		return m.end();
+	}
+
+	public String value() {
+		return val;
 	}
 }

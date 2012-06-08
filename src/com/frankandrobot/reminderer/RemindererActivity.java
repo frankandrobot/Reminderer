@@ -18,10 +18,10 @@ public class RemindererActivity extends Activity {
 		stringTester("Jun 2<---this should work");
 		stringTester("hello June 2<---this should fail");
 		parseTester("hello"); // this should pass
-		parseTester("buy eggs (date | time) [today] date"); //pass
-		parseTester(""); //fail
-		parseTester("milk (today |tomorrow) [at date] [[on] time]"); //pass
-		parseTester("buy egs [[at] date] [[on] time] [repeats day]");
+		parseTester("buy eggs June 2 8pm"); //pass
+		parseTester("buy eggs"); //pass
+		parseTester("milk at July 1 on 7:15p"); //pass
+		parseTester("buy egss repeats daily"); //pass
 	}
 
 	private void stringTester(final String string) {
@@ -35,7 +35,8 @@ public class RemindererActivity extends Activity {
 
 	private void parseTester(final String string) {
 		MetaGrammarParser parser = new MetaGrammarParser();
-		boolean rslt = parser.parse(string);
+		parser.setAndroidContext(this);
+		MetaGrammarParser.Task rslt = parser.parse(string);
 		Log.d("R", string + " is " + rslt);
 	}
 }
