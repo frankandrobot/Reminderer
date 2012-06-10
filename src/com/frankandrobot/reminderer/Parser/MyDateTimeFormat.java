@@ -124,10 +124,11 @@ public interface MyDateTimeFormat {
 		 */
 		public String[] find(final String input) {
 			result = null;
+			pos.setIndex(0);
 			result = sdf.parse(input, pos);
 			if (result == null)
 				return null;
-			return new String[] { sdf.format(result),
+			return new String[] { input.substring(0,pos.getIndex()),
 					input.substring(pos.getIndex()) };
 		}
 

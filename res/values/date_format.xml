@@ -3,7 +3,6 @@
     <string-array name="date_format">
         <item >M/d</item>
         <item >MMM d</item>
-        <item >\'hello\' MMM d</item>
     </string-array>
     
 </resources>

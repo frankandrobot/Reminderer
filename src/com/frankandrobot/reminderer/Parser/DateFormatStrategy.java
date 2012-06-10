@@ -136,7 +136,8 @@ public interface DateFormatStrategy {
 			ds.date = formatter.parse(input, pos);
 			if (ds.date == null)
 				return null;
-			ds.dateString = formatter.format(ds.date);
+			ds.dateString = input.substring(0,pos.getIndex()); 
+				//formatter.format(ds.date);
 			return ds;
 		}
 

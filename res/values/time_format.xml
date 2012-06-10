@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string-array name="time_format">
-        <item >h:mma</item>
-        <item >H:mm</item>
-        <item >hmma</item>
-        <item >hhmma</item>
+        <item>h:mma</item>
+        <item>H:mm</item>
+        <item>ha</item>
+        <item>hha</item>
+        <item>hmma</item>
+        <item>hhmma</item>
     </string-array>
-    
+
 </resources>
