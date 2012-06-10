@@ -3,5 +3,9 @@
 
     <string name="hello">Hello World, RemindererActivity!</string>
     <string name="app_name">Reminderer</string>
+    <string name="hello_world">Hello world</string>
+    <string name="add_new_task">Add new</string>
+    <string name="submit">Submit</string>
+    <string name="no_task">No tasks yet</string>
 
 </resources>

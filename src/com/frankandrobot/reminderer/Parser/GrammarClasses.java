@@ -22,7 +22,7 @@ public interface GrammarClasses {
 			String[] rslt = parser.find(context.getContext());
 			if (rslt == null)
 				return null;
-			context.setPos(context.getPos() + rslt[0].length());
+			context.gobble(rslt[0].length()+1);
 			return parser.parse(rslt[0]);
 
 		}
