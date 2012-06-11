@@ -21,15 +21,16 @@ public class RemindererActivity extends Activity {
 	// stringTester("Jun 2, 2003<---this should work");
 	// stringTester("Jun 2<---this should work");
 	// stringTester("hello June 2<---this should fail");
-	 parseTester("hello"); // this should pass
-	 parseTester("buy eggs"); // pass
-	 parseTester("buy milk June 2"); //pass
-	 parseTester("buy eggs June 2 8pm"); // pass
-	 parseTester("buy eggs June 2 10pm"); // pass
-	 parseTester("buy eggs 630am July 1"); //pass
-	 parseTester("milk at July 1 on 7:15pm"); // pass
-	 parseTester("buy egss repeats daily"); // pass
-	 parseTester("buy milk next Monday");
+//	 parseTester("hello"); // this should pass
+//	 parseTester("buy eggs"); // pass
+//	 parseTester("buy milk June 2"); //pass
+//	 parseTester("buy eggs June 2 8pm"); // pass
+//	 parseTester("buy eggs June 2 10pm"); // pass
+//	 parseTester("buy eggs 630am July 1"); //pass
+//	 parseTester("milk at July 1 on 7:15pm"); // pass
+//	 parseTester("buy egss repeats daily"); // pass
+//	 parseTester("buy milk next Monday");
+	 parseTester("buy milk at walmart");
     }
 
     private void stringTester(final String string) {

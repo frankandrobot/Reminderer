@@ -154,6 +154,8 @@ public class MetaGrammarParser {
     Finder lBracket, rBracket, lParens, rParens;
     Finder nextWhiteSpace, whiteSpace;
 
+    boolean locationRecursion = false; // hack to prevent infinite recursion
+
     public MetaGrammarParser() {
 	lBracket = new Finder("\\[");
 	rBracket = new Finder("\\]");
@@ -277,7 +279,7 @@ public class MetaGrammarParser {
 	    return null;
 	int curPos = context.getPos();
 	context.gobble(next);
-	//eat whitespace
+	// eat whitespace
 	if (whiteSpace.find(context))
 	    context.gobble(whiteSpace);
 	GrammarClasses.Day timeParser = new GrammarClasses.Day(androidContext);
@@ -341,19 +343,30 @@ public class MetaGrammarParser {
 
     // location: "at" locationString
     Task location() {
+	if (locationRecursion)
+	    return null;
 	Finder at = new Finder("at");
 	if (!at.find(context))
 	    return null;
 	int curPos = context.getPos();
 	context.gobble(at);
-	String location = "";
 	int len = context.getPos();
+	String location = "";
+	// enter recursion
+	locationRecursion = true;
 	while (command() == null) {
-	    // get gobbled string
-	    location += context.getOriginal().substring(len, context.getPos());
-	    // update len
-	    len = context.getPos();
+	    // gobble token
+	    if (nextWhiteSpace.find(context)) {
+		context.gobble(nextWhiteSpace);
+		// get gobbled string
+		location += context.getOriginal().substring(len,
+			context.getPos());
+		// update len
+		len = context.getPos();
+	    }//if no whitespace found then we've reached end
 	}
+	// exit recursion
+	locationRecursion = false;
 	// check that location isnt null
 	if (location.trim().equals("")) {
 	    context.setPos(curPos);
