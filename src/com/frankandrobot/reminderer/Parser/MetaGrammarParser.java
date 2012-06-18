@@ -1,11 +1,6 @@
 package com.frankandrobot.reminderer.Parser;
 
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
-import java.text.DateFormat;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -117,162 +112,6 @@ public class MetaGrammarParser {
 	}
     }
 
-    /**
-     * @author uri
-     * 
-     */
-    static public class Task {
-	static String defaultTime = "9:00am";
-	Calendar calendar;
-
-	String task;
-	// meeting variables
-	String taskDate;
-	String taskTime;
-	Date duration;
-	// AlarmManager just needs a taskTime to schedule the alarm
-	Repeats repeats;
-	RepeatsEvery repeatsEvery;
-	String location;
-	// helpers
-	Calendar tmpCalendar;
-	DateFormat shortDateFormat = DateFormat
-		.getDateInstance(DateFormat.SHORT);
-	DateFormat shortTimeFormat = DateFormat
-		.getTimeInstance(DateFormat.SHORT);
-	SimpleDateFormat sdfDate = new SimpleDateFormat("MM/dd/yyyy");
-	SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
-
-	public Task() {
-	    calendar = new GregorianCalendar();
-	    // set to defaultTime - bah very convoluted
-	    SimpleDateFormat sdf = new SimpleDateFormat("h:mma");
-	    Date dt = sdf.parse(defaultTime, new ParsePosition(0)); // get
-								    // default
-								    // taskTime
-	    initTmpCalendar(dt); // pass it to the tmp calendar
-	    calendar.set(Calendar.HOUR, dt.getHours()); // give it to the date
-							// calendar
-	    calendar.set(Calendar.MINUTE, dt.getMinutes());
-	    calendar.set(Calendar.AM_PM, tmpCalendar.get(Calendar.AM_PM));
-	    // date is now set to current date and default taskTime
-	}
-
-	private void initTmpCalendar(Date date) {
-	    tmpCalendar = new GregorianCalendar();
-	    tmpCalendar.setTime(date);
-	}
-
-	public void setTask(String task) {
-	    this.task = new String(task);
-	}
-
-	public String getTask() {
-	    return new String(task);
-	}
-
-	public void setDate(Date date) {
-	    // just get the day,month,year fields from date. Ignore time fields
-	    initTmpCalendar(date);
-	    copyCalendarField(calendar, tmpCalendar, Calendar.MONTH);
-	    copyCalendarField(calendar, tmpCalendar, Calendar.DAY_OF_MONTH);
-	    copyCalendarField(calendar, tmpCalendar, Calendar.YEAR);
-	    // also construct date - getDate() likely to be called more
-	    // frequently than setDate() so saving CPU here - original
-	    // constructDate() was more complicated. Not much savings with
-	    // current one
-	    taskDate = constructDate();
-	}
-
-	/**
-	 * Copies field from calendar b into a
-	 * 
-	 * @param a
-	 * @param b
-	 * @param field
-	 */
-	static private void copyCalendarField(Calendar a, final Calendar b,
-		int field) {
-	    a.set(field, b.get(field));
-	}
-
-	/**
-	 * Returns date in MM/dd/yyyy format
-	 * 
-	 * @return
-	 */
-	private String constructDate() {
-	    // bah - convoluted again
-	    String dateString = "";
-	    dateString += calendar.get(Calendar.MONTH) + "/";
-	    dateString += calendar.get(Calendar.DAY_OF_MONTH) + "/"; //
-	    dateString += calendar.get(Calendar.YEAR);
-	    return dateString;
-	}
-
-	/**
-	 * Returns date in MM/dd/yyyy format
-	 * 
-	 * We use this format for future compatibility - user may backup data to
-	 * phones using different locales. Using same format for DB ensures no
-	 * errors when reimporting
-	 * 
-	 * @return
-	 */
-	public String getDate() {
-	    return taskDate;
-	}
-
-	public void setTime(Date date) {
-	    // just get time fields. ignore date fields
-	    initTmpCalendar(date);
-	    copyCalendarField(this.calendar, tmpCalendar, Calendar.HOUR_OF_DAY);
-	    copyCalendarField(this.calendar, tmpCalendar, Calendar.MINUTE);
-	    // also construct time string - getTime() likely to be called more
-	    // frequently than setTime() so saving CPU here - see comments above
-	    taskTime = constructTime();
-	}
-
-	/**
-	 * Returns time in HH:mm format
-	 * 
-	 * @return
-	 */
-	private String constructTime() {
-	    String timeString = "";
-	    timeString += calendar.get(Calendar.HOUR_OF_DAY) + ":";
-	    timeString += calendar.get(Calendar.MINUTE);
-	    return timeString;
-	}
-	
-	public String getTime() {
-	    return taskTime;
-	}
-
-	public String toString() {
-	    String out = "";
-	    out += "Task: " + ((task == null) ? "n/a" : task) + "\n";
-	    out += "Date: "
-		    + ((calendar == null) ? "n/a" : getDate())
-		    + "\n";
-	    out += "Time: "
-		    + ((taskTime == null) ? "n/a" : getTime())
-		    + "\n";
-	    out += "RepeatDuration: "
-		    + ((duration == null) ? "n/a" : duration.toLocaleString())
-		    + "\n";
-	    out += "Repeats: " + ((repeats == null) ? "n/a" : repeats.name())
-		    + "\n";
-	    out += "RepeatsEvery: "
-		    + ((repeatsEvery == null) ? "n/a" : repeatsEvery.name())
-		    + "\n";
-	    out += "Location: " + ((location == null) ? "n/a" : location)
-		    + "\n";
-	    return out;
-	}
-
-    }
-
     Task task = new Task();
     GrammarContext context;
     Context androidContext;
@@ -305,6 +144,7 @@ public class MetaGrammarParser {
 
     // expr: task | task commands
     public Task parse(String input) {
+	task = new Task();
 	context = new GrammarContext(input.trim());
 	int curPos = 0;
 	while (commands() == null) { // current pos is not a command so
@@ -382,7 +222,8 @@ public class MetaGrammarParser {
     Task date() {
 	int curPos = context.getPos();
 	// TODO - pull out
-	GrammarClasses.Date timeParser = new GrammarClasses.Date(androidContext);
+	GrammarClasses.Date dateParser = new GrammarClasses.Date(androidContext);
+	GrammarClasses.Day dayParser = new GrammarClasses.Day(androidContext);
 	Finder at = new Finder("at");
 	Finder on = new Finder("on");
 	if (at.find(context)) // "at" found
@@ -392,12 +233,16 @@ public class MetaGrammarParser {
 	// gobble whitespace
 	if (whiteSpace.find(context))
 	    context.gobble(whiteSpace);
-	if (timeParser.find(context)) {
-	    Date date = timeParser.parse(context);
+	if (dateParser.find(context)) {
+	    Date date = dateParser.parse(context);
 	    task.setDate(date);
 	    return task;
-	} else
-	    context.setPos(curPos);
+	} else if (dayParser.find(context)) {
+	    Date day = dayParser.parse(context);
+	    task.setDay(day);
+	    return task;
+	}
+	else context.setPos(curPos);
 	return null;
     }
 
@@ -412,12 +257,13 @@ public class MetaGrammarParser {
 	// eat whitespace
 	if (whiteSpace.find(context))
 	    context.gobble(whiteSpace);
-	GrammarClasses.Day timeParser = new GrammarClasses.Day(androidContext);
-	if (!timeParser.find(context)) {
+	GrammarClasses.Day dayParser = new GrammarClasses.Day(androidContext);
+	if (!dayParser.find(context)) {
 	    context.setPos(curPos);
 	    return null;
 	}
-	task.calendar = timeParser.parse(context);
+	Date day = dayParser.parse(context);
+	task.setNextDay(day);
 	return task;
     }
 

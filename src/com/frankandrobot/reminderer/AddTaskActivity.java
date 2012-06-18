@@ -1,6 +1,7 @@
 package com.frankandrobot.reminderer;
 
 import com.frankandrobot.reminderer.Parser.MetaGrammarParser;
+import com.frankandrobot.reminderer.Parser.Task;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -27,7 +28,7 @@ public class AddTaskActivity extends Activity {
 		parser.setAndroidContext(AddTaskActivity.this);
 		EditText text = (EditText) findViewById(R.id.add_task);
 		String input = text.getText().toString();
-		MetaGrammarParser.Task rslt = parser.parse(input);
+		Task rslt = parser.parse(input);
 		String output = rslt.toString();
 		TextView log = (TextView) findViewById(R.id.log_cat);
 		log.setText(output);
