@@ -15,7 +15,6 @@ public class Task {
     static String defaultTimeStr = "9:00am";
     Calendar calendar;
     String task;
-    // AlarmManager just needs a taskTime to schedule the alarm
     Repeats repeats;
     RepeatsEvery repeatsEvery;
     String location;
@@ -27,18 +26,23 @@ public class Task {
     DateFormat shortTimeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
     SimpleDateFormat sdfDate = new SimpleDateFormat("MM/dd/yyyy");
     SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
+    boolean isTimeSet = false;
+    int curDay;
+
+    /*
+     * ex: right now is Sunday, June 2, 10am task Sunday 9am ==> next sunday
+     * task June 3 9am
+     */
 
     public Task() {
 	// initialize calendar with current date and time
 	calendar = new GregorianCalendar();
-	// get default time from defaultTimeStr - bah very convoluted
+	// get default time from defaultTimeStr and assign it to defaultTimeCal
 	SimpleDateFormat sdf = new SimpleDateFormat("h:mma");
 	Date defaultTime = sdf.parse(defaultTimeStr, new ParsePosition(0));
-	defaultTimeCal = initCalendar(defaultTime); 
-	// set the default time in the calendar
-	copyCalendarField(calendar,defaultTimeCal,Calendar.HOUR_OF_DAY);
-	copyCalendarField(calendar,defaultTimeCal,Calendar.MINUTE);
-	// date is now set to current date and default time
+	defaultTimeCal = initCalendar(defaultTime);
+	// save current day
+	curDay = calendar.get(Calendar.DAY_OF_WEEK);
     }
 
     /*
@@ -69,6 +73,18 @@ public class Task {
 	a.set(field, b.get(field));
     }
 
+    /**
+     * All getters have to call this method
+     */
+    private void calculateTime() {
+	if (!isTimeSet) {
+	    // set the default time in the calendar
+	    copyCalendarField(calendar, defaultTimeCal, Calendar.HOUR_OF_DAY);
+	    copyCalendarField(calendar, defaultTimeCal, Calendar.MINUTE);
+	    isTimeSet = true;
+	}
+    }
+
     /*
      * Setter methods for fields
      */
@@ -86,6 +102,7 @@ public class Task {
     }
 
     public void setTime(Date time) {
+	isTimeSet = true;
 	// just get time fields. ignore date fields
 	tmpCalendar = initCalendar(time);
 	copyCalendarField(this.calendar, tmpCalendar, Calendar.HOUR_OF_DAY);
@@ -94,19 +111,16 @@ public class Task {
 
     public void setDay(Date day) {
 	tmpCalendar = initCalendar(day);
-	// dunno why i have to do this:
-	// if day == calendar day, then do NOT update
-	if (calendar.get(Calendar.DAY_OF_WEEK) == tmpCalendar
-		.get(Calendar.DAY_OF_WEEK))
-	    return;
 	copyCalendarField(calendar, tmpCalendar, Calendar.DAY_OF_WEEK);
     }
 
     public void setNextDay(Date day) {
 	tmpCalendar = initCalendar(day);
-	if (calendar.get(Calendar.DAY_OF_WEEK) == tmpCalendar
-		.get(Calendar.DAY_OF_WEEK)) {
-	    calendar.add(Calendar.DAY_OF_WEEK, 7);
+	// all we care about is when the input day is the same as the current
+	// day
+	if (tmpCalendar.get(Calendar.DAY_OF_WEEK) == curDay) {
+	    int dayOfMonth = tmpCalendar.get(Calendar.DAY_OF_MONTH);
+	    calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth + 7);
 	} else
 	    copyCalendarField(calendar, tmpCalendar, Calendar.DAY_OF_WEEK);
     }
@@ -120,10 +134,12 @@ public class Task {
     }
 
     public long getDateForDb() {
+	calculateTime();
 	return calendar.getTimeInMillis();
     }
 
     public int getDayForDb() {
+	calculateTime();
 	return calendar.get(Calendar.DAY_OF_WEEK);
     }
 
@@ -136,18 +152,22 @@ public class Task {
     }
 
     public Date getDateObj() {
+	calculateTime();
 	return calendar.getTime();
     }
 
     public String getLocaleDate() {
+	calculateTime();
 	return medDateFormat.format(getDateObj());
     }
 
     public String getLocaleTime() {
+	calculateTime();
 	return shortTimeFormat.format(getDateObj());
     }
 
     public String getLocaleDay() {
+	calculateTime();
 	return calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG,
 		locale);
     }
