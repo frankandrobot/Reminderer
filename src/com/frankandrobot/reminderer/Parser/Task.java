@@ -20,7 +20,7 @@ public class Task {
     String location;
     // helpers
     Locale locale = Locale.getDefault();
-    Calendar tmpCalendar, defaultTimeCal;
+    Calendar tmpCalendar, defaultTimeCal, rightNow;
     DateFormat shortDateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
     DateFormat medDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
     DateFormat shortTimeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
@@ -28,6 +28,9 @@ public class Task {
     SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
     boolean isTimeSet = false;
     int curDay;
+    int curDayOfMonth;
+    private boolean isDaySet;
+    private boolean isDateSet;
 
     /*
      * ex: right now is Sunday, June 2, 10am task Sunday 9am ==> next sunday
@@ -37,12 +40,14 @@ public class Task {
     public Task() {
 	// initialize calendar with current date and time
 	calendar = new GregorianCalendar();
+	rightNow = new GregorianCalendar();
 	// get default time from defaultTimeStr and assign it to defaultTimeCal
 	SimpleDateFormat sdf = new SimpleDateFormat("h:mma");
 	Date defaultTime = sdf.parse(defaultTimeStr, new ParsePosition(0));
 	defaultTimeCal = initCalendar(defaultTime);
 	// save current day
 	curDay = calendar.get(Calendar.DAY_OF_WEEK);
+	curDayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
     }
 
     /*
@@ -76,12 +81,25 @@ public class Task {
     /**
      * All getters have to call this method
      */
-    private void calculateTime() {
+    private void calculateTimeAndDate() {
 	if (!isTimeSet) {
 	    // set the default time in the calendar
 	    copyCalendarField(calendar, defaultTimeCal, Calendar.HOUR_OF_DAY);
 	    copyCalendarField(calendar, defaultTimeCal, Calendar.MINUTE);
 	    isTimeSet = true;
+	}
+	if (!isDateSet && !isDaySet) {
+	    // we're here because you didn't set a date or a day. Ex: task 8pm
+	    // need to figure out if calendar date points to date in past
+	    if (calendar.before(rightNow))
+		// if so then point tomorrow
+		calendar.add(Calendar.DAY_OF_MONTH, 1);
+	} else if (isDaySet) {
+	    // we're here because you set the day but not a date
+	    // need to figure out if calendar date points to date in past
+	    if (calendar.before(rightNow))
+		// then move date to 1 week later
+		calendar.add(Calendar.DAY_OF_MONTH, 7);
 	}
     }
 
@@ -94,6 +112,7 @@ public class Task {
     }
 
     public void setDate(Date date) {
+	isDateSet = true;
 	// just get the day,month,year fields from date. Ignore time fields
 	tmpCalendar = initCalendar(date);
 	copyCalendarField(calendar, tmpCalendar, Calendar.MONTH);
@@ -110,17 +129,18 @@ public class Task {
     }
 
     public void setDay(Date day) {
+	isDaySet = true;
 	tmpCalendar = initCalendar(day);
 	copyCalendarField(calendar, tmpCalendar, Calendar.DAY_OF_WEEK);
     }
 
     public void setNextDay(Date day) {
+	isDaySet = true;
 	tmpCalendar = initCalendar(day);
 	// all we care about is when the input day is the same as the current
 	// day
 	if (tmpCalendar.get(Calendar.DAY_OF_WEEK) == curDay) {
-	    int dayOfMonth = tmpCalendar.get(Calendar.DAY_OF_MONTH);
-	    calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth + 7);
+	    calendar.set(Calendar.DAY_OF_MONTH, curDayOfMonth + 7);
 	} else
 	    copyCalendarField(calendar, tmpCalendar, Calendar.DAY_OF_WEEK);
     }
@@ -134,12 +154,12 @@ public class Task {
     }
 
     public long getDateForDb() {
-	calculateTime();
+	calculateTimeAndDate();
 	return calendar.getTimeInMillis();
     }
 
     public int getDayForDb() {
-	calculateTime();
+	calculateTimeAndDate();
 	return calendar.get(Calendar.DAY_OF_WEEK);
     }
 
@@ -152,22 +172,22 @@ public class Task {
     }
 
     public Date getDateObj() {
-	calculateTime();
+	calculateTimeAndDate();
 	return calendar.getTime();
     }
 
     public String getLocaleDate() {
-	calculateTime();
+	calculateTimeAndDate();
 	return medDateFormat.format(getDateObj());
     }
 
     public String getLocaleTime() {
-	calculateTime();
+	calculateTimeAndDate();
 	return shortTimeFormat.format(getDateObj());
     }
 
     public String getLocaleDay() {
-	calculateTime();
+	calculateTimeAndDate();
 	return calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG,
 		locale);
     }
