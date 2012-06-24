@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
+import com.frankandrobot.reminderer.Helpers.MultiOsSupport;
 import com.frankandrobot.reminderer.Parser.*;
 
 import android.app.Activity;
@@ -28,8 +29,9 @@ public class RemindererActivity extends Activity {
 	SimpleDateFormat sdf = new SimpleDateFormat("EEE");
 	String today = sdf.format(new Date());
 	todayCalendar.add(Calendar.DAY_OF_MONTH, 1);
-	String tomorrow = todayCalendar.getDisplayName(Calendar.DAY_OF_WEEK,
-		Calendar.LONG, Locale.getDefault());
+	MultiOsSupport multiOs = MultiOsSupport.Factory.newInstance();
+	String tomorrow = multiOs.getDisplayName(todayCalendar,
+		Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
 	// parseTester("hello"); // this should pass
 	// parseTester("buy eggs"); // pass
 	// parseTester("buy eggs " + today);
@@ -42,7 +44,7 @@ public class RemindererActivity extends Activity {
 	// parseTester("milk at July 1 on 7:15pm"); // pass
 	// parseTester("buy egss repeats daily"); // pass
 	parseTester("buy milk next " + today);
-	//parseTester("buy milk next " + tomorrow);
+	// parseTester("buy milk next " + tomorrow);
 	// parseTester("buy milk at walmart");
     }
 

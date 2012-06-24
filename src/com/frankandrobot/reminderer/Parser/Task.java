@@ -8,6 +8,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
+import com.frankandrobot.reminderer.Helpers.MultiOsSupport;
+import com.frankandrobot.reminderer.Helpers.MultiOsSupport.Factory;
 import com.frankandrobot.reminderer.Parser.MetaGrammarParser.Repeats;
 import com.frankandrobot.reminderer.Parser.MetaGrammarParser.RepeatsEvery;
 
@@ -31,6 +33,7 @@ public class Task {
     int curDayOfMonth;
     private boolean isDaySet;
     private boolean isDateSet;
+    MultiOsSupport miscSupport = MultiOsSupport.Factory.newInstance();
 
     /*
      * ex: right now is Sunday, June 2, 10am task Sunday 9am ==> next sunday
@@ -188,8 +191,8 @@ public class Task {
 
     public String getLocaleDay() {
 	calculateTimeAndDate();
-	return calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG,
-		locale);
+	return miscSupport.getDisplayName(calendar, Calendar.DAY_OF_WEEK,
+		Calendar.LONG, locale);
     }
 
     public String toString() {
