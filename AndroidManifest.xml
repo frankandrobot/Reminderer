@@ -33,7 +33,7 @@
 
         <receiver android:name=".Alarm.AlarmReceiver" >
             <intent-filter>
-                <action android:name="com.frankandrobot.remimderer.TASK_ALARM" />
+                <action android:name="com.frankandrobot.reminderer.TASK_ALARM" />
                 <action android:name="alarm_killed" />
                 <action android:name="cancel_snooze" />
             </intent-filter>

@@ -10,6 +10,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Parcel;
+import android.util.Log;
 
 import com.frankandrobot.reminderer.Helpers.Logger;
 import com.frankandrobot.reminderer.Parser.Task;
@@ -25,7 +26,7 @@ public class DatabaseInterface {
     // This action triggers the AlarmReceiver as well as the AlarmRinger. It
     // is a public action used in the manifest for receiving Alarm broadcasts
     // from the alarm manager.
-    public static final String TASK_ALARM = "com.frankandrobot.remimderer.TASK_ALARM";
+    public static final String TASK_ALARM = "com.frankandrobot.reminderer.TASK_ALARM";
 
     // This extra is the raw Alarm object data. It is used in the
     // AlarmManagerService to avoid a ClassNotFoundException when filling in
@@ -36,7 +37,9 @@ public class DatabaseInterface {
 	// TODO add task to db - use the ContentProvider/ContentResolver;
 	// ContentResolver resolver = context.getContentResolver();
 	// resolver.update()
-	
+	if (Logger.LOGV) {
+	    Log.v("addTask", "Saving task:\n" + task.toString());
+	}
 	// add task to alarm manager
 	findNextAlarm(context, task);
     }
