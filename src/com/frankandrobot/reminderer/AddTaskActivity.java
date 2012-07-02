@@ -1,5 +1,6 @@
 package com.frankandrobot.reminderer;
 
+import com.frankandrobot.reminderer.Database.DatabaseInterface;
 import com.frankandrobot.reminderer.Parser.GrammarParser;
 import com.frankandrobot.reminderer.Parser.Task;
 
@@ -42,7 +43,8 @@ public class AddTaskActivity extends Activity {
 
 	    @Override
 	    public void onClick(View arg0) {
-		// TODO Auto-generated method stub
+		if (mTask!=null)
+		DatabaseInterface.addTask(AddTaskActivity.this, mTask);
 		
 	    }
 	    
