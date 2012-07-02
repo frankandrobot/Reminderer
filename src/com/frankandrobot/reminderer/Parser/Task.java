@@ -11,22 +11,21 @@ import java.util.Locale;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.android.alarmclock.Alarm;
 import com.frankandrobot.reminderer.Helpers.MultiOsSupport;
-import com.frankandrobot.reminderer.Helpers.MultiOsSupport.Factory;
 import com.frankandrobot.reminderer.Parser.GrammarParser.Repeats;
 import com.frankandrobot.reminderer.Parser.GrammarParser.RepeatsEvery;
 
 public class Task implements Parcelable {
     static String defaultTimeStr = "9:00am";
     Calendar calendar;
+    Calendar rightNow;
     String task;
     Repeats repeats;
     RepeatsEvery repeatsEvery;
     String location;
     // helpers
     Locale locale = Locale.getDefault();
-    Calendar tmpCalendar, defaultTimeCal, rightNow;
+    Calendar tmpCalendar, defaultTimeCal;
     DateFormat shortDateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
     DateFormat medDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
     DateFormat shortTimeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
@@ -221,6 +220,18 @@ public class Task implements Parcelable {
     /*
      * Parcelable API
      */
+    
+    public Task(Parcel p) {
+	calendar = Calendar.getInstance();
+	calendar.setTimeInMillis(p.readLong());
+	rightNow = Calendar.getInstance();
+	rightNow.setTimeInMillis(p.readLong());
+	task = p.readString();
+	isTimeSet = p.readInt() == 1;
+	isDaySet = p.readInt() == 1;
+	isDateSet = p.readInt() == 1;
+    }
+
 
     public static final Parcelable.Creator<Task> CREATOR = new Parcelable.Creator<Task>() {
 	public Task createFromParcel(Parcel p) {
@@ -239,8 +250,9 @@ public class Task implements Parcelable {
     }
 
     public void writeToParcel(Parcel p, int flags) {
-	// TODO finish writing this
+	// TODO finish writing this - add every enum
 	p.writeLong(getDateForDb());
+	p.writeLong(rightNow.getTimeInMillis());
 	p.writeString(task);
 	p.writeInt(isTimeSet ? 1 : 0);
 	p.writeInt(isDaySet ? 1 : 0);
