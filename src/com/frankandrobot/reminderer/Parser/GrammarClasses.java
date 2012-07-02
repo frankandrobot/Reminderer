@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Set;
 
 import com.frankandrobot.reminderer.R;
-import com.frankandrobot.reminderer.Parser.MetaGrammarParser.GrammarContext;
+import com.frankandrobot.reminderer.Parser.GrammarParser.GrammarContext;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -27,7 +27,7 @@ public interface GrammarClasses {
 
 		}
 		
-		public static boolean find(MetaGrammarParser.GrammarContext context, MyDateTimeFormat parser, ParsePosition matchPos) {
+		public static boolean find(GrammarParser.GrammarContext context, MyDateTimeFormat parser, ParsePosition matchPos) {
 			String[] rslt = parser.find(context.getContext());
 			if (rslt == null)
 				return false;
@@ -56,11 +56,11 @@ public interface GrammarClasses {
 			df.setContext(context);
 		}
 
-		public java.util.Date parse(MetaGrammarParser.GrammarContext context) {
+		public java.util.Date parse(GrammarParser.GrammarContext context) {
 			return Helpers.parseDate(context, df);
 		}
 
-		public boolean find(MetaGrammarParser.GrammarContext context) {
+		public boolean find(GrammarParser.GrammarContext context) {
 			return Helpers.find(context, df, matchPos);
 		}
 
@@ -77,7 +77,7 @@ public interface GrammarClasses {
 			df.setContext(context);
 		}
 
-		public java.util.Date parse(MetaGrammarParser.GrammarContext context) {
+		public java.util.Date parse(GrammarParser.GrammarContext context) {
 			return Helpers.parseDate(context, df);
 		}
 
@@ -98,7 +98,7 @@ public interface GrammarClasses {
 			df.setContext(context);
 		}
 
-		public java.util.Date parse(MetaGrammarParser.GrammarContext context) {
+		public java.util.Date parse(GrammarParser.GrammarContext context) {
 			return Helpers.parseDate(context, df);
 		}
 
@@ -125,7 +125,7 @@ public interface GrammarClasses {
 			finders.put("yearly", getString(R.string.yearly));
 		}
 
-		public boolean parse(MetaGrammarParser.GrammarContext context) {
+		public boolean parse(GrammarParser.GrammarContext context) {
 			if (finders.get("daily").find(context)) {
 				context.gobble(finders.get("daily"));
 				return true;

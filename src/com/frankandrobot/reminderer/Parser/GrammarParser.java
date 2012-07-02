@@ -17,7 +17,7 @@ import android.content.Context;
  * 
  */
 
-public class MetaGrammarParser {
+public class GrammarParser {
     static public class GrammarContext {
 	int pos;
 	String original;
@@ -123,7 +123,7 @@ public class MetaGrammarParser {
 
     boolean locationRecursion = false; // hack to prevent infinite recursion
 
-    public MetaGrammarParser() {
+    public GrammarParser() {
 	lBracket = new Finder("\\[");
 	rBracket = new Finder("\\]");
 	lParens = new Finder("\\(");

@@ -3,7 +3,7 @@ package com.frankandrobot.reminderer.Parser;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.frankandrobot.reminderer.Parser.MetaGrammarParser.GrammarContext;
+import com.frankandrobot.reminderer.Parser.GrammarParser.GrammarContext;
 
 public class Finder {
 	Pattern p;

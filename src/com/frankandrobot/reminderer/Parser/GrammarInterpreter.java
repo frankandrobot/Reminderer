@@ -4,10 +4,10 @@ import java.util.LinkedList;
 
 import android.content.Context;
 
-import com.frankandrobot.reminderer.Parser.MetaGrammarParser;
+import com.frankandrobot.reminderer.Parser.GrammarParser;
 
 /**
- * This implements the Interpreter design pattern. The MetaGrammarParser
+ * This implements the Interpreter design pattern. The GrammarParser
  * constructs objects of this interface.
  * 
  * "Generic" classes are here. Locale specific classes are in GrammarClasses.
@@ -36,9 +36,9 @@ public class GrammarInterpreter {
 	
 	public interface Expression {
 
-		public boolean parse(MetaGrammarParser.GrammarContext context);
+		public boolean parse(GrammarParser.GrammarContext context);
 
-		public boolean interpret(MetaGrammarParser.GrammarContext context);
+		public boolean interpret(GrammarParser.GrammarContext context);
 
 	}
 
@@ -54,7 +54,7 @@ public class GrammarInterpreter {
 		/*
 		 * Gets the task and the commands from the context
 		 */
-		public boolean parse(MetaGrammarParser.GrammarContext context) {
+		public boolean parse(GrammarParser.GrammarContext context) {
 			int curPos = 0;
 			while (!commands.parse(context)) { // current pos is not a command
 												// so
@@ -75,7 +75,7 @@ public class GrammarInterpreter {
 			return commands.parse(context);
 		}
 
-		public boolean interpret(MetaGrammarParser.GrammarContext context) {
+		public boolean interpret(GrammarParser.GrammarContext context) {
 			// TODO Auto-generated method stub
 			return false;
 		}
@@ -91,7 +91,7 @@ public class GrammarInterpreter {
 			}
 		}
 
-		public boolean parse(MetaGrammarParser.GrammarContext context) {
+		public boolean parse(GrammarParser.GrammarContext context) {
 			// save position
 			int curPos = context.getPos();
 			for (Command com : commands) {
@@ -103,7 +103,7 @@ public class GrammarInterpreter {
 			return true;
 		}
 
-		public boolean interpret(MetaGrammarParser.GrammarContext context) {
+		public boolean interpret(GrammarParser.GrammarContext context) {
 			// TODO Auto-generated method stub
 			return false;
 		}
@@ -117,11 +117,11 @@ public class GrammarInterpreter {
 			this.token = token;
 		}
 
-		public boolean parse(MetaGrammarParser.GrammarContext context) {
+		public boolean parse(GrammarParser.GrammarContext context) {
 			return token.parse(context);
 		}
 
-		public boolean interpret(MetaGrammarParser.GrammarContext context) {
+		public boolean interpret(GrammarParser.GrammarContext context) {
 			// TODO Auto-generated method stub
 			return false;
 		}
@@ -134,7 +134,7 @@ public class GrammarInterpreter {
 			// TODO Auto-generated constructor stub
 		}
 		
-		public boolean parse(MetaGrammarParser.GrammarContext context) {
+		public boolean parse(GrammarParser.GrammarContext context) {
 			int pos = context.getPos();
 			if ( super.parse(context) ) return true;
 			context.setPos(pos);
@@ -154,11 +154,11 @@ public class GrammarInterpreter {
 			this.b = b;
 		}
 
-		public boolean parse(MetaGrammarParser.GrammarContext context) {
+		public boolean parse(GrammarParser.GrammarContext context) {
 			return a.parse(context) && op.find(context) && b.parse(context);
 		}
 
-		public boolean interpret(MetaGrammarParser.GrammarContext context) {
+		public boolean interpret(GrammarParser.GrammarContext context) {
 			// TODO Auto-generated method stub
 			return false;
 		}
@@ -176,11 +176,11 @@ public class GrammarInterpreter {
 			this.expr = expr;
 		}
 
-		public boolean parse(MetaGrammarParser.GrammarContext context) {
+		public boolean parse(GrammarParser.GrammarContext context) {
 			return op.find(context) && expr.parse(context);
 		}
 
-		public boolean interpret(MetaGrammarParser.GrammarContext context) {
+		public boolean interpret(GrammarParser.GrammarContext context) {
 			// TODO Auto-generated method stub
 			return false;
 		}
@@ -195,11 +195,11 @@ public class GrammarInterpreter {
 			this.token = token;
 		}
 
-		public boolean parse(MetaGrammarParser.GrammarContext context) {
+		public boolean parse(GrammarParser.GrammarContext context) {
 			return token.parse(context);
 		}
 
-		public boolean interpret(MetaGrammarParser.GrammarContext context) {
+		public boolean interpret(GrammarParser.GrammarContext context) {
 			// TODO Auto-generated method stub
 			return false;
 		}
@@ -213,11 +213,11 @@ public class GrammarInterpreter {
 			this.value = new Finder(value);
 		}
 
-		public boolean parse(MetaGrammarParser.GrammarContext context) {
+		public boolean parse(GrammarParser.GrammarContext context) {
 			return value.find(context);
 		}
 
-		public boolean interpret(MetaGrammarParser.GrammarContext context) {
+		public boolean interpret(GrammarParser.GrammarContext context) {
 			// TODO Auto-generated method stub
 			return false;
 		}

@@ -58,7 +58,7 @@ public class RemindererActivity extends Activity {
     }
 
     private void parseTester(final String string) {
-	MetaGrammarParser parser = new MetaGrammarParser();
+	GrammarParser parser = new GrammarParser();
 	parser.setAndroidContext(this);
 	Task rslt = parser.parse(string);
 	Log.d("R", "------\n" + string + "\n" + rslt);

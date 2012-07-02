@@ -10,8 +10,8 @@ import java.util.Locale;
 
 import com.frankandrobot.reminderer.Helpers.MultiOsSupport;
 import com.frankandrobot.reminderer.Helpers.MultiOsSupport.Factory;
-import com.frankandrobot.reminderer.Parser.MetaGrammarParser.Repeats;
-import com.frankandrobot.reminderer.Parser.MetaGrammarParser.RepeatsEvery;
+import com.frankandrobot.reminderer.Parser.GrammarParser.Repeats;
+import com.frankandrobot.reminderer.Parser.GrammarParser.RepeatsEvery;
 
 public class Task {
     static String defaultTimeStr = "9:00am";
