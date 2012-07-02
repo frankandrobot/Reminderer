@@ -1,6 +1,6 @@
 package com.frankandrobot.reminderer;
 
-import com.frankandrobot.reminderer.Parser.MetaGrammarParser;
+import com.frankandrobot.reminderer.Parser.GrammarParser;
 import com.frankandrobot.reminderer.Parser.Task;
 
 import android.app.Activity;
@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 public class AddTaskActivity extends Activity {
+    Task mTask;
     
     /** Called when the activity is first created. */
     @Override
@@ -24,17 +25,40 @@ public class AddTaskActivity extends Activity {
 
 	    @Override
 	    public void onClick(View arg0) {
-		MetaGrammarParser parser = new MetaGrammarParser();
+		GrammarParser parser = new GrammarParser();
 		parser.setAndroidContext(AddTaskActivity.this);
 		EditText text = (EditText) findViewById(R.id.add_task);
 		String input = text.getText().toString();
-		Task rslt = parser.parse(input);
-		String output = rslt.toString();
+		mTask = parser.parse(input);
+		String output = mTask.toString();
 		TextView log = (TextView) findViewById(R.id.log_cat);
 		log.setText(output);
 	    }
 	    
 	});
+	
+	Button save = (Button)findViewById(R.id.save);
+	save.setOnClickListener(new OnClickListener() {
+
+	    @Override
+	    public void onClick(View arg0) {
+		// TODO Auto-generated method stub
+		
+	    }
+	    
+	});
+	
+	Button cancel = (Button)findViewById(R.id.cancel);
+	cancel.setOnClickListener(new OnClickListener() {
+
+	    @Override
+	    public void onClick(View arg0) {
+		finish();
+		
+	    }
+	    
+	});
+	
 	// stringTester("June 2, 2003<--this should work");
 	// stringTester("6/2<--this should work");
 	// stringTester("Jun 2, 2003<---this should work");

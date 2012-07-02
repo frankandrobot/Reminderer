@@ -51,7 +51,7 @@ public class DatabaseProvider extends ContentProvider {
 	sURLMatcher.addURI(authorityName, "tasks/#", TASKS_ID);
 	sURLMatcher.addURI(authorityName, "gps_tasks", GPS_TASKS);
 	sURLMatcher.addURI(authorityName, "gps_tasks/#", GPS_TASKS_ID);
-
+ 
     }
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
@@ -100,7 +100,7 @@ public class DatabaseProvider extends ContentProvider {
 	return true;
     }
 
-    @Override
+    @Override //   "com..frankandrobot.reminderer.dbprovider/gps_task/3"
     public Cursor query(Uri url, String[] projectionIn, String selection,
 	    String[] selectionArgs, String sort) {
 	SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
@@ -160,7 +160,7 @@ public class DatabaseProvider extends ContentProvider {
 	}
     }
 
-    @Override
+    @Override 
     public int update(Uri url, ContentValues values, String where,
 	    String[] whereArgs) {
 	int count;
@@ -169,6 +169,7 @@ public class DatabaseProvider extends ContentProvider {
 	SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 	switch (match) {
 	case TASKS_ID: {
+	    //ex: "com..frankandrobot.reminderer.dbprovider/tasks/1"
 	    String segment = url.getPathSegments().get(1);
 	    rowId = Long.parseLong(segment);
 	    count = db.update("tasks", values, "_id=" + rowId, null);
@@ -192,77 +193,79 @@ public class DatabaseProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri url, ContentValues initialValues) {
-	if (sURLMatcher.match(url) != ALARMS) {
-	    throw new IllegalArgumentException("Cannot insert into URL: " + url);
-	}
-
-	ContentValues values;
-	if (initialValues != null)
-	    values = new ContentValues(initialValues);
-	else
-	    values = new ContentValues();
-
-	if (!values.containsKey(Alarm.Columns.HOUR))
-	    values.put(Alarm.Columns.HOUR, 0);
-
-	if (!values.containsKey(Alarm.Columns.MINUTES))
-	    values.put(Alarm.Columns.MINUTES, 0);
-
-	if (!values.containsKey(Alarm.Columns.DAYS_OF_WEEK))
-	    values.put(Alarm.Columns.DAYS_OF_WEEK, 0);
-
-	if (!values.containsKey(Alarm.Columns.ALARM_TIME))
-	    values.put(Alarm.Columns.ALARM_TIME, 0);
-
-	if (!values.containsKey(Alarm.Columns.ENABLED))
-	    values.put(Alarm.Columns.ENABLED, 0);
-
-	if (!values.containsKey(Alarm.Columns.VIBRATE))
-	    values.put(Alarm.Columns.VIBRATE, 1);
-
-	if (!values.containsKey(Alarm.Columns.MESSAGE))
-	    values.put(Alarm.Columns.MESSAGE, "");
-
-	if (!values.containsKey(Alarm.Columns.ALERT))
-	    values.put(Alarm.Columns.ALERT, "");
-
-	SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-	long rowId = db.insert("alarms", Alarm.Columns.MESSAGE, values);
-	if (rowId < 0) {
-	    throw new SQLException("Failed to insert row into " + url);
-	}
-	if (Logger.LOGV)
-	    Log.v(TAG, "Added alarm rowId = " + rowId);
-
-	Uri newUrl = ContentUris.withAppendedId(Alarm.Columns.CONTENT_URI,
-		rowId);
-	getContext().getContentResolver().notifyChange(newUrl, null);
-	return newUrl;
+	return null;
+//	if (sURLMatcher.match(url) != ALARMS) {
+//	    throw new IllegalArgumentException("Cannot insert into URL: " + url);
+//	}
+//
+//	ContentValues values;
+//	if (initialValues != null)
+//	    values = new ContentValues(initialValues);
+//	else
+//	    values = new ContentValues();
+//
+//	if (!values.containsKey(Alarm.Columns.HOUR))
+//	    values.put(Alarm.Columns.HOUR, 0);
+//
+//	if (!values.containsKey(Alarm.Columns.MINUTES))
+//	    values.put(Alarm.Columns.MINUTES, 0);
+//
+//	if (!values.containsKey(Alarm.Columns.DAYS_OF_WEEK))
+//	    values.put(Alarm.Columns.DAYS_OF_WEEK, 0);
+//
+//	if (!values.containsKey(Alarm.Columns.ALARM_TIME))
+//	    values.put(Alarm.Columns.ALARM_TIME, 0);
+//
+//	if (!values.containsKey(Alarm.Columns.ENABLED))
+//	    values.put(Alarm.Columns.ENABLED, 0);
+//
+//	if (!values.containsKey(Alarm.Columns.VIBRATE))
+//	    values.put(Alarm.Columns.VIBRATE, 1);
+//
+//	if (!values.containsKey(Alarm.Columns.MESSAGE))
+//	    values.put(Alarm.Columns.MESSAGE, "");
+//
+//	if (!values.containsKey(Alarm.Columns.ALERT))
+//	    values.put(Alarm.Columns.ALERT, "");
+//
+//	SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+//	long rowId = db.insert("alarms", Alarm.Columns.MESSAGE, values);
+//	if (rowId < 0) {
+//	    throw new SQLException("Failed to insert row into " + url);
+//	}
+//	if (Logger.LOGV)
+//	    Log.v(TAG, "Added alarm rowId = " + rowId);
+//
+//	Uri newUrl = ContentUris.withAppendedId(Alarm.Columns.CONTENT_URI,
+//		rowId);
+//	getContext().getContentResolver().notifyChange(newUrl, null);
+//	return newUrl;
     }
 
     public int delete(Uri url, String where, String[] whereArgs) {
-	SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-	int count;
-	long rowId = 0;
-	switch (sURLMatcher.match(url)) {
-	case ALARMS:
-	    count = db.delete("alarms", where, whereArgs);
-	    break;
-	case ALARMS_ID:
-	    String segment = url.getPathSegments().get(1);
-	    rowId = Long.parseLong(segment);
-	    if (TextUtils.isEmpty(where)) {
-		where = "_id=" + segment;
-	    } else {
-		where = "_id=" + segment + " AND (" + where + ")";
-	    }
-	    count = db.delete("alarms", where, whereArgs);
-	    break;
-	default:
-	    throw new IllegalArgumentException("Cannot delete from URL: " + url);
-	}
-
-	getContext().getContentResolver().notifyChange(url, null);
-	return count;
+	return 0;
+//	SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+//	int count;
+//	long rowId = 0;
+//	switch (sURLMatcher.match(url)) {
+//	case ALARMS:
+//	    count = db.delete("alarms", where, whereArgs);
+//	    break;
+//	case ALARMS_ID:
+//	    String segment = url.getPathSegments().get(1);
+//	    rowId = Long.parseLong(segment);
+//	    if (TextUtils.isEmpty(where)) {
+//		where = "_id=" + segment;
+//	    } else {
+//		where = "_id=" + segment + " AND (" + where + ")";
+//	    }
+//	    count = db.delete("alarms", where, whereArgs);
+//	    break;
+//	default:
+//	    throw new IllegalArgumentException("Cannot delete from URL: " + url);
+//	}
+//
+//	getContext().getContentResolver().notifyChange(url, null);
+//	return count;
     }
 }
