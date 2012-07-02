@@ -8,12 +8,16 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import com.android.alarmclock.Alarm;
 import com.frankandrobot.reminderer.Helpers.MultiOsSupport;
 import com.frankandrobot.reminderer.Helpers.MultiOsSupport.Factory;
 import com.frankandrobot.reminderer.Parser.GrammarParser.Repeats;
 import com.frankandrobot.reminderer.Parser.GrammarParser.RepeatsEvery;
 
-public class Task {
+public class Task implements Parcelable {
     static String defaultTimeStr = "9:00am";
     Calendar calendar;
     String task;
@@ -28,11 +32,11 @@ public class Task {
     DateFormat shortTimeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
     SimpleDateFormat sdfDate = new SimpleDateFormat("MM/dd/yyyy");
     SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
-    boolean isTimeSet = false;
-    int curDay;
-    int curDayOfMonth;
+    private boolean isTimeSet = false;
     private boolean isDaySet;
     private boolean isDateSet;
+    int curDay;
+    int curDayOfMonth;
     MultiOsSupport miscSupport = MultiOsSupport.Factory.newInstance();
 
     /*
@@ -156,6 +160,11 @@ public class Task {
 	return new String(task);
     }
 
+    /**
+     * Returns the time in epoch time
+     * 
+     * @return
+     */
     public long getDateForDb() {
 	calculateTimeAndDate();
 	return calendar.getTimeInMillis();
@@ -207,6 +216,35 @@ public class Task {
 		+ ((repeatsEvery == null) ? "n/a" : repeatsEvery.name()) + "\n";
 	out += "Location: " + ((location == null) ? "n/a" : location) + "\n";
 	return out;
+    }
+
+    /*
+     * Parcelable API
+     */
+
+    public static final Parcelable.Creator<Task> CREATOR = new Parcelable.Creator<Task>() {
+	public Task createFromParcel(Parcel p) {
+	    //TODO finish writing task parcelable implementation
+	    return null;
+	 //   return new Task(p);
+	}
+
+	public Task[] newArray(int size) {
+	    return new Task[size];
+	}
+    };
+
+    public int describeContents() {
+	return 0;
+    }
+
+    public void writeToParcel(Parcel p, int flags) {
+	// TODO finish writing this
+	p.writeLong(getDateForDb());
+	p.writeString(task);
+	p.writeInt(isTimeSet ? 1 : 0);
+	p.writeInt(isDaySet ? 1 : 0);
+	p.writeInt(isDateSet ? 1 : 0);
     }
 
 }
