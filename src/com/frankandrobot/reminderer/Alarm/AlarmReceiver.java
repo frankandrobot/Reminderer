@@ -15,8 +15,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 	if (Logger.LOGV) {
 	    Log.v("AlarmReceiver","task rec'd");
 	}
-	Toast.makeText(arg0, "Task due", Toast.LENGTH_LONG);
-	
+	Toast.makeText(arg0, "Task due", Toast.LENGTH_LONG).show();
+
     }
 
 }

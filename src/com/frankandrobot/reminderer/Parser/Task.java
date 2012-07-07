@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
+import android.annotation.SuppressLint;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -197,6 +198,7 @@ public class Task implements Parcelable {
 	return shortTimeFormat.format(getDateObj());
     }
 
+    @SuppressLint("NewApi")
     public String getLocaleDay() {
 	calculateTimeAndDate();
 	return miscSupport.getDisplayName(calendar, Calendar.DAY_OF_WEEK,
