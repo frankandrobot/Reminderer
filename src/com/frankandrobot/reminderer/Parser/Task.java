@@ -18,6 +18,8 @@ import com.frankandrobot.reminderer.Parser.GrammarParser.RepeatsEvery;
 
 public class Task implements Parcelable {
     static String defaultTimeStr = "9:00am";
+    // variables
+    int id;
     Calendar calendar;
     Calendar rightNow;
     String task;
@@ -114,6 +116,10 @@ public class Task implements Parcelable {
      * Setter methods for fields
      */
 
+    public void setId(final int id) {
+	this.id = id;
+    }
+
     public void setTask(String task) {
 	this.task = new String(task);
     }
@@ -152,52 +158,98 @@ public class Task implements Parcelable {
 	    copyCalendarField(calendar, tmpCalendar, Calendar.DAY_OF_WEEK);
     }
 
+    // ////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////
     /*
-     * Start of database methods
+     * Start of database methods - convenience functions
      */
 
-    public String getTaskForDb() {
-	return new String(task);
-    }
-
     /**
-     * Returns the time in epoch time
+     * Gets id
      * 
      * @return
      */
-    public long getDateForDb() {
-	calculateTimeAndDate();
-	return calendar.getTimeInMillis();
+    public int getIdForDb() {
+	return getId();
     }
 
+    /**
+     * Gets task
+     * 
+     * @return
+     */
+    public String getTaskForDb() {
+	return getTask();
+    }
+
+    /**
+     * Gets date/time task is due in epoch time
+     * 
+     * @return
+     */
+    public long getDateTimeForDb() {
+	return getDateTime();
+    }
+
+    /**
+     * Gets day task is due
+     * 
+     * @return
+     */
     public int getDayForDb() {
 	calculateTimeAndDate();
 	return calendar.get(Calendar.DAY_OF_WEEK);
     }
 
+    // ///////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////////
     /*
      * Start of methods used for displaying dates in user's locale
      */
+
+    public int getId() {
+	return id;
+    }
 
     public String getTask() {
 	return new String(task);
     }
 
+    /**
+     * Gets date/time as Date object
+     * 
+     * @return
+     */
     public Date getDateObj() {
 	calculateTimeAndDate();
 	return calendar.getTime();
     }
 
+    /**
+     * Gets date in user's locale
+     * 
+     * @return
+     */
     public String getLocaleDate() {
 	calculateTimeAndDate();
 	return medDateFormat.format(getDateObj());
     }
 
+    /**
+     * Gets time in user's locale
+     * 
+     * @return
+     */
     public String getLocaleTime() {
 	calculateTimeAndDate();
 	return shortTimeFormat.format(getDateObj());
     }
 
+    /**
+     * Gets day in user's locale
+     * 
+     * @return
+     */
     @SuppressLint("NewApi")
     public String getLocaleDay() {
 	calculateTimeAndDate();
@@ -205,8 +257,19 @@ public class Task implements Parcelable {
 		Calendar.LONG, locale);
     }
 
+    /**
+     * Gets date/time in epoch time
+     * 
+     * @return
+     */
+    public long getDateTime() {
+	calculateTimeAndDate();
+	return calendar.getTimeInMillis();
+    }
+
     public String toString() {
 	String out = "";
+
 	out += "Task: " + ((task == null) ? "n/a" : task) + "\n";
 	out += "Date: " + getLocaleDate() + "\n";
 	out += "Time: " + getLocaleTime() + "\n";
@@ -222,7 +285,7 @@ public class Task implements Parcelable {
     /*
      * Parcelable API
      */
-    
+
     public Task(Parcel p) {
 	calendar = Calendar.getInstance();
 	calendar.setTimeInMillis(p.readLong());
@@ -232,14 +295,12 @@ public class Task implements Parcelable {
 	isTimeSet = p.readInt() == 1;
 	isDaySet = p.readInt() == 1;
 	isDateSet = p.readInt() == 1;
+	id = p.readInt();
     }
-
 
     public static final Parcelable.Creator<Task> CREATOR = new Parcelable.Creator<Task>() {
 	public Task createFromParcel(Parcel p) {
-	    //TODO finish writing task parcelable implementation
-	    return null;
-	 //   return new Task(p);
+	    return new Task(p);
 	}
 
 	public Task[] newArray(int size) {
@@ -252,13 +313,14 @@ public class Task implements Parcelable {
     }
 
     public void writeToParcel(Parcel p, int flags) {
-	// TODO finish writing this - add every enum
-	p.writeLong(getDateForDb());
+	// TODO finish writing Task Parcelable - add every enum
+	p.writeLong(getDateTimeForDb());
 	p.writeLong(rightNow.getTimeInMillis());
 	p.writeString(task);
 	p.writeInt(isTimeSet ? 1 : 0);
 	p.writeInt(isDaySet ? 1 : 0);
 	p.writeInt(isDateSet ? 1 : 0);
+	p.writeInt(id);
     }
 
 }

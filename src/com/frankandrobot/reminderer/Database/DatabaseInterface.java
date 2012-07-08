@@ -22,6 +22,7 @@ import com.frankandrobot.reminderer.Parser.Task;
  * 
  */
 public class DatabaseInterface {
+    static private String TAG = "Reminderer DBinterface";
 
     // This action triggers the AlarmReceiver as well as the AlarmRinger. It
     // is a public action used in the manifest for receiving Alarm broadcasts
@@ -32,7 +33,7 @@ public class DatabaseInterface {
     // AlarmManagerService to avoid a ClassNotFoundException when filling in
     // the Intent extras.
     public static final String TASK_RAW_DATA = "intent.extra.task_raw";
-    
+
     public static void addTask(Context context, Task task) {
 	// TODO add task to db - use the ContentProvider/ContentResolver;
 	// ContentResolver resolver = context.getContentResolver();
@@ -43,31 +44,31 @@ public class DatabaseInterface {
 	// add task to alarm manager
 	findNextAlarm(context, task);
     }
-    
+
     public static void findNextAlarm(Context context, Task task) {
-	//TODO query db to find the next task due
-	//then pass this task to the AlarmManager
-	//what it's doing now is passing the current task
-	
-	AlarmManager am = (AlarmManager)
-                context.getSystemService(Context.ALARM_SERVICE);
+	// TODO query db to find the next task due
+	// then pass this task to the AlarmManager
+	// what it's doing now is passing the current task
 
-        if (Logger.LOGV) {
-          //  android.util.Log.v("** setAlert id " + alarm.id + " atTime " + atTimeInMillis);
-        }
+	AlarmManager am = (AlarmManager) context
+		.getSystemService(Context.ALARM_SERVICE);
 
-        Intent intent = new Intent(TASK_ALARM);
+	if (Logger.LOGV) {
+	    android.util.Log.v(TAG, "** setAlert id " + task.getId()
+		    + " atTime " + task.getLocaleTime());
+	}
 
-        Parcel out = Parcel.obtain();
-        task.writeToParcel(out, 0);
-        out.setDataPosition(0);
-        intent.putExtra(TASK_RAW_DATA, out.marshall());
+	Intent intent = new Intent(TASK_ALARM);
 
-        PendingIntent sender = PendingIntent.getBroadcast(
-                context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+	Parcel out = Parcel.obtain();
+	task.writeToParcel(out, 0);
+	out.setDataPosition(0);
+	intent.putExtra(TASK_RAW_DATA, out.marshall());
 
-        am.set(AlarmManager.RTC_WAKEUP, task.getDateForDb(), sender);
+	PendingIntent sender = PendingIntent.getBroadcast(context, 0, intent,
+		PendingIntent.FLAG_CANCEL_CURRENT);
 
+	am.set(AlarmManager.RTC_WAKEUP, task.getDateTime(), sender);
 
     }
 }

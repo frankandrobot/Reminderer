@@ -13,5 +13,10 @@
         buy eggs July 1\n
         buy eggs next Monday\n
         buy eggs 8pm repeats daily</string>
+    <string name="due_now">These task(s) are due now:</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="snooze">Snooze</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
 
 </resources>
