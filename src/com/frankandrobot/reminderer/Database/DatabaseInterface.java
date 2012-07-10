@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.os.Parcel;
 import android.util.Log;
 
+import com.frankandrobot.reminderer.Alarm.AlarmConstants;
 import com.frankandrobot.reminderer.Helpers.Logger;
 import com.frankandrobot.reminderer.Parser.Task;
 
@@ -23,16 +24,6 @@ import com.frankandrobot.reminderer.Parser.Task;
  */
 public class DatabaseInterface {
     static private String TAG = "Reminderer DBinterface";
-
-    // This action triggers the AlarmReceiver as well as the AlarmRinger. It
-    // is a public action used in the manifest for receiving Alarm broadcasts
-    // from the alarm manager.
-    public static final String TASK_ALARM = "com.frankandrobot.reminderer.TASK_ALARM";
-
-    // This extra is the raw Alarm object data. It is used in the
-    // AlarmManagerService to avoid a ClassNotFoundException when filling in
-    // the Intent extras.
-    public static final String TASK_RAW_DATA = "intent.extra.task_raw";
 
     public static void addTask(Context context, Task task) {
 	// TODO add task to db - use the ContentProvider/ContentResolver;
@@ -58,12 +49,12 @@ public class DatabaseInterface {
 		    + " atTime " + task.getLocaleTime());
 	}
 
-	Intent intent = new Intent(TASK_ALARM);
+	Intent intent = new Intent(AlarmConstants.TASK_ALARM);
 
 	Parcel out = Parcel.obtain();
 	task.writeToParcel(out, 0);
 	out.setDataPosition(0);
-	intent.putExtra(TASK_RAW_DATA, out.marshall());
+	intent.putExtra(AlarmConstants.TASK_RAW_DATA, out.marshall());
 
 	PendingIntent sender = PendingIntent.getBroadcast(context, 0, intent,
 		PendingIntent.FLAG_CANCEL_CURRENT);
