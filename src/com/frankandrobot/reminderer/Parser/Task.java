@@ -57,6 +57,9 @@ public class Task implements Parcelable {
 	// save current day
 	curDay = calendar.get(Calendar.DAY_OF_WEEK);
 	curDayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+	// set second/milliseconds to 0
+	calendar.set(Calendar.SECOND, 0);
+	calendar.set(Calendar.MILLISECOND, 0);
     }
 
     /*

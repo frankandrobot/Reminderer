@@ -8,7 +8,7 @@
         android:minSdkVersion="8"
         android:targetSdkVersion="10" />
 
-<!--     Need this to set alarms when phone turns on -->
+    <!-- Need this to set alarms when phone turns on -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -40,16 +40,25 @@
         </activity>
         <activity
             android:name=".Alarm.AlarmAlertActivity"
-            android:label="@string/app_name" >
+            android:excludeFromRecents="true"
+            android:label="@string/app_name"
+            android:launchMode="singleInstance"
+            android:taskAffinity="" >
         </activity>
 
         <receiver android:name=".Alarm.AlarmReceiver" >
             <intent-filter>
                 <action android:name="com.frankandrobot.reminderer.TASK_ALARM" />
-                <action android:name="alarm_killed" />
-                <action android:name="cancel_snooze" />
+                <action android:name="com.frankandrobot.reminderer.alarm_killed" />
+                <action android:name="com.frankandrobot.reminderer.cancel_snooze" />
             </intent-filter>
         </receiver>
+
+        <service android:name=".Alarm.AlarmRingerService" >
+            <intent-filter>
+                <action android:name="com.frankandrobot.reminderer.TASK_ALARM" />
+            </intent-filter>
+        </service>
 
         <!-- Widget -->
         <receiver

@@ -1,9 +1,7 @@
 package com.frankandrobot.reminderer.Alarm;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
-import com.frankandrobot.reminderer.Database.DatabaseInterface;
 import com.frankandrobot.reminderer.Helpers.Logger;
 import com.frankandrobot.reminderer.Parser.Task;
 
@@ -13,10 +11,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Parcel;
 import android.util.Log;
-import android.widget.Toast;
 
 public class AlarmReceiver extends BroadcastReceiver {
-    private static String TAG = "AlarmReceiver";
+    private static String TAG = "Reminderer AlarmReceiver";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -27,7 +24,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 	// Grab the task from the intent.
 	Task task = null;
 	final byte[] data = intent
-		.getByteArrayExtra(DatabaseInterface.TASK_RAW_DATA);
+		.getByteArrayExtra(AlarmConstants.TASK_RAW_DATA);
 	if (data != null) {
 	    Parcel in = Parcel.obtain();
 	    in.unmarshall(data, 0, data.length);
@@ -56,8 +53,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 	// Maintain a cpu wake lock until the AlarmAlert and AlarmKlaxon can
 	// pick it up.
-	//TODO enable wake lock
-	//AlarmAlertWakeLock.acquireCpuWakeLock(context);
+	AlarmAlertWakeLock.acquireCpuWakeLock(context);
 
 	// Close dialogs and window shade
 	Intent closeDialogs = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
@@ -80,6 +76,10 @@ public class AlarmReceiver extends BroadcastReceiver {
                 | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
         context.startActivity(alarmAlert);
 
+        // Play the alarm alert and vibrate the device.
+        Intent playAlarm = new Intent(AlarmConstants.TASK_ALARM);
+        playAlarm.putExtra(AlarmConstants.TASK_INTENT_EXTRA, task);
+        context.startService(playAlarm);
     }
 
 }
