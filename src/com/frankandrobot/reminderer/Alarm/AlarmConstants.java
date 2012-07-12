@@ -20,4 +20,7 @@ public class AlarmConstants {
     // AlarmManagerService to avoid a ClassNotFoundException when filling in
     // the Intent extras.
     public static final String TASK_RAW_DATA = "intent.extra.task_raw";
+
+    /** Play alarm up to 10 minutes before silencing */
+    static final int ALARM_TIMEOUT_SECONDS = 10 * 60;
 }

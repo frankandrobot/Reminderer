@@ -16,18 +16,18 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Vibrator;
 import android.provider.Settings;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 
 //TODO test these scenarios:
 //TODO on phone/listening to music and alarm comes in
-//TODO alarm comes in then get phones call/start music
+//TODO alarm comes in then get phone call/start music
+//TODO headphones plugged in (and listening to music or on call)
+//TODO handle what happens when two alarms are due back to back?
+//TODO handle when user kills alarm
+//TODO handle when alarm expires
 
 public class AlarmRingerService extends Service implements OnPreparedListener,
 	OnErrorListener, OnAudioFocusChangeListener {
-    /** Play alarm up to 10 minutes before silencing */
-    private static final int ALARM_TIMEOUT_SECONDS = 10 * 60;
-
     private static final String TAG = "Reminderer:AlarmRingerService";
     private static final long[] sVibratePattern = new long[] { 500, 500 };
     // Volume suggested by media team for in-call alarms.
@@ -36,9 +36,8 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
     private boolean mPlaying = false;
     private Vibrator mVibrator;
     private MediaPlayer mMediaPlayer;
-    private Task mCurrentAlarm;
+    private Task mCurrentTask;
     private long mStartTime;
-    private TelephonyManager mTelephonyManager;
 
     // Internal messages
     private static final int KILLER = 1000;
@@ -75,9 +74,9 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-	if (Logger.LOGV) 
-	    Log.v(TAG,"onStartCommand()");
-	
+	if (Logger.LOGV)
+	    Log.v(TAG, "onStartCommand()");
+
 	// No intent, tell the system not to restart us.
 	if (intent == null) {
 	    stopSelf();
@@ -93,61 +92,76 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
 	    return START_NOT_STICKY;
 	}
 
-	//TODO what does this do? stop alarm if receive two alarms in a row?
-	if (mCurrentAlarm != null) {
-	    sendKillBroadcast(mCurrentAlarm);
+	// TODO what does this do? stop alarm if receive two alarms in a row?
+	if (mCurrentTask != null) {
+	    sendKillBroadcast(mCurrentTask);
 	}
-	
-	//TODO add foreground notification
-	mCurrentAlarm = task;
+
+	// TODO add foreground notification
+	mCurrentTask = task;
 	initMediaPlayer();
 	return START_STICKY;
     }
 
+    /**
+     * Initializes the media player
+     * 
+     * it uses prepareAsync() and requests an AudioFocus, so the logic continues
+     * in the callback listeners.
+     * 
+     * NOTE: instead of the complicated init function, we could probably just
+     * use one of the static MediaPlayer.create() methods
+     */
     private void initMediaPlayer() {
 	if (Logger.LOGV)
-	    Log.v(TAG,"initMediaPlayer()");
-	// TODO do we really need all this? can we just use one of the create()
-	// methods?
+	    Log.v(TAG, "initMediaPlayer()");
 	mMediaPlayer = new MediaPlayer();
 	mMediaPlayer.setOnErrorListener(this);
 	// TODO reenable looping
-	mMediaPlayer.setLooping(true);
+	// mMediaPlayer.setLooping(true);
 	mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 	try {
 	    mMediaPlayer.setDataSource(this,
 		    Settings.System.DEFAULT_RINGTONE_URI);
 	} catch (Exception e) {
-	    Log.e(TAG, e.toString());
-	    stopSelf();
+	    Log.e(TAG, "Couldn't load ringer: " + e.toString());
+	    mMediaPlayer.release();
+	    mMediaPlayer = null;
+	    // can't play ringer but can run vibrator and continue other
+	    // processing
+	    finalProcessing();
+	    return;
 	}
 	mMediaPlayer.setOnPreparedListener(this);
 	mMediaPlayer.prepareAsync();
 	// logic continues in onPrepared
     }
 
+    /*
+     * As per the docs, we're using prepareAsync() because this is a Service.
+     * onPrepared() is the callback.
+     * 
+     * Instead of using the TelephonyManager to figure out if we're on a call,
+     * we get an audio focus. The callback to requestAudioFocus() tells us if
+     * other apps are using the audio.
+     */
     @Override
     public void onPrepared(MediaPlayer arg0) {
 	if (Logger.LOGV)
-	    Log.v(TAG,"onPrepared()");
+	    Log.v(TAG, "onPrepared()");
 	AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 	int result = audioManager.requestAudioFocus(this,
 		AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 	if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
 	    Log.e(TAG, "could not get audio focus");
-	    stopSelf();
 	}
-	else {
-	    if (Logger.LOGV)
-		Log.v(TAG,"playing ringtone");
-	    mMediaPlayer.start();
-	}
-	/* Start the vibrator after everything is ok with the media player */
-	mVibrator.vibrate(sVibratePattern, 0);
-	// set the timer to kill the alarm
-	enableKiller(mCurrentAlarm);
-	mPlaying = true;
-	mStartTime = System.currentTimeMillis();
+	// else {
+	// if (Logger.LOGV)
+	// Log.v(TAG, "playing ringtone");
+	// mMediaPlayer.start();
+	// }
+	// start vibrator and timer to kill service
+	finalProcessing();
 	// logic continues in onAudioFocusChange
     }
 
@@ -164,7 +178,8 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
 	case AudioManager.AUDIOFOCUS_GAIN:
 	    // resume playback
 	    if (!mMediaPlayer.isPlaying()) {
-		if (Logger.LOGV) Log.v(TAG,"playing alarm at max volume");
+		if (Logger.LOGV)
+		    Log.v(TAG, "playing alarm at max volume");
 		mMediaPlayer.start();
 		mMediaPlayer.setVolume(1.0f, 1.0f);
 	    }
@@ -174,7 +189,7 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
 	    // Lost focus for an unbounded amount of time: stop playback and
 	    // release media player
 	    if (Logger.LOGV)
-		Log.v(TAG,"mediaplayer lost focus");
+		Log.v(TAG, "mediaplayer lost focus");
 	    if (mMediaPlayer.isPlaying())
 		mMediaPlayer.stop();
 	    mMediaPlayer.release();
@@ -186,7 +201,7 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
 	    // playback. We don't release the media player because playback
 	    // is likely to resume
 	    if (Logger.LOGV)
-		Log.v(TAG,"mediaplayer temporarily lost focus");
+		Log.v(TAG, "mediaplayer temporarily lost focus");
 	    if (mMediaPlayer.isPlaying())
 		mMediaPlayer.pause();
 	    break;
@@ -195,7 +210,8 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
 	    // Lost focus for a short time, but it's ok to keep playing
 	    // at an attenuated level
 	    if (mMediaPlayer.isPlaying()) {
-		if (Logger.LOGV) Log.v(TAG,"playing alarm at min volume");
+		if (Logger.LOGV)
+		    Log.v(TAG, "playing alarm at min volume");
 		mMediaPlayer.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME);
 	    }
 	    break;
@@ -214,10 +230,11 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
     private void sendKillBroadcast(Task task) {
 	long millis = System.currentTimeMillis() - mStartTime;
 	int minutes = (int) Math.round(millis / 60000.0);
-//	Intent alarmKilled = new Intent(Alarms.ALARM_KILLED);
-//	alarmKilled.putExtra(Alarms.ALARM_INTENT_EXTRA, task);
-//	alarmKilled.putExtra(Alarms.ALARM_KILLED_TIMEOUT, minutes);
-//	sendBroadcast(alarmKilled);
+	// Intent alarmKilled = new Intent(Alarms.ALARM_KILLED);
+	// alarmKilled.putExtra(Alarms.ALARM_INTENT_EXTRA, task);
+	// alarmKilled.putExtra(Alarms.ALARM_KILLED_TIMEOUT, minutes);
+	// tell alarm receiver to stop notification
+	// sendBroadcast(alarmKilled);
     }
 
     /**
@@ -225,7 +242,7 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
      */
     public void stop() {
 	if (Logger.LOGV)
-	    Log.v(TAG,"stop()");
+	    Log.v(TAG, "stop()");
 	if (mPlaying) {
 	    mPlaying = false;
 
@@ -251,11 +268,23 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
      */
     private void enableKiller(Task task) {
 	mHandler.sendMessageDelayed(mHandler.obtainMessage(KILLER, task),
-		1000 * ALARM_TIMEOUT_SECONDS);
+		1000 * AlarmConstants.ALARM_TIMEOUT_SECONDS);
     }
 
     private void disableKiller() {
 	mHandler.removeMessages(KILLER);
     }
 
+    /**
+     * Start the vibrator, enable the timer to kill the service, record
+     * startTime
+     */
+    private void finalProcessing() {
+	/* Start the vibrator */
+	mVibrator.vibrate(sVibratePattern, 0);
+	// set the timer to kill the alarm
+	enableKiller(mCurrentTask);
+	mPlaying = true;
+	mStartTime = System.currentTimeMillis();
+    }
 }
