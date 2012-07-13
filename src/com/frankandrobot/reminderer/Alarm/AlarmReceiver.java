@@ -77,7 +77,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         context.startActivity(alarmAlert);
 
         // Play the alarm alert and vibrate the device.
-        Intent playAlarm = new Intent(AlarmConstants.TASK_ALARM);
+        Intent playAlarm = new Intent(AlarmConstants.TASK_ALARM_ALERT);
         playAlarm.putExtra(AlarmConstants.TASK_INTENT_EXTRA, task);
         context.startService(playAlarm);
     }

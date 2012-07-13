@@ -19,11 +19,12 @@ import android.provider.Settings;
 import android.util.Log;
 
 //TODO test these scenarios:
+//TODO phone is locked and alarm comes in
 //TODO on phone/listening to music and alarm comes in
 //TODO alarm comes in then get phone call/start music
 //TODO headphones plugged in (and listening to music or on call)
 //TODO handle what happens when two alarms are due back to back?
-//TODO handle when user kills alarm
+//DONE handle when user kills alarm
 //TODO handle when alarm expires
 
 public class AlarmRingerService extends Service implements OnPreparedListener,
@@ -154,12 +155,11 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
 		AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 	if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
 	    Log.e(TAG, "could not get audio focus");
+	} else {
+	    if (Logger.LOGV)
+		Log.v(TAG, "playing ringtone");
+	    mMediaPlayer.start();
 	}
-	// else {
-	// if (Logger.LOGV)
-	// Log.v(TAG, "playing ringtone");
-	// mMediaPlayer.start();
-	// }
 	// start vibrator and timer to kill service
 	finalProcessing();
 	// logic continues in onAudioFocusChange
@@ -230,11 +230,11 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
     private void sendKillBroadcast(Task task) {
 	long millis = System.currentTimeMillis() - mStartTime;
 	int minutes = (int) Math.round(millis / 60000.0);
-	// Intent alarmKilled = new Intent(Alarms.ALARM_KILLED);
+	Intent alarmKilled = new Intent(AlarmConstants.TASK_ALARM_KILLED);
 	// alarmKilled.putExtra(Alarms.ALARM_INTENT_EXTRA, task);
 	// alarmKilled.putExtra(Alarms.ALARM_KILLED_TIMEOUT, minutes);
-	// tell alarm receiver to stop notification
-	// sendBroadcast(alarmKilled);
+	// tell alarm receiver to stop notification & update AlarmAlertActivity
+	sendBroadcast(alarmKilled);
     }
 
     /**

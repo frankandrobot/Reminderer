@@ -49,7 +49,7 @@ public class DatabaseInterface {
 		    + " atTime " + task.getLocaleTime());
 	}
 
-	Intent intent = new Intent(AlarmConstants.TASK_ALARM);
+	Intent intent = new Intent(AlarmConstants.TASK_ALARM_ALERT);
 
 	Parcel out = Parcel.obtain();
 	task.writeToParcel(out, 0);

@@ -48,15 +48,15 @@
 
         <receiver android:name=".Alarm.AlarmReceiver" >
             <intent-filter>
-                <action android:name="com.frankandrobot.reminderer.TASK_ALARM" />
-                <action android:name="com.frankandrobot.reminderer.alarm_killed" />
+                <action android:name="com.frankandrobot.reminderer.TASK_ALARM_ALERT" />
+                <action android:name="com.frankandrobot.reminderer.TASK_ALARM_KILLED" />
                 <action android:name="com.frankandrobot.reminderer.cancel_snooze" />
             </intent-filter>
         </receiver>
 
         <service android:name=".Alarm.AlarmRingerService" >
             <intent-filter>
-                <action android:name="com.frankandrobot.reminderer.TASK_ALARM" />
+                <action android:name="com.frankandrobot.reminderer.TASK_ALARM_ALERT" />
             </intent-filter>
         </service>
 

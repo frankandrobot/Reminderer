@@ -14,13 +14,16 @@ public class AlarmConstants {
     // This action triggers the AlarmReceiver as well as the AlarmRinger. It
     // is a public action used in the manifest for receiving Alarm broadcasts
     // from the alarm manager.
-    public static final String TASK_ALARM = "com.frankandrobot.reminderer.TASK_ALARM";
+    public static final String TASK_ALARM_ALERT = "com.frankandrobot.reminderer.TASK_ALARM_ALERT";
 
+    public static final String TASK_ALARM_KILLED = "com.frankandrobot.reminderer.TASK_ALARM_KILLED";
+    
     // This extra is the raw Alarm object data. It is used in the
     // AlarmManagerService to avoid a ClassNotFoundException when filling in
     // the Intent extras.
     public static final String TASK_RAW_DATA = "intent.extra.task_raw";
 
     /** Play alarm up to 10 minutes before silencing */
-    static final int ALARM_TIMEOUT_SECONDS = 10 * 60;
+    // TODO change back to 10 minute timeout
+    public static final int ALARM_TIMEOUT_SECONDS = 1 * 60;
 }
