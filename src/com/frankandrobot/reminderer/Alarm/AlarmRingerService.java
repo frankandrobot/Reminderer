@@ -1,5 +1,8 @@
 package com.frankandrobot.reminderer.Alarm;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import com.frankandrobot.reminderer.Helpers.Logger;
 import com.frankandrobot.reminderer.Parser.Task;
 
@@ -25,7 +28,7 @@ import android.util.Log;
 //TODO headphones plugged in (and listening to music or on call)
 //TODO handle what happens when two alarms are due back to back?
 //DONE handle when user kills alarm
-//TODO handle when alarm expires
+//DONE handle when alarm expires
 
 public class AlarmRingerService extends Service implements OnPreparedListener,
 	OnErrorListener, OnAudioFocusChangeListener {
@@ -41,29 +44,47 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
     private long mStartTime;
 
     // Internal messages
-    private static final int KILLER = 1000;
-    private Handler mHandler = new Handler() {
-	public void handleMessage(Message msg) {
-	    switch (msg.what) {
-	    case KILLER:
-		if (Logger.LOGV) {
+//    private static final int KILLER = 1000;
+//    
+//    private Handler mHandler = new Handler() {
+//	public void handleMessage(Message msg) {
+//	    switch (msg.what) {
+//	    case KILLER:
+//		if (Logger.LOGV) {
+//		    Log.v(TAG, "*********** Alarm killer triggered ***********");
+//		}
+//		sendKillBroadcast((Task) msg.obj);
+//		stopSelf();
+//		break;
+//	    }
+//	}
+//    };
+    private Timer mAlarmKiller;
+    
+    private TimerTask mAlarmKillerTask = new TimerTask() {
+
+	@Override
+	public void run() {
+	    if (Logger.LOGV) {
 		    Log.v(TAG, "*********** Alarm killer triggered ***********");
 		}
-		sendKillBroadcast((Task) msg.obj);
+		sendKillBroadcast(mCurrentTask);
 		stopSelf();
-		break;
-	    }
 	}
+	
     };
 
     @Override
     public void onCreate() {
+	mAlarmKiller = new Timer();
 	mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 	AlarmAlertWakeLock.acquireCpuWakeLock(this);
     }
 
     @Override
     public void onDestroy() {
+	mAlarmKiller.cancel();
+	mAlarmKiller = null;
 	stop();
 	AlarmAlertWakeLock.releaseCpuLock();
     }
@@ -267,12 +288,14 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
      * user will know that the alarm tripped.
      */
     private void enableKiller(Task task) {
-	mHandler.sendMessageDelayed(mHandler.obtainMessage(KILLER, task),
-		1000 * AlarmConstants.ALARM_TIMEOUT_SECONDS);
+	mAlarmKiller.schedule(mAlarmKillerTask, 1000 * AlarmConstants.ALARM_TIMEOUT_SECONDS);
+//	mHandler.sendMessageDelayed(mHandler.obtainMessage(KILLER, task),
+//		1000 * AlarmConstants.ALARM_TIMEOUT_SECONDS);
     }
 
     private void disableKiller() {
-	mHandler.removeMessages(KILLER);
+	mAlarmKillerTask.cancel();
+//	mHandler.removeMessages(KILLER);
     }
 
     /**

@@ -14,6 +14,9 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
+//TODO finish pulling from AlarmAlert
+//TODO implement save state for mKilled
+
 public class AlarmAlertActivity extends Activity {
     private static String TAG = "Reminderer AlarmALertActivity";
 
