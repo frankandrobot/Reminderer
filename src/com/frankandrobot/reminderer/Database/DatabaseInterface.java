@@ -9,6 +9,8 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Parcel;
 import android.util.Log;
 
@@ -23,15 +25,23 @@ import com.frankandrobot.reminderer.Parser.Task;
  * 
  */
 public class DatabaseInterface {
-    static private String TAG = "Reminderer DBinterface";
+    static private String TAG = "Reminderer:DBinterface";
 
     public static void addTask(Context context, Task task) {
-	// TODO add task to db - use the ContentProvider/ContentResolver;
-	// ContentResolver resolver = context.getContentResolver();
-	// resolver.update()
 	if (Logger.LOGV) {
-	    Log.v("addTask", "Saving task:\n" + task.toString());
+	    Log.v(TAG, "Saving task:\n" + task.toString());
+	    Log.v(TAG, "task,time:"+task.getTaskForDb()+" "+task.getDateTimeForDb());
 	}
+	ContentResolver resolver = context.getContentResolver();
+	// create content values from Task object
+	ContentValues values = new ContentValues();
+	values.put(DbColumns.TASK_DUE_DATE, task.getDateTimeForDb());
+	values.put(DbColumns.TASK, task.getTaskForDb());
+	// add content values to db
+	Uri uri = resolver.insert(DbColumns.CONTENT_URI, values);
+	// get id
+        String segment = uri.getPathSegments().get(1);
+        int newId = Integer.parseInt(segment);
 	// add task to alarm manager
 	findNextAlarm(context, task);
     }
@@ -61,5 +71,27 @@ public class DatabaseInterface {
 
 	am.set(AlarmManager.RTC_WAKEUP, task.getDateTime(), sender);
 
+    }
+
+    /**
+     * Gets the tasks that are due a given time 
+     * 
+     * @param context
+     * @param time
+     * @return
+     */
+    public static Cursor getDueAlarms(Context context, Calendar time) {
+	return getDueAlarms(context, time.getTimeInMillis());
+    }
+
+    public static Cursor getDueAlarms(Context context, long time) {
+	//TODO use async cursor loader
+	Cursor mResult = 
+		context.getContentResolver().query(DbColumns.CONTENT_URI,
+						   DbColumns.TASK_ALERT_LISTVIEW_CP, 
+						   DbColumns.TASK_DUE_DATE+"=?",
+						   new String[]{Long.toString(time)}, 
+						   DbColumns.DEFAULT_SORT);
+	return mResult;
     }
 }
