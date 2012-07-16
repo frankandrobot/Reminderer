@@ -24,7 +24,7 @@ import android.widget.SimpleCursorAdapter;
 //TODO implement save state for mKilled
 
 public class AlarmAlertActivity extends Activity {
-    private static String TAG = "Reminderer AlarmALertActivity";
+    private static String TAG = "R:AlarmALert";
 
     protected boolean mKilled = false;
     protected Button mDismiss, mSnooze;

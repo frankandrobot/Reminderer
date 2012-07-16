@@ -14,7 +14,7 @@ import android.util.Log;
  * 
  */
 class AlarmAlertWakeLock {
-    private static String TAG = "Reminderer AlarmAlertWakeLock";
+    private static String TAG = "R:WakeLock";
     private static PowerManager.WakeLock sCpuWakeLock;
 
     static void acquireCpuWakeLock(Context context) {

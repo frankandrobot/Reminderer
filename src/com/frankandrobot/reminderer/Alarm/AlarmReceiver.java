@@ -13,7 +13,7 @@ import android.os.Parcel;
 import android.util.Log;
 
 public class AlarmReceiver extends BroadcastReceiver {
-    private static String TAG = "Reminderer AlarmReceiver";
+    private static String TAG = "R:AlarmReceiver";
 
     @Override
     public void onReceive(Context context, Intent intent) {

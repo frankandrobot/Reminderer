@@ -25,7 +25,7 @@ import com.frankandrobot.reminderer.Parser.Task;
  * 
  */
 public class DatabaseInterface {
-    static private String TAG = "Reminderer:DBinterface";
+    static private String TAG = "R:DbInterface";
 
     public static void addTask(Context context, Task task) {
 	if (Logger.LOGV) {
@@ -89,7 +89,7 @@ public class DatabaseInterface {
 	Cursor mResult = 
 		context.getContentResolver().query(DbColumns.CONTENT_URI,
 						   DbColumns.TASK_ALERT_LISTVIEW_CP, 
-						   DbColumns.TASK_DUE_DATE+"=?",
+						   DbColumns.TASK_DUE_DATE+"<=?",
 						   new String[]{Long.toString(time)}, 
 						   DbColumns.DEFAULT_SORT);
 	return mResult;

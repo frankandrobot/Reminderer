@@ -33,7 +33,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 public class DatabaseProvider extends ContentProvider {
-    private static String TAG = "Reminderer:DBProvider";
+    private static String TAG = "R:Provider";
     private SQLiteOpenHelper mOpenHelper;
 
     // The DB will have tow tables: tasks and gps_tasks

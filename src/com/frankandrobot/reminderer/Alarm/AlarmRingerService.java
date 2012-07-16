@@ -32,7 +32,7 @@ import android.util.Log;
 
 public class AlarmRingerService extends Service implements OnPreparedListener,
 	OnErrorListener, OnAudioFocusChangeListener {
-    private static final String TAG = "Reminderer:AlarmRingerService";
+    private static final String TAG = "R:AlarmRinger";
     private static final long[] sVibratePattern = new long[] { 500, 500 };
     // Volume suggested by media team for in-call alarms.
     private static final float IN_CALL_VOLUME = 0.125f;
