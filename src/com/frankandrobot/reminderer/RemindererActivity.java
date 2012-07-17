@@ -30,8 +30,8 @@ public class RemindererActivity extends Activity {
 	String today = sdf.format(new Date());
 	todayCalendar.add(Calendar.DAY_OF_MONTH, 1);
 	MultiOsSupport multiOs = MultiOsSupport.Factory.newInstance();
-	String tomorrow = multiOs.getDisplayName(todayCalendar,
-		Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
+//	String tomorrow = multiOs.getDisplayName(todayCalendar,
+//		Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
 	// parseTester("hello"); // this should pass
 	// parseTester("buy eggs"); // pass
 	// parseTester("buy eggs " + today);

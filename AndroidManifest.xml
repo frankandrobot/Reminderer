@@ -6,7 +6,7 @@
 
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="10" />
+        android:targetSdkVersion="11" />
 
     <!-- Need this to set alarms when phone turns on -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
