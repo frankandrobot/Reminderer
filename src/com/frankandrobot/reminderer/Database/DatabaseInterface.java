@@ -18,6 +18,9 @@ import com.frankandrobot.reminderer.Alarm.AlarmConstants;
 import com.frankandrobot.reminderer.Helpers.Logger;
 import com.frankandrobot.reminderer.Parser.Task;
 
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+
 /**
  * This is the app-specific interface to the database
  * 
@@ -93,5 +96,13 @@ public class DatabaseInterface {
 						   new String[]{Long.toString(time)}, 
 						   DbColumns.DEFAULT_SORT);
 	return mResult;
+    }
+    
+    public static CursorLoader getDueAlarmsCursorLoader(Context context, long time) {
+            return new android.support.v4.content.CursorLoader(context, DbColumns.CONTENT_URI,
+        	    DbColumns.TASK_ALERT_LISTVIEW_NO_CP,
+        	    DbColumns.TASK_DUE_DATE+"<=?",
+        	    new String[]{Long.toString(time)}, 
+			   DbColumns.DEFAULT_SORT);
     }
 }

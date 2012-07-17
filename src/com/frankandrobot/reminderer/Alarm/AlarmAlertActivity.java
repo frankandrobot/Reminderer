@@ -6,7 +6,6 @@ import com.frankandrobot.reminderer.Database.DbColumns;
 import com.frankandrobot.reminderer.Helpers.Logger;
 import com.frankandrobot.reminderer.Parser.Task;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -20,27 +19,38 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+
 //TODO finish pulling from AlarmAlert
 //TODO implement save state for mKilled
 
-public class AlarmAlertActivity extends Activity {
+public class AlarmAlertActivity extends FragmentActivity implements
+	LoaderManager.LoaderCallbacks<Cursor> {
     private static String TAG = "R:AlarmALert";
 
     protected boolean mKilled = false;
     protected Button mDismiss, mSnooze;
+    Task mTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 	super.onCreate(savedInstanceState);
 	setContentView(R.layout.alarm_alert);
 
-	Task mTask= getIntent().getParcelableExtra(AlarmConstants.TASK_INTENT_EXTRA);
+	mTask = getIntent().getParcelableExtra(
+		AlarmConstants.TASK_INTENT_EXTRA);
 
 	if (Logger.LOGV) {
 	    Log.v(TAG, "AlarmAlert launched");
 	    Log.v(TAG, mTask.toString());
 	}
 
+	// setup buttons
 	mDismiss = (Button) findViewById(R.id.dismiss);
 	mDismiss.setOnClickListener(new OnClickListener() {
 
@@ -55,14 +65,18 @@ public class AlarmAlertActivity extends Activity {
 
 	});
 	mSnooze = (Button) findViewById(R.id.snooze);
+
+	// setup receiver
 	registerReceiver(mReceiver, new IntentFilter(
 		AlarmConstants.TASK_ALARM_KILLED));
+
 	// setup due tasks list view
-	Cursor cr = DatabaseInterface.getDueAlarms(this, mTask.getDateTime());
+	getSupportLoaderManager().initLoader(0, null, this);
 	SimpleCursorAdapter sca = new SimpleCursorAdapter(this,
 		R.layout.alarm_alert_row, cr,
-		DbColumns.TASK_ALERT_LISTVIEW_NO_CP, new int[]{R.id.task_text,R.id.task_due_date});
-	ListView lv = (ListView)findViewById(R.id.dueTasks);
+		DbColumns.TASK_ALERT_LISTVIEW_NO_CP, new int[] {
+			R.id.task_text, R.id.task_due_date });
+	ListView lv = (ListView) findViewById(R.id.dueTasks);
 	lv.setAdapter(sca);
     }
 
@@ -86,5 +100,24 @@ public class AlarmAlertActivity extends Activity {
 	    // }
 	}
     };
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
+	    // This is called when a new Loader needs to be created.  This
+	    // activity only has one Loader, so we don't care about the ID.
+	    return DatabaseInterface.getDueAlarmsCursorLoader(this, mTask.getDateTimeForDb());
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> arg0, Cursor arg1) {
+	// TODO Auto-generated method stub
+	
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> arg0) {
+	// TODO Auto-generated method stub
+	
+    }
 
 }
