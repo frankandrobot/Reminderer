@@ -36,6 +36,7 @@ public class AlarmAlertActivity extends FragmentActivity implements
     protected boolean mKilled = false;
     protected Button mDismiss, mSnooze;
     Task mTask;
+    SimpleCursorAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,13 +72,13 @@ public class AlarmAlertActivity extends FragmentActivity implements
 		AlarmConstants.TASK_ALARM_KILLED));
 
 	// setup due tasks list view
-	getSupportLoaderManager().initLoader(0, null, this);
-	SimpleCursorAdapter sca = new SimpleCursorAdapter(this,
-		R.layout.alarm_alert_row, cr,
+	mAdapter= new SimpleCursorAdapter(this,
+		R.layout.alarm_alert_row, null,
 		DbColumns.TASK_ALERT_LISTVIEW_NO_CP, new int[] {
 			R.id.task_text, R.id.task_due_date });
 	ListView lv = (ListView) findViewById(R.id.dueTasks);
-	lv.setAdapter(sca);
+	lv.setAdapter(mAdapter);
+	getSupportLoaderManager().initLoader(0, null, this);
     }
 
     @Override
@@ -109,15 +110,18 @@ public class AlarmAlertActivity extends FragmentActivity implements
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> arg0, Cursor arg1) {
-	// TODO Auto-generated method stub
-	
+    public void onLoadFinished(Loader<Cursor> arg0, Cursor data) {
+	// Swap the new cursor in.  (The framework will take care of closing the
+        // old cursor once we return.)
+        mAdapter.changeCursor(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> arg0) {
-	// TODO Auto-generated method stub
-	
+	// This is called when the last Cursor provided to onLoadFinished()
+        // above is about to be closed.  We need to make sure we are no
+        // longer using it.
+        mAdapter.changeCursor(null);
     }
 
 }

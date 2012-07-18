@@ -91,16 +91,16 @@ public class DatabaseInterface {
 	//TODO use async cursor loader
 	Cursor mResult = 
 		context.getContentResolver().query(DbColumns.CONTENT_URI,
-						   DbColumns.TASK_ALERT_LISTVIEW_CP, 
+						   DbColumns.TASK_ALERT_LISTVIEW_NO_CP,
 						   DbColumns.TASK_DUE_DATE+"<=?",
 						   new String[]{Long.toString(time)}, 
 						   DbColumns.DEFAULT_SORT);
 	return mResult;
     }
     
-    public static CursorLoader getDueAlarmsCursorLoader(Context context, long time) {
+    public static Loader<Cursor> getDueAlarmsCursorLoader(Context context, long time) {
             return new android.support.v4.content.CursorLoader(context, DbColumns.CONTENT_URI,
-        	    DbColumns.TASK_ALERT_LISTVIEW_NO_CP,
+        	    DbColumns.TASK_ALERT_LISTVIEW_CP,
         	    DbColumns.TASK_DUE_DATE+"<=?",
         	    new String[]{Long.toString(time)}, 
 			   DbColumns.DEFAULT_SORT);
