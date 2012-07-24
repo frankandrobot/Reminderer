@@ -33,7 +33,9 @@ public class DatabaseInterface {
     public static void addTask(Context context, Task task) {
 	if (Logger.LOGV) {
 	    Log.v(TAG, "Saving task:\n" + task.toString());
-	    Log.v(TAG, "task,time:"+task.getTaskForDb()+" "+task.getDateTimeForDb());
+	    Log.v(TAG,
+		    "task,time:" + task.getTaskForDb() + " "
+			    + task.getDateTimeForDb());
 	}
 	ContentResolver resolver = context.getContentResolver();
 	// create content values from Task object
@@ -43,66 +45,158 @@ public class DatabaseInterface {
 	// add content values to db
 	Uri uri = resolver.insert(DbColumns.CONTENT_URI, values);
 	// get id
-        String segment = uri.getPathSegments().get(1);
-        int newId = Integer.parseInt(segment);
+	String segment = uri.getPathSegments().get(1);
+	int newId = Integer.parseInt(segment);
+	// TODO delete old alarm if any
 	// add task to alarm manager
 	findNextAlarm(context, task);
     }
 
     public static void findNextAlarm(Context context, Task task) {
-	// TODO query db to find the next task due
-	// then pass this task to the AlarmManager
-	// what it's doing now is passing the current task
+	// Idea is that you get a Cursor containing all of the tasks due after
+	// the current time. The problem is that there may be more than one task
+	// due at the same time. So you get the task in the first row of the
+	// Cursor. Then you get all tasks due at the same time as that task
+	// TODO rewrite using Cursor groups
+	// TODO make this asynchronous
+
+	//disable the old alarm if any
+	disableAlert(context);
+	// get all tasks due after curTime
+	long curTime = System.currentTimeMillis();
+	Cursor nextAlarms = getDueAlarms(context, curTime, DbColumns.GTE);
+	if (nextAlarms == null) {
+	    Log.d(TAG, "Error occurred. No upcoming tasks due");
+	    return;
+	} else if (nextAlarms.getCount() == 0) {
+	    if (Logger.LOGV)
+		Log.v(TAG, "No upcoming tasks due");
+	    return;
+	}
+	// get the task in the first row
+	nextAlarms.moveToNext(); // row pointer starts at -1
+	int index = nextAlarms.getColumnIndex(DbColumns.TASK_DUE_DATE);
+	long dueTime = nextAlarms.getLong(index);
+	if (Logger.LOGV) {
+	    Log.v(TAG, "dueTime:" + dueTime);
+	    Log.v(TAG, dumpCursor(nextAlarms));
+	}
+	// get all tasks due at dueTime
+	nextAlarms.close(); // close previous
+	nextAlarms = getDueAlarms(context, dueTime, DbColumns.EQ);
+	if (nextAlarms == null) {
+	    Log.d(TAG, "Something went wrong. nextAlarms should not be null");
+	    return;
+	}
+	// get ids of these tasks
+	long ids[] = new long[nextAlarms.getCount()];
+	index = nextAlarms.getColumnIndex(DbColumns.TASK_ID);
+	int len = 0;
+	while (nextAlarms.moveToNext()) {
+	    ids[len++] = nextAlarms.getLong(index);
+	}
+	nextAlarms.close();
 
 	AlarmManager am = (AlarmManager) context
 		.getSystemService(Context.ALARM_SERVICE);
-
 	if (Logger.LOGV) {
 	    android.util.Log.v(TAG, "** setAlert id " + task.getId()
 		    + " atTime " + task.getLocaleTime());
 	}
-
 	Intent intent = new Intent(AlarmConstants.TASK_ALARM_ALERT);
-
 	Parcel out = Parcel.obtain();
 	task.writeToParcel(out, 0);
 	out.setDataPosition(0);
+	// TODO remove task from intent
 	intent.putExtra(AlarmConstants.TASK_RAW_DATA, out.marshall());
-
+	intent.putExtra(AlarmConstants.TASK_ID_DATA, ids);
 	PendingIntent sender = PendingIntent.getBroadcast(context, 0, intent,
 		PendingIntent.FLAG_CANCEL_CURRENT);
 
-	am.set(AlarmManager.RTC_WAKEUP, task.getDateTime(), sender);
+	am.set(AlarmManager.RTC_WAKEUP, dueTime, sender);
 
     }
 
     /**
-     * Gets the tasks that are due a given time 
+     * DEPRECATED - use the Loader<Cursor> interface for asynchronous calls
+     * 
+     * Gets the tasks that are due a given time
      * 
      * @param context
      * @param time
+     * @param op
      * @return
      */
-    public static Cursor getDueAlarms(Context context, Calendar time) {
-	return getDueAlarms(context, time.getTimeInMillis());
+    public static Cursor getDueAlarms(Context context, Calendar time, String op) {
+	return getDueAlarms(context, time.getTimeInMillis(), op);
     }
 
-    public static Cursor getDueAlarms(Context context, long time) {
-	//TODO use async cursor loader
-	Cursor mResult = 
-		context.getContentResolver().query(DbColumns.CONTENT_URI,
-						   DbColumns.TASK_ALERT_LISTVIEW_NO_CP,
-						   DbColumns.TASK_DUE_DATE+"<=?",
-						   new String[]{Long.toString(time)}, 
-						   DbColumns.DEFAULT_SORT);
+    /**
+     * DEPRECATED - use the Loader<Cursor> interface for asynchronous calls
+     * 
+     * @param context
+     * @param time
+     * @param op
+     * @return
+     */
+    public static Cursor getDueAlarms(Context context, long time, String op) {
+	Cursor mResult = context.getContentResolver().query(
+		DbColumns.CONTENT_URI, DbColumns.TASK_ALERT_LISTVIEW_CP,
+		DbColumns.TASK_DUE_DATE + op + "?",
+		new String[] { Long.toString(time) }, DbColumns.DEFAULT_SORT);
 	return mResult;
     }
-    
-    public static Loader<Cursor> getDueAlarmsCursorLoader(Context context, long time) {
-            return new android.support.v4.content.CursorLoader(context, DbColumns.CONTENT_URI,
-        	    DbColumns.TASK_ALERT_LISTVIEW_CP,
-        	    DbColumns.TASK_DUE_DATE+"<=?",
-        	    new String[]{Long.toString(time)}, 
-			   DbColumns.DEFAULT_SORT);
+
+    /**
+     * Get a cursors containing all of the tasks with due_date OP time where OP
+     * is one of <=, =, or >=
+     * 
+     * @param context
+     * @param time
+     * @param OP
+     *            - one of <=, =, or >=
+     * @return
+     */
+    public static Loader<Cursor> getDueAlarmsCursorLoader(Context context,
+	    long time, String OP) {
+	return new android.support.v4.content.CursorLoader(context,
+		DbColumns.CONTENT_URI, DbColumns.TASK_ALERT_LISTVIEW_CP,
+		DbColumns.TASK_DUE_DATE + OP + "?",
+		new String[] { Long.toString(time) }, DbColumns.DEFAULT_SORT);
+    }
+
+    /**
+     * Convenience method to print out the alarm cursor
+     * 
+     * @param cursor
+     */
+    private static String dumpCursor(Cursor cursor) {
+	if (cursor == null)
+	    return "";
+	// save row position
+	int origPos = cursor.getPosition();
+	int index = cursor.getColumnIndex(DbColumns.TASK_DUE_DATE);
+	cursor.moveToFirst();
+	String row = "*****Cursor*****\n";
+	while (cursor.moveToNext()) {
+	    row += cursor.getPosition() + ":" + cursor.getLong(index);
+	}
+	// restore cursor
+	cursor.moveToPosition(origPos);
+	return row;
+    }
+
+    /**
+     * Cancels any pending alarms
+     * 
+     * @param context
+     */
+    private static void disableAlert(Context context) {
+	AlarmManager am = (AlarmManager) context
+		.getSystemService(Context.ALARM_SERVICE);
+	PendingIntent sender = PendingIntent.getBroadcast(context, 0,
+		new Intent(AlarmConstants.TASK_ALARM_ALERT),
+		PendingIntent.FLAG_CANCEL_CURRENT);
+	am.cancel(sender);
     }
 }

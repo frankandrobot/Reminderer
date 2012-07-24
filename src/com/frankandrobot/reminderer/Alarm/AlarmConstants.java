@@ -26,4 +26,6 @@ public class AlarmConstants {
     /** Play alarm up to 10 minutes before silencing */
     // TODO change back to 10 minute timeout
     public static final int ALARM_TIMEOUT_SECONDS = 1 * 60;
+    
+    public static final String TASK_ID_DATA = "com.frankandrobot.reminderer.task_id_data";
 }

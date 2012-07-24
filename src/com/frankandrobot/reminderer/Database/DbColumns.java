@@ -29,4 +29,7 @@ public class DbColumns {
 
     public final static String DEFAULT_SORT = TASK_DUE_DATE + " ASC";
 
+    public final static String LTE = "<=";
+    public final static String EQ = "=";
+    public final static String GTE = ">=";
 }

@@ -32,7 +32,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 	    task = Task.CREATOR.createFromParcel(in);
 	}
 	if (task == null) {
-	    Log.v(TAG, "AlarmReceiver failed to parse the taskfrom the intent");
+	    Log.v(TAG, "AlarmReceiver failed to parse the task from the intent");
 	    return;
 	}
 	

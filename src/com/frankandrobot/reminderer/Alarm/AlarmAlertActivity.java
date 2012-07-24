@@ -43,8 +43,8 @@ public class AlarmAlertActivity extends FragmentActivity implements
 	super.onCreate(savedInstanceState);
 	setContentView(R.layout.alarm_alert);
 
-	mTask = getIntent().getParcelableExtra(
-		AlarmConstants.TASK_INTENT_EXTRA);
+	mTask = getIntent()
+		.getParcelableExtra(AlarmConstants.TASK_INTENT_EXTRA);
 
 	if (Logger.LOGV) {
 	    Log.v(TAG, "AlarmAlert launched");
@@ -72,9 +72,8 @@ public class AlarmAlertActivity extends FragmentActivity implements
 		AlarmConstants.TASK_ALARM_KILLED));
 
 	// setup due tasks list view
-	mAdapter= new SimpleCursorAdapter(this,
-		R.layout.alarm_alert_row, null,
-		DbColumns.TASK_ALERT_LISTVIEW_NO_CP, new int[] {
+	mAdapter = new SimpleCursorAdapter(this, R.layout.alarm_alert_row,
+		null, DbColumns.TASK_ALERT_LISTVIEW_NO_CP, new int[] {
 			R.id.task_text, R.id.task_due_date });
 	ListView lv = (ListView) findViewById(R.id.dueTasks);
 	lv.setAdapter(mAdapter);
@@ -104,24 +103,25 @@ public class AlarmAlertActivity extends FragmentActivity implements
 
     @Override
     public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
-	    // This is called when a new Loader needs to be created.  This
-	    // activity only has one Loader, so we don't care about the ID.
-	    return DatabaseInterface.getDueAlarmsCursorLoader(this, mTask.getDateTimeForDb());
+	// This is called when a new Loader needs to be created. This
+	// activity only has one Loader, so we don't care about the ID.
+	return DatabaseInterface.getDueAlarmsCursorLoader(this,
+		mTask.getDateTimeForDb(), DbColumns.LTE);
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> arg0, Cursor data) {
-	// Swap the new cursor in.  (The framework will take care of closing the
-        // old cursor once we return.)
-        mAdapter.changeCursor(data);
+	// Swap the new cursor in. (The framework will take care of closing the
+	// old cursor once we return.)
+	mAdapter.changeCursor(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> arg0) {
 	// This is called when the last Cursor provided to onLoadFinished()
-        // above is about to be closed.  We need to make sure we are no
-        // longer using it.
-        mAdapter.changeCursor(null);
+	// above is about to be closed. We need to make sure we are no
+	// longer using it.
+	mAdapter.changeCursor(null);
     }
 
 }
