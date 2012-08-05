@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import android.annotation.TargetApi;
 import android.os.Build;
 
 /**
@@ -13,12 +14,12 @@ import android.os.Build;
  * @author uri
  * 
  */
-public interface MultiOsSupport {
+public abstract class MultiOsSupport {
 
-    public String getDisplayName(Calendar cal, int field, int style,
+    abstract public String getDisplayName(Calendar cal, int field, int style,
 	    Locale locale);
 
-    public class Factory {
+    public static class Factory {
 	static public MultiOsSupport newInstance() {
 	    final int sdkVersion = Integer.parseInt(Build.VERSION.SDK);
 	    MultiOsSupport helpers = null;
@@ -36,7 +37,7 @@ public interface MultiOsSupport {
 	}
     }
 
-    public class FroyoHelpers implements MultiOsSupport {
+    public static class FroyoHelpers extends MultiOsSupport {
 	
 	@Override
 	public String getDisplayName(Calendar cal, int field, int style,
@@ -54,8 +55,9 @@ public interface MultiOsSupport {
 	}
     }
 
-    public class GingerbreadHelpers implements MultiOsSupport {
-
+    public static class GingerbreadHelpers extends FroyoHelpers {
+	
+	@TargetApi(9)
 	@Override
 	public String getDisplayName(Calendar cal, int field, int style,
 		Locale locale) {
@@ -63,25 +65,12 @@ public interface MultiOsSupport {
 	}
     }
 
-    public class HoneycombHelpers implements MultiOsSupport {
-	GingerbreadHelpers gh = new GingerbreadHelpers();
-	
-	@Override
-	public String getDisplayName(Calendar cal, int field, int style,
-		Locale locale) {
-	    return gh.getDisplayName(cal, field, style, locale);
-	}
+    public static class HoneycombHelpers extends GingerbreadHelpers {
 
     }
 
-    public class ICSHelpers implements MultiOsSupport {
-	GingerbreadHelpers gh = new GingerbreadHelpers();
-	
-	@Override
-	public String getDisplayName(Calendar cal, int field, int style,
-		Locale locale) {
-	    return gh.getDisplayName(cal, field, style, locale);
-	}
+    public static class ICSHelpers extends HoneycombHelpers {
+
     }
 
 }

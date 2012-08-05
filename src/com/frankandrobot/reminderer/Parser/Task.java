@@ -8,31 +8,37 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
+import android.annotation.SuppressLint;
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.frankandrobot.reminderer.Helpers.MultiOsSupport;
-import com.frankandrobot.reminderer.Helpers.MultiOsSupport.Factory;
 import com.frankandrobot.reminderer.Parser.GrammarParser.Repeats;
 import com.frankandrobot.reminderer.Parser.GrammarParser.RepeatsEvery;
 
-public class Task {
+public class Task implements Parcelable {
     static String defaultTimeStr = "9:00am";
+    // variables
+    int id;
     Calendar calendar;
+    Calendar rightNow;
     String task;
     Repeats repeats;
     RepeatsEvery repeatsEvery;
     String location;
     // helpers
     Locale locale = Locale.getDefault();
-    Calendar tmpCalendar, defaultTimeCal, rightNow;
+    Calendar tmpCalendar, defaultTimeCal;
     DateFormat shortDateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
     DateFormat medDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
     DateFormat shortTimeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
     SimpleDateFormat sdfDate = new SimpleDateFormat("MM/dd/yyyy");
     SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
-    boolean isTimeSet = false;
-    int curDay;
-    int curDayOfMonth;
+    private boolean isTimeSet = false;
     private boolean isDaySet;
     private boolean isDateSet;
+    int curDay;
+    int curDayOfMonth;
     MultiOsSupport miscSupport = MultiOsSupport.Factory.newInstance();
 
     /*
@@ -51,6 +57,9 @@ public class Task {
 	// save current day
 	curDay = calendar.get(Calendar.DAY_OF_WEEK);
 	curDayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+	// set second/milliseconds to 0
+	calendar.set(Calendar.SECOND, 0);
+	calendar.set(Calendar.MILLISECOND, 0);
     }
 
     /*
@@ -110,6 +119,10 @@ public class Task {
      * Setter methods for fields
      */
 
+    public void setId(final int id) {
+	this.id = id;
+    }
+
     public void setTask(String task) {
 	this.task = new String(task);
     }
@@ -148,55 +161,118 @@ public class Task {
 	    copyCalendarField(calendar, tmpCalendar, Calendar.DAY_OF_WEEK);
     }
 
+    // ////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////
     /*
-     * Start of database methods
+     * Start of database methods - convenience functions
      */
 
+    /**
+     * Gets id
+     * 
+     * @return
+     */
+    public int getIdForDb() {
+	return getId();
+    }
+
+    /**
+     * Gets task
+     * 
+     * @return
+     */
     public String getTaskForDb() {
-	return new String(task);
+	return getTask();
     }
 
-    public long getDateForDb() {
-	calculateTimeAndDate();
-	return calendar.getTimeInMillis();
+    /**
+     * Gets date/time task is due in epoch time
+     * 
+     * @return
+     */
+    public long getDateTimeForDb() {
+	return getDateTime();
     }
 
+    /**
+     * Gets day task is due
+     * 
+     * @return
+     */
     public int getDayForDb() {
 	calculateTimeAndDate();
 	return calendar.get(Calendar.DAY_OF_WEEK);
     }
 
+    // ///////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////////
     /*
      * Start of methods used for displaying dates in user's locale
      */
+
+    public int getId() {
+	return id;
+    }
 
     public String getTask() {
 	return new String(task);
     }
 
+    /**
+     * Gets date/time as Date object
+     * 
+     * @return
+     */
     public Date getDateObj() {
 	calculateTimeAndDate();
 	return calendar.getTime();
     }
 
+    /**
+     * Gets date in user's locale
+     * 
+     * @return
+     */
     public String getLocaleDate() {
 	calculateTimeAndDate();
 	return medDateFormat.format(getDateObj());
     }
 
+    /**
+     * Gets time in user's locale
+     * 
+     * @return
+     */
     public String getLocaleTime() {
 	calculateTimeAndDate();
 	return shortTimeFormat.format(getDateObj());
     }
 
+    /**
+     * Gets day in user's locale
+     * 
+     * @return
+     */
+    @SuppressLint("NewApi")
     public String getLocaleDay() {
 	calculateTimeAndDate();
 	return miscSupport.getDisplayName(calendar, Calendar.DAY_OF_WEEK,
 		Calendar.LONG, locale);
     }
 
+    /**
+     * Gets date/time in epoch time
+     * 
+     * @return
+     */
+    public long getDateTime() {
+	calculateTimeAndDate();
+	return calendar.getTimeInMillis();
+    }
+
     public String toString() {
 	String out = "";
+
 	out += "Task: " + ((task == null) ? "n/a" : task) + "\n";
 	out += "Date: " + getLocaleDate() + "\n";
 	out += "Time: " + getLocaleTime() + "\n";
@@ -207,6 +283,47 @@ public class Task {
 		+ ((repeatsEvery == null) ? "n/a" : repeatsEvery.name()) + "\n";
 	out += "Location: " + ((location == null) ? "n/a" : location) + "\n";
 	return out;
+    }
+
+    /*
+     * Parcelable API
+     */
+
+    public Task(Parcel p) {
+	calendar = Calendar.getInstance();
+	calendar.setTimeInMillis(p.readLong());
+	rightNow = Calendar.getInstance();
+	rightNow.setTimeInMillis(p.readLong());
+	task = p.readString();
+	isTimeSet = p.readInt() == 1;
+	isDaySet = p.readInt() == 1;
+	isDateSet = p.readInt() == 1;
+	id = p.readInt();
+    }
+
+    public static final Parcelable.Creator<Task> CREATOR = new Parcelable.Creator<Task>() {
+	public Task createFromParcel(Parcel p) {
+	    return new Task(p);
+	}
+
+	public Task[] newArray(int size) {
+	    return new Task[size];
+	}
+    };
+
+    public int describeContents() {
+	return 0;
+    }
+
+    public void writeToParcel(Parcel p, int flags) {
+	// TODO finish writing Task Parcelable - add every enum
+	p.writeLong(getDateTimeForDb());
+	p.writeLong(rightNow.getTimeInMillis());
+	p.writeString(task);
+	p.writeInt(isTimeSet ? 1 : 0);
+	p.writeInt(isDaySet ? 1 : 0);
+	p.writeInt(isDateSet ? 1 : 0);
+	p.writeInt(id);
     }
 
 }
