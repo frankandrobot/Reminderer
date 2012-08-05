@@ -17,6 +17,7 @@ import android.os.Message;
 import android.os.Parcel;
 import android.util.Log;
 
+import com.android.calendar.AsyncQueryServiceHelper;
 import com.android.calendar.AsyncQueryService.Operation;
 import com.android.calendar.AsyncQueryServiceHelper.OperationInfo;
 import com.frankandrobot.reminderer.Alarm.AlarmConstants;
@@ -42,7 +43,7 @@ public class DatabaseInterface {
 	return values;
     }
     
-    public static void addTask(Context context, Handler handler, Task task) {
+    public static void addTask(final Context context, Handler handler, final Task task) {
 	if (Logger.LOGV) {
 	    Log.v(TAG, "Saving task:\n" + task.toString());
 	    Log.v(TAG,
@@ -53,15 +54,24 @@ public class DatabaseInterface {
 	// create content values from Task object
 	ContentValues values = addToContentValues(task);
 	// add content values to db
-	Intent intent = new Intent(AsyncHelper.QUERY_HELPER);
-	intent.
-	Uri uri = resolver.insert(DbColumns.CONTENT_URI, values);
+	Runnable postOp = new Runnable() {
+
+	    @Override
+	    public void run() {
+		findNextAlarm(context, task);
+	    }
+	
+	};
+	DatabaseService.addTaskToQueue(context,handler,values,postOp);
+	//go
+	context.startService(new Intent(context, DatabaseService.class));
+	      
+//	Uri uri = resolver.insert(DbColumns.CONTENT_URI, values);
 	// get id
-	String segment = uri.getPathSegments().get(1);
-	int newId = Integer.parseInt(segment);
+//	String segment = uri.getPathSegments().get(1);
+//	int newId = Integer.parseInt(segment);
 	// TODO delete old alarm if any
 	// add task to alarm manager
-	findNextAlarm(context, task);
     }
 
     public static void findNextAlarm(Context context, Task task) {
