@@ -60,6 +60,9 @@
             </intent-filter>
         </service>
 
+        <service android:name=".Database.DatabaseAsyncService" >
+        </service>
+        
         <!-- Widget -->
         <receiver
             android:name=".Widget.RemindererWidgetProvider"

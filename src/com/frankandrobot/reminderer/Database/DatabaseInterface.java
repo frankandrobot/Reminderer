@@ -4,27 +4,20 @@ import java.util.Calendar;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.content.ContentProviderResult;
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Handler;
-import android.os.Message;
 import android.os.Parcel;
 import android.util.Log;
 
-import com.android.calendar.AsyncQueryServiceHelper;
-import com.android.calendar.AsyncQueryService.Operation;
-import com.android.calendar.AsyncQueryServiceHelper.OperationInfo;
 import com.frankandrobot.reminderer.Alarm.AlarmConstants;
+import com.frankandrobot.reminderer.Database.DatabaseAsyncService.DatabaseHandler;
 import com.frankandrobot.reminderer.Helpers.Logger;
 import com.frankandrobot.reminderer.Parser.Task;
 
-import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 
 /**
@@ -50,7 +43,6 @@ public class DatabaseInterface {
 		    "task,time:" + task.getTaskForDb() + " "
 			    + task.getDateTimeForDb());
 	}
-	ContentResolver resolver = context.getContentResolver();
 	// create content values from Task object
 	ContentValues values = addToContentValues(task);
 	// add content values to db
@@ -62,16 +54,7 @@ public class DatabaseInterface {
 	    }
 	
 	};
-	DatabaseService.addTaskToQueue(context,handler,values,postOp);
-	//go
-	context.startService(new Intent(context, DatabaseService.class));
-	      
-//	Uri uri = resolver.insert(DbColumns.CONTENT_URI, values);
-	// get id
-//	String segment = uri.getPathSegments().get(1);
-//	int newId = Integer.parseInt(segment);
-	// TODO delete old alarm if any
-	// add task to alarm manager
+	DatabaseAsyncService.startInsert(context,handler,values,postOp);
     }
 
     public static void findNextAlarm(Context context, Task task) {
@@ -222,50 +205,4 @@ public class DatabaseInterface {
 	am.cancel(sender);
     }
 
-    /*
-     * /////////////////////////////////////////////////////////////////////////
-     */
-
-    class AsyncHelper extends Handler {
-
-	static public String QUERY_HELPER = "com.frankandrobot.reminderer.query";
-	static public String QUERY_HANDLER= "handler";
-	
-	@Override
-	public void handleMessage(Message msg) {
-	    OperationInfo info = (OperationInfo) msg.obj;
-
-	    int token = msg.what;
-	    int op = msg.arg1;
-
-	    if (localLOGV) {
-		Log.d(TAG, "AsyncQueryService.handleMessage: token=" + token
-			+ ", op=" + op + ", result=" + info.result);
-	    }
-
-	    // pass token back to caller on each callback.
-	    switch (op) {
-	    case Operation.EVENT_ARG_QUERY:
-		onQueryComplete(token, info.cookie, (Cursor) info.result);
-		break;
-
-	    case Operation.EVENT_ARG_INSERT:
-		onInsertComplete(token, info.cookie, (Uri) info.result);
-		break;
-
-	    case Operation.EVENT_ARG_UPDATE:
-		onUpdateComplete(token, info.cookie, (Integer) info.result);
-		break;
-
-	    case Operation.EVENT_ARG_DELETE:
-		onDeleteComplete(token, info.cookie, (Integer) info.result);
-		break;
-
-	    case Operation.EVENT_ARG_BATCH:
-		onBatchComplete(token, info.cookie,
-			(ContentProviderResult[]) info.result);
-		break;
-	    }
-	}
-    }
 }
