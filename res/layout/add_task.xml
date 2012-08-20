@@ -3,7 +3,11 @@
     android:id="@+id/addtask_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:baselineAligned="true"
+    android:contentDescription="@string/add_task"
     android:orientation="vertical" >
+
+    <!-- Add task box -->
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,44 +15,97 @@
 
         <EditText
             android:id="@+id/add_task"
-            android:layout_width="wrap_content"
+            android:layout_width="0dip"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:ems="10"
-            android:inputType="text" >
-
-            <requestFocus />
+            android:layout_margin="5dip"
+            android:layout_weight="1"
+            android:inputType="text"
+            android:nextFocusDown="@+id/submit"
+            android:nextFocusRight="@+id/submit"
+            android:text="@string/add_task"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@color/selected" >
         </EditText>
 
-        <Button
+        <ImageButton
             android:id="@+id/submit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/add_new_task" />
+            android:layout_width="45dip"
+            android:layout_height="match_parent"
+            android:layout_margin="5dip"
+            android:background="#000000ff"
+            android:baselineAlignBottom="false"
+            android:contentDescription="@string/add_task"
+            android:cropToPadding="false"
+            android:scaleType="fitCenter"
+            android:src="@drawable/add_plus_imagebutton" />
     </LinearLayout>
 
+    <!-- Help screen -->
+
     <TextView
-        android:id="@+id/log_cat"
+        android:id="@+id/sample_tasks_heading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dip"
+        android:layout_marginLeft="15dip"
+        android:layout_marginRight="5dip"
+        android:layout_marginTop="5dip"
+        android:text="@string/add_sample_task"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/sample_tasks"
         android:layout_width="wrap_content"
         android:layout_height="0dip"
+        android:layout_marginBottom="5dip"
+        android:layout_marginLeft="15dip"
+        android:layout_marginRight="5dip"
+        android:layout_marginTop="5dip"
         android:layout_weight="1"
-        android:text="@string/no_task"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <TextView
-        android:id="@+id/test"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Large Text"
+        android:text="@string/add_no_task"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <EditText
-        android:id="@+id/test2"
+    <!-- Start of output -->
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:visibility="gone" />
+        android:layout_marginBottom="5dip"
+        android:layout_marginLeft="15dip"
+        android:layout_marginRight="15dip"
+        android:layout_marginTop="10dip"
+        android:layout_weight="1"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/add_task_heading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dip"
+            android:text="@string/add_task_heading"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@color/add_task_heading_color"
+            android:textStyle="bold" />
+
+        <include
+            android:id="@+id/add_row_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            layout="@layout/add_task_row" />
+
+        <include
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            layout="@layout/add_horizontal_bar" />
+
+         <include
+            android:id="@+id/add_row_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            layout="@layout/add_task_row" />
+         
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

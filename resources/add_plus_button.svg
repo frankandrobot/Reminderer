@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="512"
+   height="512"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="plus_button.svg"
+   inkscape:export-filename="/home/uri/projects/Reminderer/resources/plus_button_unselected.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.47892257"
+     inkscape:cx="372.04724"
+     inkscape:cy="432.81777"
+     inkscape:document-units="px"
+     inkscape:current-layer="g3889"
+     showgrid="false"
+     inkscape:window-width="770"
+     inkscape:window-height="708"
+     inkscape:window-x="169"
+     inkscape:window-y="27"
+     inkscape:window-maximized="0">
+    <inkscape:grid
+       type="xygrid"
+       id="grid3758"
+       empspacing="5"
+       visible="true"
+       enabled="true"
+       snapvisiblegridlinesonly="true" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer"
+     style="display:none"
+     sodipodi:insensitive="true">
+    <rect
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:6.25;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3756"
+       width="496.94882"
+       height="505.3009"
+       x="10.440101"
+       y="4.6110907" />
+  </g>
+  <g
+     inkscape:label="circle"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-540.36218)"
+     style="display:none"
+     sodipodi:insensitive="true">
+    <path
+       sodipodi:type="arc"
+       style="fill:#ffffff;fill-opacity:1;stroke:none"
+       id="path2985"
+       sodipodi:cx="265.17856"
+       sodipodi:cy="261.43756"
+       sodipodi:rx="212.97806"
+       sodipodi:ry="212.97806"
+       d="m 478.15662,261.43756 a 212.97806,212.97806 0 1 1 -425.95612,0 212.97806,212.97806 0 1 1 425.95612,0 z"
+       transform="matrix(1.1715686,0,0,1.1715686,-55.137079,493.37821)"
+       inkscape:export-filename="/home/uri/projects/Reminderer/resources/plus_button.png"
+       inkscape:export-xdpi="108.18016"
+       inkscape:export-ydpi="108.18016" />
+  </g>
+  <g
+     style="display:none"
+     transform="translate(0,-540.36218)"
+     id="g3885"
+     inkscape:groupmode="layer"
+     inkscape:label="selected circle"
+     sodipodi:insensitive="true">
+    <path
+       inkscape:export-ydpi="108.18016"
+       inkscape:export-xdpi="108.18016"
+       inkscape:export-filename="/home/uri/projects/Reminderer/resources/plus_button.png"
+       transform="matrix(1.1715686,0,0,1.1715686,-55.137079,493.37821)"
+       d="m 478.15662,261.43756 a 212.97806,212.97806 0 1 1 -425.95612,0 212.97806,212.97806 0 1 1 425.95612,0 z"
+       sodipodi:ry="212.97806"
+       sodipodi:rx="212.97806"
+       sodipodi:cy="261.43756"
+       sodipodi:cx="265.17856"
+       id="path3887"
+       style="fill:#808080;fill-opacity:1;stroke:none"
+       sodipodi:type="arc" />
+  </g>
+  <g
+     inkscape:label="unselected circle"
+     inkscape:groupmode="layer"
+     id="g3889"
+     transform="translate(0,-540.36218)"
+     style="display:inline">
+    <path
+       sodipodi:type="arc"
+       style="fill:#b55454;fill-opacity:1;stroke:none"
+       id="path3891"
+       sodipodi:cx="265.17856"
+       sodipodi:cy="261.43756"
+       sodipodi:rx="212.97806"
+       sodipodi:ry="212.97806"
+       d="m 478.15662,261.43756 c 0,117.62453 -95.35353,212.97806 -212.97806,212.97806 -117.62454,0 -212.97806,-95.35353 -212.97806,-212.97806 0,-117.62453 95.35352,-212.978057 212.97806,-212.978057 117.62453,0 212.97806,95.353527 212.97806,212.978057 z"
+       transform="matrix(1.1715686,0,0,1.1715686,-55.137079,493.37821)"
+       inkscape:export-filename="/home/uri/projects/Reminderer/resources/plus_button.png"
+       inkscape:export-xdpi="108.18016"
+       inkscape:export-ydpi="108.18016" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="plus"
+     style="display:inline"
+     sodipodi:insensitive="true">
+    <text
+       xml:space="preserve"
+       style="font-size:618.81756592px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:ColaborateLight;-inkscape-font-specification:ColaborateLight"
+       x="100.8334"
+       y="475.89426"
+       id="text3760"
+       sodipodi:linespacing="125%"
+       inkscape:export-xdpi="108.18016"
+       inkscape:export-ydpi="108.18016"
+       inkscape:export-filename="/home/uri/projects/Reminderer/resources/plus_button.png"><tspan
+         sodipodi:role="line"
+         id="tspan3762"
+         x="100.8334"
+         y="475.89426"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:1;font-family:Arcadepix;-inkscape-font-specification:Arcadepix Bold">+</tspan></text>
+  </g>
+</svg>

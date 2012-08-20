@@ -6,17 +6,17 @@
     <string name="hello_world">Hello world</string>
     <string name="add_new_task">Add new</string>
     <string name="submit">Submit</string>
-    <string name="no_task">Sample tasks:\n
-        buy eggs\n
-        buy eggs 8pm\n
-        buy eggs Monday 9am\n
-        buy eggs July 1\n
-        buy eggs next Monday\n
-        buy eggs 8pm repeats daily</string>
+    <string name="add_no_task">buy eggs\nbuy eggs 8pm\nbuy eggs Monday 9am\nbuy eggs July 1\nbuy eggs next Monday\nbuy eggs 8pm repeats daily</string>
     <string name="due_now">These task(s) are due now:</string>
     <string name="dismiss">Dismiss</string>
     <string name="snooze">Snooze</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
+    <string name="plus">+</string>
+    <string name="add_task">Add task...</string>
+    <string name="add_sample_task">Sample tasks:</string>
+    <string name="add_date">date</string>
+    <string name="add_task_heading">Add task heading</string>
+    <string name="add_time">time</string>
 
 </resources>

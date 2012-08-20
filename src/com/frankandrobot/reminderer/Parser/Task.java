@@ -31,6 +31,7 @@ public class Task implements Parcelable {
     Calendar tmpCalendar, defaultTimeCal;
     DateFormat shortDateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
     DateFormat medDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
+    DateFormat fullDateFormat = DateFormat.getDateInstance(DateFormat.FULL);
     DateFormat shortTimeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
     SimpleDateFormat sdfDate = new SimpleDateFormat("MM/dd/yyyy");
     SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
@@ -229,7 +230,7 @@ public class Task implements Parcelable {
     }
 
     /**
-     * Gets date in user's locale
+     * Gets date in user's locale (no day of week)
      * 
      * @return
      */
@@ -268,6 +269,16 @@ public class Task implements Parcelable {
     public long getDateTime() {
 	calculateTimeAndDate();
 	return calendar.getTimeInMillis();
+    }
+    
+    /**
+     * Returns the full date format. In US, it's "Monday, June 30, 2012"
+     * 
+     * @return
+     */
+    public String getFullLocaleDate() {
+	calculateTimeAndDate();
+	return fullDateFormat.format(getDateObj());
     }
 
     public String toString() {
