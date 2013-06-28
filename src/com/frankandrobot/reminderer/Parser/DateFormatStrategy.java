@@ -13,7 +13,10 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 /**
- * Do NOT call this interface directly. Use MyDateFormat.
+ * Do NOT call this interface directly: use MyDateFormat.
+ *
+ * The current {@link BruteForce} implementation has two instances for
+ * dates and another for times.
  *
  * @author uri
  */
@@ -24,14 +27,14 @@ public interface DateFormatStrategy
      * Initializes the DateFormatStrategy.
      * <p/>
      * Don't forget to set this otherwise you'll get a null ptr exception.
-     * The parser uses the context to get the system resources.
+     * The Parser uses the context to get the system resources.
      *
      * @param context
      */
     public void initialize(Context context);
 
     /**
-     * Looks for a date at the start of the string.
+     * Looks for a date/time at the start of the string.
      * <p/>
      * Don't forget to initialize the context first before calling this!
      *
@@ -42,7 +45,7 @@ public interface DateFormatStrategy
     public String[] find(final String input);
 
     /**
-     * Gets a data from the input string.
+     * Gets a date/time from the input string.
      *
      * @param input
      * @return a date if the input string represents a date. Otherwise returns

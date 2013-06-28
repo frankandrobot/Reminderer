@@ -9,9 +9,9 @@ import java.util.Date;
 
 /**
  * This class enumerates the different date formats
- * 
+ *
  * To run: (1) comment out package name above (2) run javac
- * DateFormatTester.java && java DateFormatTester
+ * DateFormatTester.DateFormatStrategyTester && DateFormatStrategyTester DateFormatTester
  * 
  * @author uri
  * 

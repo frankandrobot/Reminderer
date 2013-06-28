@@ -7,7 +7,7 @@ import android.content.Context;
 import com.frankandrobot.reminderer.Parser.GrammarParser;
 
 /**
- * CURRENTLY UNUSED: this was for the meta-grammar parser.
+ * CURRENTLY UNUSED: this was for the meta-grammar Parser.
  * 
  * This implements the Interpreter design pattern. The GrammarParser constructs
  * objects of this interface.
