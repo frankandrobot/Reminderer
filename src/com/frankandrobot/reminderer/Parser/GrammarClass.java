@@ -10,34 +10,60 @@ import java.text.ParsePosition;
 import java.util.HashMap;
 
 /**
- * Each {@link GrammarClass} implements a...if I recall correctly...left recursive
- * grammar. A grammar is a generalization of regular expressions.
+ * The {@link GrammarClass}es when taken as a whole form a Context-Free Grammar.
+ * These are just a generalization of regular expressions. See
+ *
+ * http://springpad.com/#!/echoes2099/notebooks/contextfreegrammars/blocks
+ *
+ * for details.
+ *
  */
 public interface GrammarClass
 {
+    /**
+     * Finds itself in the start of the input string.
+     *
+     * Note: returns true only when a match is found in the beginning of the
+     * input string. <b>It will return false even if the pattern is found
+     * somewhere in the string but it is NOT the beginning.</b>
+     *
+     * @param inputString
+     * @return
+     */
+    public boolean find(GrammarContext inputString);
 
-    public boolean find(GrammarContext context);
-
-    public Object parse(GrammarContext context);
+    /**
+     * TODO
+     *
+     * @param inputString
+     * @return
+     */
+    public Object parse(GrammarContext inputString);
 
     /**
      * Internal helper classes
      */
     class Helpers
     {
-        public static java.util.Date parseDate(GrammarContext context,
-                                               MyDateTimeFormat parser)
+        /**
+         *
+         * @param inputString
+         * @param parser
+         * @return
+         */
+        public static java.util.Date parseDate(GrammarContext inputString,
+                                               DateTimeFormat parser)
         {
-            String[] rslt = parser.find(context.getContext());
+            String[] rslt = parser.find(inputString.getContext());
             if (rslt == null)
                 return null;
-            context.gobble(rslt[0].length() + 1);
+            inputString.gobble(rslt[0].length() + 1);
             return parser.parse(rslt[0]);
 
         }
 
         public static boolean find(GrammarParser.GrammarContext context,
-                                   MyDateTimeFormat parser,
+                                   DateTimeFormat parser,
                                    ParsePosition matchPos)
         {
             String[] rslt = parser.find(context.getContext());
@@ -62,9 +88,12 @@ public interface GrammarClass
 
     // day | date | time | occurrence | others
 
+    /**
+     * Parses and finds days in a {@link GrammarContext} (input string)
+     */
     public class Day implements GrammarClass
     {
-        static MyDateTimeFormat df = new MyDateTimeFormat.DayFormat();
+        static DateTimeFormat df = new DateTimeFormat.DayFormat();
         ParsePosition matchPos = new ParsePosition(0);
 
         Day(Context context)
@@ -72,14 +101,14 @@ public interface GrammarClass
             df.setContext(context);
         }
 
-        public java.util.Date parse(GrammarParser.GrammarContext context)
+        public java.util.Date parse(GrammarParser.GrammarContext inputString)
         {
-            return Helpers.parseDate(context, df);
+            return Helpers.parseDate(inputString, df);
         }
 
-        public boolean find(GrammarParser.GrammarContext context)
+        public boolean find(GrammarParser.GrammarContext inputString)
         {
-            return Helpers.find(context, df, matchPos);
+            return Helpers.find(inputString, df, matchPos);
         }
 
         public int end()
@@ -90,7 +119,7 @@ public interface GrammarClass
 
     public class Date implements GrammarClass
     {
-        static MyDateTimeFormat df = new MyDateTimeFormat.DateFormat();
+        static DateTimeFormat df = new DateTimeFormat.DateFormat();
         ParsePosition matchPos = new ParsePosition(0);
 
         Date(Context context)
@@ -98,14 +127,14 @@ public interface GrammarClass
             df.setContext(context);
         }
 
-        public java.util.Date parse(GrammarParser.GrammarContext context)
+        public java.util.Date parse(GrammarParser.GrammarContext inputString)
         {
-            return Helpers.parseDate(context, df);
+            return Helpers.parseDate(inputString, df);
         }
 
-        public boolean find(GrammarContext context)
+        public boolean find(GrammarContext inputString)
         {
-            return Helpers.find(context, df, matchPos);
+            return Helpers.find(inputString, df, matchPos);
         }
 
         public int end()
@@ -116,7 +145,7 @@ public interface GrammarClass
 
     public class Time implements GrammarClass
     {
-        static MyDateTimeFormat df = new MyDateTimeFormat.TimeFormat();
+        static DateTimeFormat df = new DateTimeFormat.TimeFormat();
         ParsePosition matchPos = new ParsePosition(0);
 
         Time(Context context)
@@ -124,14 +153,14 @@ public interface GrammarClass
             df.setContext(context);
         }
 
-        public java.util.Date parse(GrammarParser.GrammarContext context)
+        public java.util.Date parse(GrammarParser.GrammarContext inputString)
         {
-            return Helpers.parseDate(context, df);
+            return Helpers.parseDate(inputString, df);
         }
 
-        public boolean find(GrammarContext context)
+        public boolean find(GrammarContext inputString)
         {
-            return Helpers.find(context, df, matchPos);
+            return Helpers.find(inputString, df, matchPos);
         }
 
         public int end()

@@ -13,12 +13,13 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 /**
- * Do NOT call this interface directly: use MyDateFormat.
+ * Do NOT call this interface directly: use {@link DateTimeFormat}.
  *
- * The current {@link BruteForce} implementation has two instances for
- * dates and another for times.
+ * Implementations work on specific {@link DateFormat}s.
  *
- * @author uri
+ * The {@link BruteForce} implementation can be instantiated to work with either
+ * dates {!link DateInstance} or times {@link TimeInstance}.
+ *
  */
 public interface DateFormatStrategy
 {

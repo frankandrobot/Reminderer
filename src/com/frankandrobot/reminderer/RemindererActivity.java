@@ -1,11 +1,9 @@
 package com.frankandrobot.reminderer;
 
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Locale;
 
 import com.frankandrobot.reminderer.Helpers.MultiOsSupport;
 import com.frankandrobot.reminderer.Parser.*;
@@ -49,7 +47,7 @@ public class RemindererActivity extends Activity {
     }
 
     private void stringTester(final String string) {
-	MyDateTimeFormat.DateFormat form = new MyDateTimeFormat.DateFormat(this);
+	DateTimeFormat.DateFormat form = new DateTimeFormat.DateFormat(this);
 	String[] date = form.find(string);
 	if (date == null)
 	    Log.d("R", "date is null");
