@@ -12,7 +12,7 @@ import com.frankandrobot.reminderer.Parser.GrammarParser;
  * This implements the Interpreter design pattern. The GrammarParser constructs
  * objects of this interface.
  * 
- * "Generic" classes are here. Locale specific classes are in GrammarClasses.
+ * "Generic" classes are here. Locale specific classes are in GrammarClass.
  * 
  * @author uri
  * 
