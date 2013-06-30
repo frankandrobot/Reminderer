@@ -5,9 +5,9 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.Helpers.MultiOsSupport;
-import com.frankandrobot.reminderer.Parser.ContextFreeGrammar;
-import com.frankandrobot.reminderer.Parser.DateTimeFormat;
-import com.frankandrobot.reminderer.Parser.Task;
+import com.frankandrobot.reminderer.parser.ContextFreeGrammar;
+import com.frankandrobot.reminderer.parser.Task;
+import com.frankandrobot.reminderer.parser.datetime.DateTimeFormat;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

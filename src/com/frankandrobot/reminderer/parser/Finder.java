@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.Parser;
+package com.frankandrobot.reminderer.parser;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,8 +14,6 @@ public class Finder
     Pattern p;
     Matcher m;
     String val;
-
-    Finder() {}
 
     Finder(String pattern)
     {
@@ -61,5 +59,10 @@ public class Finder
     public String value()
     {
         return val;
+    }
+
+    public void reset()
+    {
+        if (m!=null) m.reset();
     }
 }

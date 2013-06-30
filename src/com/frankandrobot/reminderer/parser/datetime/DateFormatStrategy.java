@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.Parser;
+package com.frankandrobot.reminderer.parser.datetime;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -36,7 +36,7 @@ public interface DateFormatStrategy
      * Initializes the DateFormatStrategy.
      * <p/>
      * Don't forget to set this otherwise you'll get a null ptr exception.
-     * The Parser uses the context to load locale-specific custom date/time
+     * The parser uses the context to load locale-specific custom date/time
      * formats.
      *
      * @param context

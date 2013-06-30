@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.Parser;
+package com.frankandrobot.reminderer.parser;
 
 /**
  * A {@link GrammarContext} is just an input string.

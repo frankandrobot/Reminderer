@@ -1,16 +1,16 @@
 package com.frankandrobot.reminderer.Alarm;
 
-import java.text.SimpleDateFormat;
-
-import com.frankandrobot.reminderer.Helpers.Logger;
-import com.frankandrobot.reminderer.Parser.Task;
-
 import android.app.KeyguardManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Parcel;
 import android.util.Log;
+
+import com.frankandrobot.reminderer.Helpers.Logger;
+import com.frankandrobot.reminderer.parser.Task;
+
+import java.text.SimpleDateFormat;
 
 public class AlarmReceiver extends BroadcastReceiver {
     private static String TAG = "R:AlarmReceiver";

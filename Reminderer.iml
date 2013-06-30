@@ -12,9 +12,6 @@
       <sourceFolder url="file://$MODULE_DIR$/gen" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="false" />
     </content>
-    <orderEntry type="inheritedJdk" />
-    <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="android-support-v4" level="project" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
@@ -24,6 +21,9 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="android-support-v4" level="project" />
     <orderEntry type="library" name="jmockit" level="project" />
   </component>
 </module>

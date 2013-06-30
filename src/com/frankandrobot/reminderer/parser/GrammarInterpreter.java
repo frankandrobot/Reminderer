@@ -1,16 +1,16 @@
-package com.frankandrobot.reminderer.Parser;
+package com.frankandrobot.reminderer.parser;
 
 import android.content.Context;
 
 import java.util.LinkedList;
 
 /**
- * CURRENTLY UNUSED: this was for the meta-grammar Parser.
+ * CURRENTLY UNUSED: this was for the meta-grammar parser.
  * 
  * Implements the Interpreter design pattern. The ContextFreeGrammar constructs
  * objects of this interface.
  * 
- * "Generic" classes are here. Locale specific classes are in DateTimeTerminal.
+ * "Generic" classes are here. Locale specific classes are in ITerminal.
  * 
  * @deprecated Use {@link ContextFreeGrammar}
  * 
@@ -24,7 +24,7 @@ public class GrammarInterpreter {
     static public Finder whiteSpace = new Finder("[ \t]+");
 
     /**
-     * Terminal classes are the only classes that actually use the Context
+     * ITerminal classes are the only classes that actually use the Context
      * 
      * @param context
      */
@@ -58,7 +58,7 @@ public class GrammarInterpreter {
 	 */
 	public boolean parse(GrammarContext context) {
 	    int curPos = 0;
-	    while (!commands.parse(context)) { // current pos is not a command
+	    while (!commands.parse(context)) { // current pos is not a commands
 					       // so
 		// gobble the token
 		if (whiteSpace.find(context)) {

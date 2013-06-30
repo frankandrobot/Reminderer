@@ -1,24 +1,21 @@
 package com.frankandrobot.reminderer.Database;
 
-import java.util.Calendar;
-
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Handler;
 import android.os.Parcel;
+import android.support.v4.content.Loader;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.Alarm.AlarmConstants;
-import com.frankandrobot.reminderer.Database.DatabaseAsyncService.DatabaseHandler;
 import com.frankandrobot.reminderer.Helpers.Logger;
-import com.frankandrobot.reminderer.Parser.Task;
+import com.frankandrobot.reminderer.parser.Task;
 
-import android.support.v4.content.Loader;
+import java.util.Calendar;
 
 /**
  * This is the app-specific interface to the database

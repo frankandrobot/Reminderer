@@ -1,17 +1,14 @@
 package com.frankandrobot.reminderer.Alarm;
 
-import com.frankandrobot.reminderer.R;
-import com.frankandrobot.reminderer.Database.DatabaseInterface;
-import com.frankandrobot.reminderer.Database.DbColumns;
-import com.frankandrobot.reminderer.Helpers.Logger;
-import com.frankandrobot.reminderer.Parser.Task;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -19,12 +16,11 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.ListFragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
+import com.frankandrobot.reminderer.Database.DatabaseInterface;
+import com.frankandrobot.reminderer.Database.DbColumns;
+import com.frankandrobot.reminderer.Helpers.Logger;
+import com.frankandrobot.reminderer.R;
+import com.frankandrobot.reminderer.parser.Task;
 
 //TODO finish pulling from AlarmAlert
 //TODO implement save state for mKilled
