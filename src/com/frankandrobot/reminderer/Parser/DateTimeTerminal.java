@@ -3,41 +3,23 @@ package com.frankandrobot.reminderer.Parser;
 import android.content.Context;
 import android.content.res.Resources;
 
-import com.frankandrobot.reminderer.Parser.GrammarParser.GrammarContext;
 import com.frankandrobot.reminderer.R;
 
 import java.text.ParsePosition;
 import java.util.HashMap;
 
 /**
- * The {@link GrammarClass}es when taken as a whole form a non-left recursive
- * Context-Free Grammar. These are just a generalization of regular expressions.
- *
- * Each grammar class corresponds to a non-terminal or terminal symbol in the
- * grammar. The way these work is that terminal classes try to parse the input
- * string. Either a terminal class is able to parse a string or it can't. Partial
- * parsing isn't supported. Non-terminal classes call other terminal classes
- * to parase a string.
- *
- * See
- *
- * http://springpad.com/#!/echoes2099/notebooks/contextfreegrammars/blocks
- *
- * and here
- *
- * http://ikaruga2.wordpress.com/2012/06/26/reminderer-a-grammar-parser/
- *
- * for details.
+ * Implementations represent terminals that are dates and times.
  *
  */
-public interface GrammarClass
+public interface DateTimeTerminal
 {
     /**
      * Finds itself in the start of the input string.
      *
      * The difference between find() and parse() is that <code>find</code>, as its name
      * implies, looks for a match while <code>parse</code> finds a match
-     * and converts it to the appropriate object.
+     * and returns a Date
      *
      * Note: returns true only when a match is found in the beginning of the
      * input string. <b>It will return false even if the pattern is found
@@ -52,16 +34,16 @@ public interface GrammarClass
      * Tries to parse an input string.
      *
      * If a match is found, it "gobbles" the match from the input string and
-     * returns the appropriate object. Otherwise, returns null.
+     * returns a date. Otherwise, returns null.
      *
      * The difference between find() and parse() is that <code>find</code>, as its name
      * implies, looks for a match while <code>parse</code> finds a match
-     * and converts it to the appropriate object.
+     * and returns a Date
      *
      * @param inputString
      * @return
      */
-    public Object parse(GrammarContext inputString);
+    public java.util.Date parse(GrammarContext inputString);
 
     /**
      * Internal helper classes
@@ -113,7 +95,7 @@ public interface GrammarClass
     /**
      * Parses and finds days in a {@link GrammarContext} (input string)
      */
-    public class Day implements GrammarClass
+    public class Day implements DateTimeTerminal
     {
         static DateTimeFormat df = new DateTimeFormat.DayFormat();
         ParsePosition matchPos = new ParsePosition(0);
@@ -142,7 +124,7 @@ public interface GrammarClass
     /**
      * Parses and finds dates in a {@link GrammarContext} (input string)
      */
-    public class Date implements GrammarClass
+    public class Date implements DateTimeTerminal
     {
         static DateTimeFormat df = new DateTimeFormat.DateFormat();
         ParsePosition matchPos = new ParsePosition(0);
@@ -171,7 +153,7 @@ public interface GrammarClass
     /**
      * Parses and finds times in a {@link GrammarContext} (input string)
      */
-    public class Time implements GrammarClass
+    public class Time implements DateTimeTerminal
     {
         static DateTimeFormat df = new DateTimeFormat.TimeFormat();
         ParsePosition matchPos = new ParsePosition(0);
@@ -181,7 +163,7 @@ public interface GrammarClass
             df.setContext(context);
         }
 
-        public java.util.Date parse(GrammarParser.GrammarContext inputString)
+        public java.util.Date parse(GrammarContext inputString)
         {
             return Helpers.parseDate(inputString, df);
         }
@@ -213,7 +195,7 @@ public interface GrammarClass
             finders.put("yearly", getString(R.string.yearly));
         }
 
-        public boolean parse(GrammarParser.GrammarContext context)
+        public boolean parse(GrammarContext context)
         {
             if (finders.get("daily").find(context))
             {

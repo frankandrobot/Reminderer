@@ -7,12 +7,12 @@ import java.util.LinkedList;
 /**
  * CURRENTLY UNUSED: this was for the meta-grammar Parser.
  * 
- * Implements the Interpreter design pattern. The GrammarParser constructs
+ * Implements the Interpreter design pattern. The ContextFreeGrammar constructs
  * objects of this interface.
  * 
- * "Generic" classes are here. Locale specific classes are in GrammarClass.
+ * "Generic" classes are here. Locale specific classes are in DateTimeTerminal.
  * 
- * @author uri
+ * @deprecated Use {@link ContextFreeGrammar}
  * 
  */
 public class GrammarInterpreter {
@@ -38,9 +38,9 @@ public class GrammarInterpreter {
 
     public interface Expression {
 
-	public boolean parse(GrammarParser.GrammarContext context);
+	public boolean parse(GrammarContext context);
 
-	public boolean interpret(GrammarParser.GrammarContext context);
+	public boolean interpret(GrammarContext context);
 
     }
 
@@ -56,7 +56,7 @@ public class GrammarInterpreter {
 	/*
 	 * Gets the task and the commands from the context
 	 */
-	public boolean parse(GrammarParser.GrammarContext context) {
+	public boolean parse(GrammarContext context) {
 	    int curPos = 0;
 	    while (!commands.parse(context)) { // current pos is not a command
 					       // so
@@ -77,7 +77,7 @@ public class GrammarInterpreter {
 	    return commands.parse(context);
 	}
 
-	public boolean interpret(GrammarParser.GrammarContext context) {
+	public boolean interpret(GrammarContext context) {
 	    return false;
 	}
     }
@@ -92,7 +92,7 @@ public class GrammarInterpreter {
 	    }
 	}
 
-	public boolean parse(GrammarParser.GrammarContext context) {
+	public boolean parse(GrammarContext context) {
 	    // save position
 	    int curPos = context.getPos();
 	    for (Command com : commands) {
@@ -104,7 +104,7 @@ public class GrammarInterpreter {
 	    return true;
 	}
 
-	public boolean interpret(GrammarParser.GrammarContext context) {
+	public boolean interpret(GrammarContext context) {
 	    return false;
 	}
 
@@ -117,11 +117,11 @@ public class GrammarInterpreter {
 	    this.token = token;
 	}
 
-	public boolean parse(GrammarParser.GrammarContext context) {
+	public boolean parse(GrammarContext context) {
 	    return token.parse(context);
 	}
 
-	public boolean interpret(GrammarParser.GrammarContext context) {
+	public boolean interpret(GrammarContext context) {
 	    return false;
 	}
     }
@@ -132,7 +132,7 @@ public class GrammarInterpreter {
 	    super(token);
 	}
 
-	public boolean parse(GrammarParser.GrammarContext context) {
+	public boolean parse(GrammarContext context) {
 	    int pos = context.getPos();
 	    if (super.parse(context))
 		return true;
@@ -153,11 +153,11 @@ public class GrammarInterpreter {
 	    this.b = b;
 	}
 
-	public boolean parse(GrammarParser.GrammarContext context) {
+	public boolean parse(GrammarContext context) {
 	    return a.parse(context) && op.find(context) && b.parse(context);
 	}
 
-	public boolean interpret(GrammarParser.GrammarContext context) {
+	public boolean interpret(GrammarContext context) {
 	    return false;
 	}
     }
@@ -174,11 +174,11 @@ public class GrammarInterpreter {
 	    this.expr = expr;
 	}
 
-	public boolean parse(GrammarParser.GrammarContext context) {
+	public boolean parse(GrammarContext context) {
 	    return op.find(context) && expr.parse(context);
 	}
 
-	public boolean interpret(GrammarParser.GrammarContext context) {
+	public boolean interpret(GrammarContext context) {
 
 	    return false;
 	}
@@ -193,11 +193,11 @@ public class GrammarInterpreter {
 	    this.token = token;
 	}
 
-	public boolean parse(GrammarParser.GrammarContext context) {
+	public boolean parse(GrammarContext context) {
 	    return token.parse(context);
 	}
 
-	public boolean interpret(GrammarParser.GrammarContext context) {
+	public boolean interpret(GrammarContext context) {
 
 	    return false;
 	}
@@ -211,11 +211,11 @@ public class GrammarInterpreter {
 	    this.value = new Finder(value);
 	}
 
-	public boolean parse(GrammarParser.GrammarContext context) {
+	public boolean parse(GrammarContext context) {
 	    return value.find(context);
 	}
 
-	public boolean interpret(GrammarParser.GrammarContext context) {
+	public boolean interpret(GrammarContext context) {
 
 	    return false;
 	}

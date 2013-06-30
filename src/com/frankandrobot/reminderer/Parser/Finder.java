@@ -1,7 +1,5 @@
 package com.frankandrobot.reminderer.Parser;
 
-import com.frankandrobot.reminderer.Parser.GrammarParser.GrammarContext;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

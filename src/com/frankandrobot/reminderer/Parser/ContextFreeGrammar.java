@@ -6,22 +6,36 @@ import java.util.Date;
 import java.util.LinkedList;
 
 /**
- * This class parses the meta grammar
+ * A **context free grammar** is just a generalization of regular expressions.
+ *
+ * Each method corresponds to a non-terminal or terminal symbol in the
+ * grammar. Each terminal tries to parse the input  string---either its able to
+ * parse the string or it can't. Partial parsing isn't supported.
+ * Non-terminals call other terminals to parse a string.
+ *
+ * See
+ *
+ * http://springpad.com/#!/echoes2099/notebooks/contextfreegrammars/blocks
+ *
+ * and here
+ *
+ * http://ikaruga2.wordpress.com/2012/06/26/reminderer-a-grammar-parser/
+ *
+ * for details.
  *
  */
 
-public class GrammarParser
+public class ContextFreeGrammar
 {
     protected Task task = new Task();
     protected GrammarContext context;
     protected Context androidContext;
-    protected GrammarInterpreter grammar;
     protected LinkedList<GrammarInterpreter.Command> commands;
     protected Finder lBracket, rBracket, lParens, rParens;
     protected Finder nextWhiteSpace, whiteSpace;
     protected boolean locationRecursion = false; // hack to prevent infinite recursion
 
-    public GrammarParser()
+    public ContextFreeGrammar()
     {
         lBracket = new Finder("\\[");
         rBracket = new Finder("\\]");
@@ -40,7 +54,6 @@ public class GrammarParser
     public void setAndroidContext(Context context)
     {
         androidContext = context;
-        grammar = new GrammarInterpreter(androidContext);
     }
 
     // expr: task | task commands
@@ -109,7 +122,7 @@ public class GrammarParser
     {
         int curPos = context.getPos();
         // TODO - pull out
-        GrammarClass.Time timeParser = new GrammarClass.Time(androidContext);
+        DateTimeTerminal.Time timeParser = new DateTimeTerminal.Time(androidContext);
         Finder at = new Finder("at");
         Finder on = new Finder("on");
         if (at.find(context)) // "at" found
@@ -134,8 +147,8 @@ public class GrammarParser
     {
         int curPos = context.getPos();
         // TODO - pull out
-        GrammarClass.Date dateParser = new GrammarClass.Date(androidContext);
-        GrammarClass.Day dayParser = new GrammarClass.Day(androidContext);
+        DateTimeTerminal.Date dateParser = new DateTimeTerminal.Date(androidContext);
+        DateTimeTerminal.Day dayParser = new DateTimeTerminal.Day(androidContext);
         Finder at = new Finder("at");
         Finder on = new Finder("on");
         if (at.find(context)) // "at" found
@@ -171,7 +184,7 @@ public class GrammarParser
         // eat whitespace
         if (whiteSpace.find(context))
             context.gobble(whiteSpace);
-        GrammarClass.Day dayParser = new GrammarClass.Day(androidContext);
+        DateTimeTerminal.Day dayParser = new DateTimeTerminal.Day(androidContext);
         if (!dayParser.find(context))
         {
             context.setPos(curPos);
@@ -233,7 +246,7 @@ public class GrammarParser
         // search for day
         // TODO pull out
         // TODO day
-        GrammarClass.Day dayParser = new GrammarClass.Day(androidContext);
+        DateTimeTerminal.Day dayParser = new DateTimeTerminal.Day(androidContext);
         // if (dayParser.find(context))
         // TODO taskTime duration
         return null;
@@ -331,88 +344,6 @@ public class GrammarParser
         String value()
         {
             return token.value();
-        }
-    }
-
-    /**
-     * A {@link GrammarContext} is just an input string.
-     * <p/>
-     * As the parser progresses, it "gobbles" characters from the beginning of the input
-     * string.
-     * <p/>
-     * - {@link #pos} keeps track of the parser position
-     * - {@link #original} is the original input string
-     * - {@link #context} is the current string
-     */
-    static public class GrammarContext
-    {
-        int pos;
-        String original;
-        String context;
-
-        /**
-         * Creates a new {@link GrammarContext} from the input string
-         *
-         * @param input
-         */
-        GrammarContext(String input)
-        {
-            original = new String(input);
-            context = new String(input);
-            pos = 0;
-        }
-
-        /**
-         * Gobbles the number of matched characters in the token
-         *
-         * @param token
-         * @return the new context
-         */
-        String gobble(Finder token)
-        {
-            return gobble(token.end());
-        }
-
-        /**
-         * Gobble i characters from the current context string
-         *
-         * @param i
-         * @return the new context
-         */
-        String gobble(int i)
-        {
-            pos += i;
-            pos = Math.min(pos, original.length());
-            context = original.substring(pos);
-            return getContext();
-        }
-
-        String getOriginal()
-        {
-            return original;
-        }
-
-        String getContext()
-        {
-            return context;
-        }
-
-        /**
-         * Jumps to the ith position in the original string
-         *
-         * @param i
-         * @return
-         */
-        String setPos(int i)
-        {
-            pos = i;
-            context = original.substring(pos);
-            return getContext();
-        }
-
-        int getPos()
-        {
-            return pos;
         }
     }
 

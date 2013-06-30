@@ -1,16 +1,18 @@
 package com.frankandrobot.reminderer;
 
+import android.app.Activity;
+import android.os.Bundle;
+import android.util.Log;
+
+import com.frankandrobot.reminderer.Helpers.MultiOsSupport;
+import com.frankandrobot.reminderer.Parser.ContextFreeGrammar;
+import com.frankandrobot.reminderer.Parser.DateTimeFormat;
+import com.frankandrobot.reminderer.Parser.Task;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-
-import com.frankandrobot.reminderer.Helpers.MultiOsSupport;
-import com.frankandrobot.reminderer.Parser.*;
-
-import android.app.Activity;
-import android.os.Bundle;
-import android.util.Log;
 
 public class RemindererActivity extends Activity {
     /** Called when the activity is first created. */
@@ -56,7 +58,7 @@ public class RemindererActivity extends Activity {
     }
 
     private void parseTester(final String string) {
-	GrammarParser parser = new GrammarParser();
+	ContextFreeGrammar parser = new ContextFreeGrammar();
 	parser.setAndroidContext(this);
 	Task rslt = parser.parse(string);
 	Log.d("R", "------\n" + string + "\n" + rslt);
