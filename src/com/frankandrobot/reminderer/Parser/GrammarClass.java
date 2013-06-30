@@ -10,10 +10,22 @@ import java.text.ParsePosition;
 import java.util.HashMap;
 
 /**
- * The {@link GrammarClass}es when taken as a whole form a Context-Free Grammar.
- * These are just a generalization of regular expressions. See
+ * The {@link GrammarClass}es when taken as a whole form a non-left recursive
+ * Context-Free Grammar. These are just a generalization of regular expressions.
+ *
+ * Each grammar class corresponds to a non-terminal or terminal symbol in the
+ * grammar. The way these work is that terminal classes try to parse the input
+ * string. Either a terminal class is able to parse a string or it can't. Partial
+ * parsing isn't supported. Non-terminal classes call other terminal classes
+ * to parase a string.
+ *
+ * See
  *
  * http://springpad.com/#!/echoes2099/notebooks/contextfreegrammars/blocks
+ *
+ * and here
+ *
+ * http://ikaruga2.wordpress.com/2012/06/26/reminderer-a-grammar-parser/
  *
  * for details.
  *
@@ -22,6 +34,10 @@ public interface GrammarClass
 {
     /**
      * Finds itself in the start of the input string.
+     *
+     * The difference between find() and parse() is that <code>find</code>, as its name
+     * implies, looks for a match while <code>parse</code> finds a match
+     * and converts it to the appropriate object.
      *
      * Note: returns true only when a match is found in the beginning of the
      * input string. <b>It will return false even if the pattern is found
@@ -33,7 +49,14 @@ public interface GrammarClass
     public boolean find(GrammarContext inputString);
 
     /**
-     * TODO
+     * Tries to parse an input string.
+     *
+     * If a match is found, it "gobbles" the match from the input string and
+     * returns the appropriate object. Otherwise, returns null.
+     *
+     * The difference between find() and parse() is that <code>find</code>, as its name
+     * implies, looks for a match while <code>parse</code> finds a match
+     * and converts it to the appropriate object.
      *
      * @param inputString
      * @return
@@ -46,10 +69,11 @@ public interface GrammarClass
     class Helpers
     {
         /**
+         * Parses an input string using the given {@link DateTimeFormat}.
          *
-         * @param inputString
-         * @param parser
-         * @return
+         * @param inputString the input string
+         * @param parser a {@link DateTimeFormat}
+         * @return null if no match is found; otherwise, the matched date
          */
         public static java.util.Date parseDate(GrammarContext inputString,
                                                DateTimeFormat parser)
@@ -62,26 +86,24 @@ public interface GrammarClass
 
         }
 
-        public static boolean find(GrammarParser.GrammarContext context,
+        /**
+         * Looks for a match using the given {@link DateTimeFormat} in the input
+         * string at the given position.
+         *
+         * @param inputString
+         * @param parser
+         * @param matchPos
+         * @return
+         */
+        public static boolean find(GrammarContext inputString,
                                    DateTimeFormat parser,
                                    ParsePosition matchPos)
         {
-            String[] rslt = parser.find(context.getContext());
+            String[] rslt = parser.find(inputString.getContext());
             if (rslt == null)
                 return false;
             matchPos.setIndex(rslt[0].length());
             return true;
-        }
-
-    }
-
-    public class Preposition extends GrammarInterpreter.UnaryOperator
-    {
-
-        Preposition(GrammarInterpreter grammarInterpreter, String preposition,
-                    GrammarInterpreter.Token expression)
-        {
-            grammarInterpreter.super(preposition, expression);
         }
 
     }
@@ -101,33 +123,7 @@ public interface GrammarClass
             df.setContext(context);
         }
 
-        public java.util.Date parse(GrammarParser.GrammarContext inputString)
-        {
-            return Helpers.parseDate(inputString, df);
-        }
-
-        public boolean find(GrammarParser.GrammarContext inputString)
-        {
-            return Helpers.find(inputString, df, matchPos);
-        }
-
-        public int end()
-        {
-            return matchPos.getIndex();
-        }
-    }
-
-    public class Date implements GrammarClass
-    {
-        static DateTimeFormat df = new DateTimeFormat.DateFormat();
-        ParsePosition matchPos = new ParsePosition(0);
-
-        Date(Context context)
-        {
-            df.setContext(context);
-        }
-
-        public java.util.Date parse(GrammarParser.GrammarContext inputString)
+        public java.util.Date parse(GrammarContext inputString)
         {
             return Helpers.parseDate(inputString, df);
         }
@@ -143,6 +139,38 @@ public interface GrammarClass
         }
     }
 
+    /**
+     * Parses and finds dates in a {@link GrammarContext} (input string)
+     */
+    public class Date implements GrammarClass
+    {
+        static DateTimeFormat df = new DateTimeFormat.DateFormat();
+        ParsePosition matchPos = new ParsePosition(0);
+
+        Date(Context context)
+        {
+            df.setContext(context);
+        }
+
+        public java.util.Date parse(GrammarContext inputString)
+        {
+            return Helpers.parseDate(inputString, df);
+        }
+
+        public boolean find(GrammarContext inputString)
+        {
+            return Helpers.find(inputString, df, matchPos);
+        }
+
+        public int end()
+        {
+            return matchPos.getIndex();
+        }
+    }
+
+    /**
+     * Parses and finds times in a {@link GrammarContext} (input string)
+     */
     public class Time implements GrammarClass
     {
         static DateTimeFormat df = new DateTimeFormat.TimeFormat();
@@ -211,5 +239,16 @@ public interface GrammarClass
         {
             return new Finder(resources.getString(id));
         }
+    }
+
+    public class Preposition extends GrammarInterpreter.UnaryOperator
+    {
+
+        Preposition(GrammarInterpreter grammarInterpreter, String preposition,
+                    GrammarInterpreter.Token expression)
+        {
+            grammarInterpreter.super(preposition, expression);
+        }
+
     }
 }

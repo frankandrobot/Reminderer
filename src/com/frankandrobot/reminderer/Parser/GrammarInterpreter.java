@@ -1,15 +1,13 @@
 package com.frankandrobot.reminderer.Parser;
 
-import java.util.LinkedList;
-
 import android.content.Context;
 
-import com.frankandrobot.reminderer.Parser.GrammarParser;
+import java.util.LinkedList;
 
 /**
  * CURRENTLY UNUSED: this was for the meta-grammar Parser.
  * 
- * This implements the Interpreter design pattern. The GrammarParser constructs
+ * Implements the Interpreter design pattern. The GrammarParser constructs
  * objects of this interface.
  * 
  * "Generic" classes are here. Locale specific classes are in GrammarClass.

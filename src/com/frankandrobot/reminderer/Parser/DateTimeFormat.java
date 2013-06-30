@@ -1,7 +1,6 @@
 package com.frankandrobot.reminderer.Parser;
 
 import android.content.Context;
-import android.content.res.Resources;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -12,7 +11,7 @@ import java.util.Date;
 /**
  * Inspired by Java's {@link SimpleDateFormat}.
  *
- * Implementations focus on a specific format. For example, {@link DateFormat}
+ * Implementations focus on **ONE** format. For example, {@link DateFormat}
  * works on strings that contain dates (ex: 02/12, Monday, etc) only.
  */
 public interface DateTimeFormat
