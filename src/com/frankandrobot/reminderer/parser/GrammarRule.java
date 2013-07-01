@@ -80,6 +80,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
                     || location() != null)*/
 
             llRules.add(new TimeRule(context));
+            llRules.add(new DateRule(context));
             llRules.add(new RepeatsEveryRule(context));
         }
 
@@ -146,6 +147,59 @@ abstract public class GrammarRule implements IGrammarRule<Task>
         }
     }
 
+    /**
+     * date: dateParser | "on" dateParser
+     */
+    public static class DateRule extends GrammarRule
+    {
+        private Finder at = new Finder("at");
+        private Finder on = new Finder("on");
+
+        private DateTimeTerminal.Date dateParser;
+        private DateTimeTerminal.Day dayParser;
+
+        public DateRule(Context context)
+        {
+            super(context);
+
+            dateParser =  new DateTimeTerminal.Date(context);
+            dayParser = new DateTimeTerminal.Day(context);
+        }
+
+        @Override
+        public Task parse(GrammarContext inputString)
+        {
+            at.reset();
+            on.reset();
+
+            int curPos = inputString.getPos();
+
+            if (at.find(inputString)) // "at" found
+                inputString.gobble(at);
+            else if (on.find(inputString)) // "on" found
+                inputString.gobble(on);
+
+            // gobble whitespace
+            if (ContextFreeGrammar.whiteSpace.find(inputString))
+                inputString.gobble(ContextFreeGrammar.whiteSpace);
+
+            if (dateParser.find(inputString))
+            {
+                Date date = dateParser.parse(inputString);
+                Task task = new Task();
+                task.setDate(date);
+                return task;
+            } else if (dayParser.find(inputString))
+            {
+                Date day = dayParser.parse(inputString);
+                Task task = new Task();
+                task.setDay(day);
+                return task;
+            }
+            inputString.setPos(curPos);
+            return null;
+        }
+    }
     /**
      // repeatsEvery: "repeats" "every" S
      // S: timeDuration | dayParser | "hour" | "day" | "week" | "month" | "year"

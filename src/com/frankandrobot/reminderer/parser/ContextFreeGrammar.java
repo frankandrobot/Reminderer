@@ -89,39 +89,6 @@ public class ContextFreeGrammar
     }
 /*
 
-
-
-
-    // date: dateParser | "on" dateParser
-    Task date()
-    {
-        int curPos = context.getPos();
-        // TODO - pull out
-        DateTimeTerminal.Date dateParser = new DateTimeTerminal.Date(androidContext);
-        DateTimeTerminal.Day dayParser = new DateTimeTerminal.Day(androidContext);
-        Finder at = new Finder("at");
-        Finder on = new Finder("on");
-        if (at.find(context)) // "at" found
-            context.gobble(at);
-        else if (on.find(context)) // "on" found
-            context.gobble(on);
-        // gobble whitespace
-        if (whiteSpace.find(context))
-            context.gobble(whiteSpace);
-        if (dateParser.find(context))
-        {
-            Date date = dateParser.parse(context);
-            task.setDate(date);
-            return task;
-        } else if (dayParser.find(context))
-        {
-            Date day = dayParser.parse(context);
-            task.setDay(day);
-            return task;
-        } else context.setPos(curPos);
-        return null;
-    }
-
     // next: "next" dayParser
     Task next()
     {
