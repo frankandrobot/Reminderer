@@ -2,8 +2,6 @@ package com.frankandrobot.reminderer.parser;
 
 import android.content.Context;
 
-import com.frankandrobot.reminderer.parser.GrammarRule.Commands;
-
 /**
  * A **context free grammar** is just a generalization of regular expressions.
  *
@@ -28,14 +26,14 @@ public class ContextFreeGrammar
 {
     protected Context androidContext;
 
-    protected Finder lBracket, rBracket, lParens, rParens;
-    protected Finder nextWhiteSpace, whiteSpace;
+    static protected Finder lBracket, rBracket, lParens, rParens;
+    static protected Finder nextWhiteSpace, whiteSpace;
 
-    protected IGrammarRule<Task> commands = new Commands();
+    protected IGrammarRule<Task> commands;
 
     protected boolean locationRecursion = false; // hack to prevent infinite recursion
 
-    public ContextFreeGrammar()
+    static
     {
         lBracket = new Finder("\\[");
         rBracket = new Finder("\\]");
@@ -43,6 +41,11 @@ public class ContextFreeGrammar
         rParens = new Finder("\\)");
         nextWhiteSpace = new Finder("[^ \t]*[ \t]+");
         whiteSpace = new Finder("[ \t]+");
+    }
+
+    public ContextFreeGrammar(Context context)
+    {
+        commands = new GrammarRule.CommandsRule(context);
     }
 
     public void setAndroidContext(Context context)
@@ -87,30 +90,7 @@ public class ContextFreeGrammar
 /*
 
 
-    // taskTime: timeParser | "at" timeParser
-    Task time()
-    {
-        int curPos = context.getPos();
-        // TODO - pull out
-        DateTimeTerminal.Time timeParser = new DateTimeTerminal.Time(androidContext);
-        Finder at = new Finder("at");
-        Finder on = new Finder("on");
-        if (at.find(context)) // "at" found
-            context.gobble(at);
-        else if (on.find(context)) // "on" found
-            context.gobble(on);
-        // gobble whitespace
-        if (whiteSpace.find(context))
-            context.gobble(whiteSpace);
-        if (timeParser.find(context))
-        {
-            Date time = timeParser.parse(context);
-            task.setTime(time);
-            return task;
-        } else
-            context.setPos(curPos);
-        return null;
-    }
+
 
     // date: dateParser | "on" dateParser
     Task date()
@@ -206,7 +186,7 @@ public class ContextFreeGrammar
             return null;
         }
         context.gobble(every);
-        for (RepeatsEvery token : RepeatsEvery.values())
+        for (RepeatsEveryRule token : RepeatsEveryRule.values())
             if (token.find(context))
             { // one of hourly, daily, etc found
                 token.gobble(context);

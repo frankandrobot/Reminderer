@@ -1,16 +1,43 @@
 package com.frankandrobot.reminderer.parser;
 
+import android.content.Context;
+
+import java.util.Date;
 import java.util.LinkedList;
 
-abstract public class GrammarRule
+abstract public class GrammarRule implements IGrammarRule<Task>
 {
+    private Context androidContext;
+
+    public GrammarRule(Context context)
+    {
+        this.androidContext = context;
+    }
+
+    public Context getAndroidContext()
+    {
+        return androidContext;
+    }
+
+    public void setAndroidContext(Context androidContext)
+    {
+        this.androidContext = androidContext;
+    }
+
     /**
      *     // commands: commands commands | NULL
      * @return
      */
-    public static class Commands implements IGrammarRule<Task>
+    public static class CommandsRule extends GrammarRule
     {
-        private IGrammarRule<Task> command = new Command();
+        private IGrammarRule<Task> command;
+
+        public CommandsRule(Context context)
+        {
+            super(context);
+
+            command = new CommandRule(context);
+        }
 
         @Override
         public Task parse(GrammarContext inputString)
@@ -41,17 +68,19 @@ abstract public class GrammarRule
         // commands: taskTime | date | next | repeats | location #list of commands
      *
      */
-    public static class Command implements IGrammarRule<Task>
+    public static class CommandRule extends GrammarRule
     {
         private LinkedList<IGrammarRule> llRules = new LinkedList<IGrammarRule>();
 
-        public Command()
+        public CommandRule(Context context)
         {
-            /*if (time() != null || date() != null || next() != null
+            super(context);
+                        /*if (time() != null || date() != null || next() != null
                     || repeats() != null || repeatsEvery() != null
                     || location() != null)*/
 
-            llRules.add(new RepeatsEvery());
+            llRules.add(new TimeRule(context));
+            llRules.add(new RepeatsEveryRule(context));
         }
 
         @Override
@@ -72,17 +101,64 @@ abstract public class GrammarRule
     }
 
     /**
+     * // taskTime: timeParser | "at" timeParser
+     */
+    public static class TimeRule extends GrammarRule
+    {
+        private Finder at = new Finder("at");
+        private Finder on = new Finder("on");
+        DateTimeTerminal.Time time;
+
+        public TimeRule(Context context)
+        {
+            super(context);
+
+            time = new DateTimeTerminal.Time(context);
+        }
+
+        @Override
+        public Task parse(GrammarContext inputString)
+        {
+            at.reset();
+            on.reset();
+
+            int curPos = inputString.getPos();
+
+            if (at.find(inputString)) // "at" found
+                inputString.gobble(at);
+            else if (on.find(inputString)) // "on" found
+                inputString.gobble(on);
+
+            // gobble whitespace
+            if (ContextFreeGrammar.whiteSpace.find(inputString))
+                inputString.gobble(ContextFreeGrammar.whiteSpace);
+
+            Date taskTime = time.parse(inputString);
+            if (taskTime != null)
+            {
+                Task task = new Task();
+                task.setTime(taskTime);
+                return task;
+            }
+
+            inputString.setPos(curPos);
+            return null;
+        }
+    }
+
+    /**
      // repeatsEvery: "repeats" "every" S
      // S: timeDuration | dayParser | "hour" | "day" | "week" | "month" | "year"
      */
-    public static class RepeatsEvery implements IGrammarRule<Task>
+    public static class RepeatsEveryRule extends GrammarRule
     {
         private Finder repeats = new Finder("repeats");
         private Finder every = new Finder("every");
         private LinkedList<RepeatsToken> llTokens = new LinkedList<RepeatsToken>();
 
-        public RepeatsEvery()
+        public RepeatsEveryRule(Context context)
         {
+            super(context);
             //TODO replace with XML
             for(String token:new String[]{"hour", "day", "week", "month", "year"})
             {

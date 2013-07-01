@@ -31,8 +31,7 @@ public class AddTaskActivity extends Activity {
 
 	    @Override
 	    public void onClick(View arg0) {
-		ContextFreeGrammar parser = new ContextFreeGrammar();
-		parser.setAndroidContext(AddTaskActivity.this);
+		ContextFreeGrammar parser = new ContextFreeGrammar(AddTaskActivity.this);
 		EditText text = (EditText) findViewById(R.id.add_task);
 		String input = text.getText().toString();
 		mTask = parser.parse(input);
