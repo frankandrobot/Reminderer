@@ -13,12 +13,21 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 /**
- * Do NOT call this interface directly: use MyDateFormat.
+ * Do NOT call this interface directly: use {@link DateTimeFormat}.
  *
- * The current {@link BruteForce} implementation has two instances for
- * dates and another for times.
+ * Implementations find and parse dates/times in strings.
+ * There are four types of formats to match:
+ * - long format (built-in)
+ * - med format (built-in)
+ * - short format (built-in)
+ * - custom ({@link SimpleDateFormat})
  *
- * @author uri
+ * Implementations use Android {@link Context}s to load locale-specific
+ * custom time/date formats.
+ *
+ * The {@link BruteForce} implementation can be instantiated to work with either
+ * dates {!link DateInstance} or times {@link TimeInstance}.
+ *
  */
 public interface DateFormatStrategy
 {
@@ -27,7 +36,8 @@ public interface DateFormatStrategy
      * Initializes the DateFormatStrategy.
      * <p/>
      * Don't forget to set this otherwise you'll get a null ptr exception.
-     * The Parser uses the context to get the system resources.
+     * The Parser uses the context to load locale-specific custom date/time
+     * formats.
      *
      * @param context
      */

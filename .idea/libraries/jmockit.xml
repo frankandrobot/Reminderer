@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="jmockit">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/test/lib/jmockit.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/test/lib/jmockit.jar!/" />
+    </SOURCES>
+  </library>
+</component>

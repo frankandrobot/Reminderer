@@ -1,10 +1,5 @@
 package com.frankandrobot.reminderer;
 
-import com.frankandrobot.reminderer.Database.DatabaseInterface;
-import com.frankandrobot.reminderer.Database.DatabaseAsyncService.DatabaseHandler;
-import com.frankandrobot.reminderer.Parser.GrammarParser;
-import com.frankandrobot.reminderer.Parser.Task;
-
 import android.app.Activity;
 import android.content.ContentProviderResult;
 import android.os.Bundle;
@@ -15,6 +10,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.frankandrobot.reminderer.Database.DatabaseAsyncService.DatabaseHandler;
+import com.frankandrobot.reminderer.Database.DatabaseInterface;
+import com.frankandrobot.reminderer.Parser.ContextFreeGrammar;
+import com.frankandrobot.reminderer.Parser.Task;
 
 public class AddTaskActivity extends Activity {
     Task mTask;
@@ -31,7 +31,7 @@ public class AddTaskActivity extends Activity {
 
 	    @Override
 	    public void onClick(View arg0) {
-		GrammarParser parser = new GrammarParser();
+		ContextFreeGrammar parser = new ContextFreeGrammar();
 		parser.setAndroidContext(AddTaskActivity.this);
 		EditText text = (EditText) findViewById(R.id.add_task);
 		String input = text.getText().toString();

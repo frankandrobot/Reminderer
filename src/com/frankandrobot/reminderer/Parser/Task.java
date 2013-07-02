@@ -1,5 +1,13 @@
 package com.frankandrobot.reminderer.Parser;
 
+import android.annotation.SuppressLint;
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import com.frankandrobot.reminderer.Helpers.MultiOsSupport;
+import com.frankandrobot.reminderer.Parser.ContextFreeGrammar.Repeats;
+import com.frankandrobot.reminderer.Parser.ContextFreeGrammar.RepeatsEvery;
+
 import java.text.DateFormat;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -7,14 +15,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
-
-import android.annotation.SuppressLint;
-import android.os.Parcel;
-import android.os.Parcelable;
-
-import com.frankandrobot.reminderer.Helpers.MultiOsSupport;
-import com.frankandrobot.reminderer.Parser.GrammarParser.Repeats;
-import com.frankandrobot.reminderer.Parser.GrammarParser.RepeatsEvery;
 
 public class Task implements Parcelable {
     static String defaultTimeStr = "9:00am";
