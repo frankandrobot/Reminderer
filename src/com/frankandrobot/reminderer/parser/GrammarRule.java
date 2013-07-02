@@ -2,6 +2,8 @@ package com.frankandrobot.reminderer.parser;
 
 import android.content.Context;
 
+import com.frankandrobot.reminderer.datastructures.Task;
+
 import java.util.Date;
 import java.util.LinkedList;
 

@@ -20,7 +20,7 @@ import com.frankandrobot.reminderer.Database.DatabaseInterface;
 import com.frankandrobot.reminderer.Database.DbColumns;
 import com.frankandrobot.reminderer.Helpers.Logger;
 import com.frankandrobot.reminderer.R;
-import com.frankandrobot.reminderer.parser.Task;
+import com.frankandrobot.reminderer.datastructures.Task;
 
 //TODO finish pulling from AlarmAlert
 //TODO implement save state for mKilled

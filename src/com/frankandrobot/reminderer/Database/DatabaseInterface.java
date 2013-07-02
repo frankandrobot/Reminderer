@@ -13,7 +13,7 @@ import android.util.Log;
 
 import com.frankandrobot.reminderer.Alarm.AlarmConstants;
 import com.frankandrobot.reminderer.Helpers.Logger;
-import com.frankandrobot.reminderer.parser.Task;
+import com.frankandrobot.reminderer.datastructures.Task;
 
 import java.util.Calendar;
 

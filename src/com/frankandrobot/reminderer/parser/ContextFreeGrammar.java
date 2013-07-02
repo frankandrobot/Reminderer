@@ -2,6 +2,8 @@ package com.frankandrobot.reminderer.parser;
 
 import android.content.Context;
 
+import com.frankandrobot.reminderer.datastructures.Task;
+
 /**
  * A **context free grammar** is just a generalization of regular expressions.
  *

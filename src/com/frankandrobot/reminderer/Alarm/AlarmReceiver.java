@@ -8,7 +8,7 @@ import android.os.Parcel;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.Helpers.Logger;
-import com.frankandrobot.reminderer.parser.Task;
+import com.frankandrobot.reminderer.datastructures.Task;
 
 import java.text.SimpleDateFormat;
 

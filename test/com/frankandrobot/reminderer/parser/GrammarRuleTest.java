@@ -3,6 +3,8 @@ package com.frankandrobot.reminderer.parser;
 import android.content.Context;
 import android.content.res.Resources;
 
+import com.frankandrobot.reminderer.datastructures.Task;
+
 import org.junit.Before;
 import org.junit.Test;
 

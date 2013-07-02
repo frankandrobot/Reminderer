@@ -13,8 +13,8 @@ import android.widget.Toast;
 
 import com.frankandrobot.reminderer.Database.DatabaseAsyncService.DatabaseHandler;
 import com.frankandrobot.reminderer.Database.DatabaseInterface;
+import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.parser.ContextFreeGrammar;
-import com.frankandrobot.reminderer.parser.Task;
 
 public class AddTaskActivity extends Activity {
     Task mTask;

@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.Helpers;
+package com.frankandrobot.reminderer.datastructures;
 
 import java.util.HashMap;
 import java.util.Map;

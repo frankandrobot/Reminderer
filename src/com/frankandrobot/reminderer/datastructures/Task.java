@@ -1,11 +1,11 @@
-package com.frankandrobot.reminderer.parser;
+package com.frankandrobot.reminderer.datastructures;
 
 import android.annotation.SuppressLint;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.frankandrobot.reminderer.Helpers.DataStructure;
 import com.frankandrobot.reminderer.Helpers.MultiOsSupport;
+import com.frankandrobot.reminderer.parser.GrammarRule;
 
 import java.text.DateFormat;
 import java.text.ParsePosition;
@@ -15,6 +15,22 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
+/**
+ * Represents a task.
+ *
+ * The task date is **always** a date in the future. Ex:
+ *
+ * - given "buy milk monday" and its Tuesday, then task date = Monday.
+ * - given "buy milk 8pm" and its 9pm, then task date = tomorrow 8pm
+ * - given "buy milk Jun 1" and its June 2nd, then task date = June 1 next year.
+ *
+ * The only time it will set a date in the past is when you explicitly set it in
+ * the past (ex: "buy milk June 1, 1979")
+ *
+ * If you use the wrong date and day (ex: Monday June 23 and June 23 is a Tuesday),
+ * task will use the date.
+ *
+ */
 public class Task extends DataStructure implements Parcelable
 {
     public static final Parcelable.Creator<Task> CREATOR = new Parcelable.Creator<Task>()

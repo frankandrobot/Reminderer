@@ -1,5 +1,7 @@
 package com.frankandrobot.reminderer.Helpers;
 
+import com.frankandrobot.reminderer.datastructures.DataStructure;
+
 import org.junit.Test;
 
 public class DataStructureTest
