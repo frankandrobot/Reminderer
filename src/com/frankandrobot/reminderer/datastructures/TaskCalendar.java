@@ -21,8 +21,10 @@ import java.util.Locale;
  * - given "buy milk 8pm" and its 9pm, then task date = tomorrow 8pm
  * - given "buy milk Jun 1" and its June 2nd, then task date = June 1 next year.
  *
- * The only time it will set a date in the past is when you explicitly set it in
- * the past (ex: "buy milk June 1, 1979")
+ * You can never set a date in the past.
+ * 
+ * <strike>The only time it will set a date in the past is when you explicitly set it in
+ * the past (ex: "buy milk June 1, 1979")</strike>
  *
  * If you use the wrong date and day (ex: Monday June 23 and June 23 is a Tuesday),
  * task will use the date.
