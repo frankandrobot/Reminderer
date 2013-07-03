@@ -67,7 +67,7 @@ public class TaskCalendarTest
     {
         final SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm:ss");
 
-        //set to July 1 8am (before)
+        //set to Sun (before)
         TaskCalendar calendar = new TaskCalendar();
         Date date = sdfTime.parse("8:00:00");
         calendar.setTime(date);
@@ -87,22 +87,20 @@ public class TaskCalendarTest
     @Test
     public void testSetDay() throws Exception
     {
-        /*final SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm:ss");
+        final SimpleDateFormat sdfDay = new SimpleDateFormat("EEE");
 
-        //set to July 1 8am (before)
+        //set to Sun (before)
         TaskCalendar calendar = new TaskCalendar();
-        Date date = sdfTime.parse("8:00:00");
-        calendar.setTime(date);
-        //this is before NOW, so should go to next day
+        calendar.setTime(sdfDay.parse("Sun"));
+        //this is before NOW, so should go to next Sunday
         System.out.println(sdfFull.format(calendar.getDate()));
-        assertTrue(sdfFull.format(calendar.getDate()).contains("7/2/2013 08:00:00"));
+        assertTrue(sdfFull.format(calendar.getDate()).contains("7/7/2013 09:00:00"));
 
-        //set to July 1 11am (after)
+        //set to Mon 9:00 (before)
         calendar = new TaskCalendar();
-        date = sdfTime.parse("11:00:00");
-        calendar.setTime(date);
+        calendar.setTime(sdfDay.parse("Mon"));
         System.out.println(sdfFull.format(calendar.getDate()));
-        assertTrue(sdfFull.format(calendar.getDate()).contains("7/1/2013 11:00:00"));*/
+        assertTrue(sdfFull.format(calendar.getDate()).contains("7/8/2013 09:00:00"));
     }
 
     @Test
