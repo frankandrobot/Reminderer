@@ -1,9 +1,10 @@
-package com.frankandrobot.reminderer.Parser;
+package com.frankandrobot.reminderer.parser.datetime;
 
 import android.content.Context;
 import android.content.res.Resources;
 
 import com.frankandrobot.reminderer.R;
+import com.frankandrobot.reminderer.datastructures.ReDate;
 
 import java.text.DateFormat;
 import java.text.ParsePosition;
@@ -36,7 +37,7 @@ public interface DateFormatStrategy
      * Initializes the DateFormatStrategy.
      * <p/>
      * Don't forget to set this otherwise you'll get a null ptr exception.
-     * The Parser uses the context to load locale-specific custom date/time
+     * The parser uses the context to load locale-specific custom date/time
      * formats.
      *
      * @param context
@@ -57,11 +58,12 @@ public interface DateFormatStrategy
     /**
      * Gets a date/time from the input string.
      *
+     *
      * @param input
      * @return a date if the input string represents a date. Otherwise returns
      *         null.
      */
-    public Date parse(final String input);
+    public ReDate parse(final String input);
 
     public interface DateFormatInstance
     {
@@ -186,39 +188,40 @@ public interface DateFormatStrategy
 
         }
 
-        public Date parse(String input)
+        public ReDate parse(String input)
         {
-            Date date;
+            ReDate date;
             // first try to match the long format
             pos.setIndex(0);
-            date = longFormatter.parse(input, pos);
+            date = new ReDate(longFormatter.parse(input, pos));
             // then try the med format
             if (date == null)
             {
                 pos.setIndex(0);
-                date = medFormatter.parse(input, pos);
+                date = new ReDate(medFormatter.parse(input, pos));
             }
             // then try the short format
             if (date == null)
             {
                 pos.setIndex(0);
-                date = shortFormatter.parse(input, pos);
+                date = new ReDate(shortFormatter.parse(input, pos));
             }
             // if DateFormat failed try the simpleDateFormatter
             if (date == null)
             {
                 // default parsers check for year
                 // if we are here then user didnt type year so add current year
-                Calendar curYear = new GregorianCalendar();
+                /*Calendar curYear = new GregorianCalendar();
                 String curYearString = ":"
-                        + String.valueOf(curYear.get(Calendar.YEAR));
+                        + String.valueOf(curYear.get(Calendar.YEAR));*/
                 customFormatPattern = resources
                         .getStringArray(customFormatResourceId);
                 for (int i = 0; i < customFormatPattern.length; i++)
                 {
-                    simpleDateFormatter.applyPattern(customFormatPattern[i] + ":yyyy");
+                    simpleDateFormatter.applyPattern(customFormatPattern[i]);
                     pos.setIndex(0);
-                    date = simpleDateFormatter.parse(input + curYearString, pos);
+                    date = new ReDate(simpleDateFormatter.parse(input, pos))
+                            .setYearSet(false);
                     if (date != null)
                     {
                         break;

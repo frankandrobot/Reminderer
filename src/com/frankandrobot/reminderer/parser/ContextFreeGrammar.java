@@ -1,9 +1,8 @@
-package com.frankandrobot.reminderer.Parser;
+package com.frankandrobot.reminderer.parser;
 
 import android.content.Context;
 
-import java.util.Date;
-import java.util.LinkedList;
+import com.frankandrobot.reminderer.datastructures.Task;
 
 /**
  * A **context free grammar** is just a generalization of regular expressions.
@@ -27,15 +26,16 @@ import java.util.LinkedList;
 
 public class ContextFreeGrammar
 {
-    protected Task task = new Task();
-    protected GrammarContext context;
     protected Context androidContext;
-    protected LinkedList<GrammarInterpreter.Command> commands;
-    protected Finder lBracket, rBracket, lParens, rParens;
-    protected Finder nextWhiteSpace, whiteSpace;
+
+    static protected Finder lBracket, rBracket, lParens, rParens;
+    static protected Finder nextWhiteSpace, whiteSpace;
+
+    protected IGrammarRule<Task> commands;
+
     protected boolean locationRecursion = false; // hack to prevent infinite recursion
 
-    public ContextFreeGrammar()
+    static
     {
         lBracket = new Finder("\\[");
         rBracket = new Finder("\\]");
@@ -43,12 +43,11 @@ public class ContextFreeGrammar
         rParens = new Finder("\\)");
         nextWhiteSpace = new Finder("[^ \t]*[ \t]+");
         whiteSpace = new Finder("[ \t]+");
-        commands = new LinkedList<GrammarInterpreter.Command>();
     }
 
-    public void setGrammarContext(String input)
+    public ContextFreeGrammar(Context context)
     {
-        context = new GrammarContext(input);
+        commands = new GrammarRule.CommandsRule(context);
     }
 
     public void setAndroidContext(Context context)
@@ -59,118 +58,38 @@ public class ContextFreeGrammar
     // expr: task | task commands
     public Task parse(String input)
     {
-        task = new Task();
-        context = new GrammarContext(input.trim());
+        GrammarContext context = new GrammarContext(input.trim());
         int curPos = 0;
-        while (commands() == null)
-        { // current pos is not a command so
-            // gobble the token
+
+        //try to get a command
+        Task task = commands.parse(context);
+        while (task == null)
+        {
+            // current pos is not a commands so gobble the token
             if (nextWhiteSpace.find(context))
             {
                 context.gobble(nextWhiteSpace);
                 curPos = context.getPos();
+                task = commands.parse(context);
             } else
             {
+                //no more next token so put position at end of input string
                 curPos = context.getOriginal().length();
                 break;
             }
         }
+
         // did we find a task?
         String taskString = context.getOriginal().substring(0, curPos);
         if (taskString.trim().equals(""))
             return null;
         context.setPos(curPos);
-        task.task = taskString;
-        return commands();
-    }
+        task = task == null ? new Task() : task;
+        task.set(Task.Task_Desc.class, taskString);
 
-    // commands: command commands | NULL
-    Task commands()
-    {
-        // save position
-        int curPos = context.getPos();
-        // command commands
-        if (command() != null && commands() != null)
-            return task;
-        else
-            context.setPos(curPos);
-        // NULL
-        if (context.getContext() == null
-                || context.getContext().trim().equals(""))
-            return task;
-        return null;
+        return task.combine(commands.parse(context));
     }
-
-    // command: taskTime | date | next | repeats | location #list of commands
-    Task command()
-    {
-        int curPos = context.getPos();
-        if (time() != null || date() != null || next() != null
-                || repeats() != null || repeatsEvery() != null
-                || location() != null)
-        {
-            return task;
-        } else
-        {
-            context.setPos(curPos);
-            return null;
-        }
-    }
-
-    // taskTime: timeParser | "at" timeParser
-    Task time()
-    {
-        int curPos = context.getPos();
-        // TODO - pull out
-        DateTimeTerminal.Time timeParser = new DateTimeTerminal.Time(androidContext);
-        Finder at = new Finder("at");
-        Finder on = new Finder("on");
-        if (at.find(context)) // "at" found
-            context.gobble(at);
-        else if (on.find(context)) // "on" found
-            context.gobble(on);
-        // gobble whitespace
-        if (whiteSpace.find(context))
-            context.gobble(whiteSpace);
-        if (timeParser.find(context))
-        {
-            Date time = timeParser.parse(context);
-            task.setTime(time);
-            return task;
-        } else
-            context.setPos(curPos);
-        return null;
-    }
-
-    // date: dateParser | "on" dateParser
-    Task date()
-    {
-        int curPos = context.getPos();
-        // TODO - pull out
-        DateTimeTerminal.Date dateParser = new DateTimeTerminal.Date(androidContext);
-        DateTimeTerminal.Day dayParser = new DateTimeTerminal.Day(androidContext);
-        Finder at = new Finder("at");
-        Finder on = new Finder("on");
-        if (at.find(context)) // "at" found
-            context.gobble(at);
-        else if (on.find(context)) // "on" found
-            context.gobble(on);
-        // gobble whitespace
-        if (whiteSpace.find(context))
-            context.gobble(whiteSpace);
-        if (dateParser.find(context))
-        {
-            Date date = dateParser.parse(context);
-            task.setDate(date);
-            return task;
-        } else if (dayParser.find(context))
-        {
-            Date day = dayParser.parse(context);
-            task.setDay(day);
-            return task;
-        } else context.setPos(curPos);
-        return null;
-    }
+/*
 
     // next: "next" dayParser
     Task next()
@@ -236,7 +155,7 @@ public class ContextFreeGrammar
             return null;
         }
         context.gobble(every);
-        for (RepeatsEvery token : RepeatsEvery.values())
+        for (RepeatsEveryRule token : RepeatsEveryRule.values())
             if (token.find(context))
             { // one of hourly, daily, etc found
                 token.gobble(context);
@@ -266,7 +185,7 @@ public class ContextFreeGrammar
         String location = "";
         // enter recursion
         locationRecursion = true;
-        while (command() == null)
+        while (commands() == null)
         {
             // gobble token
             if (nextWhiteSpace.find(context))
@@ -319,37 +238,11 @@ public class ContextFreeGrammar
         }
     }
 
-    static enum RepeatsEvery
-    {
-        // TODO replace this with XML
-        Hourly("hour"), Daily("day"), Weekly("week"), Monthly("month"), Yearly(
-            "year");
-        private Finder token;
-
-        RepeatsEvery(String occ)
-        {
-            this.token = new Finder(occ);
-        }
-
-        boolean find(GrammarContext context)
-        {
-            return token.find(context);
-        }
-
-        void gobble(GrammarContext context)
-        {
-            context.gobble(token);
-        }
-
-        String value()
-        {
-            return token.value();
-        }
-    }
 
     static public class ParsingException extends Exception
     {
         private static final long serialVersionUID = 1L;
 
     }
+    */
 }

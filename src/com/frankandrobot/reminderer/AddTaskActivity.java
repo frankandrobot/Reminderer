@@ -13,8 +13,8 @@ import android.widget.Toast;
 
 import com.frankandrobot.reminderer.Database.DatabaseAsyncService.DatabaseHandler;
 import com.frankandrobot.reminderer.Database.DatabaseInterface;
-import com.frankandrobot.reminderer.Parser.ContextFreeGrammar;
-import com.frankandrobot.reminderer.Parser.Task;
+import com.frankandrobot.reminderer.datastructures.Task;
+import com.frankandrobot.reminderer.parser.ContextFreeGrammar;
 
 public class AddTaskActivity extends Activity {
     Task mTask;
@@ -31,8 +31,7 @@ public class AddTaskActivity extends Activity {
 
 	    @Override
 	    public void onClick(View arg0) {
-		ContextFreeGrammar parser = new ContextFreeGrammar();
-		parser.setAndroidContext(AddTaskActivity.this);
+		ContextFreeGrammar parser = new ContextFreeGrammar(AddTaskActivity.this);
 		EditText text = (EditText) findViewById(R.id.add_task);
 		String input = text.getText().toString();
 		mTask = parser.parse(input);

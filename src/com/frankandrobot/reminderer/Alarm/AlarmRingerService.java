@@ -1,25 +1,23 @@
 package com.frankandrobot.reminderer.Alarm;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
-import com.frankandrobot.reminderer.Helpers.Logger;
-import com.frankandrobot.reminderer.Parser.Task;
-
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnErrorListener;
-import android.os.Handler;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.os.IBinder;
-import android.os.Message;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.Log;
+
+import com.frankandrobot.reminderer.Helpers.Logger;
+import com.frankandrobot.reminderer.datastructures.Task;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 //TODO test these scenarios:
 //TODO phone is locked and alarm comes in

@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.Parser;
+package com.frankandrobot.reminderer.parser;
 
 import java.text.DateFormat;
 import java.text.ParsePosition;
