@@ -91,14 +91,14 @@ public class TaskCalendarTest
 
         //set to Sun (before)
         TaskCalendar calendar = new TaskCalendar();
-        calendar.setTime(sdfDay.parse("Sun"));
+        calendar.setDay(sdfDay.parse("Sun"));
         //this is before NOW, so should go to next Sunday
         System.out.println(sdfFull.format(calendar.getDate()));
         assertTrue(sdfFull.format(calendar.getDate()).contains("7/7/2013 09:00:00"));
 
         //set to Mon 9:00 (before)
         calendar = new TaskCalendar();
-        calendar.setTime(sdfDay.parse("Mon"));
+        calendar.setDay(sdfDay.parse("Mon"));
         System.out.println(sdfFull.format(calendar.getDate()));
         assertTrue(sdfFull.format(calendar.getDate()).contains("7/8/2013 09:00:00"));
     }
@@ -106,5 +106,63 @@ public class TaskCalendarTest
     @Test
     public void testSetNextDay() throws Exception
     {
+        final SimpleDateFormat sdfDay = new SimpleDateFormat("EEE");
 
-    }}
+        //set to Sun (before)
+        TaskCalendar calendar = new TaskCalendar();
+        calendar.setNextDay(sdfDay.parse("Sun"));
+        //this is before NOW, so should go to next Sunday
+        System.out.println(sdfFull.format(calendar.getDate()));
+        assertTrue(sdfFull.format(calendar.getDate()).contains("7/7/2013 09:00:00"));
+
+        //set to Mon (today)
+        calendar = new TaskCalendar();
+        calendar.setNextDay(sdfDay.parse("Mon"));
+        //this is today, so should go to next
+        System.out.println(sdfFull.format(calendar.getDate()));
+        assertTrue(sdfFull.format(calendar.getDate()).contains("7/8/2013 09:00:00"));
+
+        //set to Tues 9:00 (after)
+        calendar = new TaskCalendar();
+        calendar.setNextDay(sdfDay.parse("Tue"));
+        System.out.println(sdfFull.format(calendar.getDate()));
+        assertTrue(sdfFull.format(calendar.getDate()).contains("7/2/2013 09:00:00"));
+    }
+
+    @Test
+    public void testAll() throws Exception
+    {
+        SimpleDateFormat sdfDate = new SimpleDateFormat("M/d/yyyy");
+        SimpleDateFormat sdfDay = new SimpleDateFormat("EEE");
+        SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm:ss");
+
+        //set to Sun (before)
+        TaskCalendar calendar = new TaskCalendar();
+        calendar.setDay(sdfDay.parse("Sun"));
+        calendar.setTime(sdfTime.parse("10:00:00"));
+        //this is before NOW, so should go to next Sunday
+        System.out.println(sdfFull.format(calendar.getDate()));
+        assertTrue(sdfFull.format(calendar.getDate()).contains("7/7/2013 10:00:00"));
+
+        calendar = new TaskCalendar();
+        calendar.setDate(sdfDate.parse("7/3/2013"));
+        calendar.setTime(sdfTime.parse("11:00:00"));
+        System.out.println(sdfFull.format(calendar.getDate()));
+        assertTrue(sdfFull.format(calendar.getDate()).contains("7/3/2013 11:00:00"));
+
+    }
+
+    @Test
+    public void testDayDoesNotMatchDate() throws Exception
+    {
+        SimpleDateFormat sdfDate = new SimpleDateFormat("M/d/yyyy");
+        SimpleDateFormat sdfDay = new SimpleDateFormat("EEE");
+
+        TaskCalendar calendar = new TaskCalendar();
+        calendar.setDay(sdfDay.parse("Tue"));
+        calendar.setDate(sdfDate.parse("7/3/2013"));
+        System.out.println(sdfFull.format(calendar.getDate()));
+        //should use date
+        assertTrue(sdfFull.format(calendar.getDate()).contains("7/3/2013 09:00:00"));
+    }
+}
