@@ -2,6 +2,7 @@ package com.frankandrobot.reminderer.parser;
 
 import android.content.Context;
 
+import com.frankandrobot.reminderer.datastructures.ReDate;
 import com.frankandrobot.reminderer.parser.datetime.DateTimeFormat;
 
 import java.text.ParsePosition;
@@ -17,12 +18,13 @@ abstract public class DateTimeTerminal
         /**
          * Parses an input string using the given {@link com.frankandrobot.reminderer.parser.datetime.DateTimeFormat}.
          *
+         *
          * @param inputString the input string
          * @param parser      a {@link com.frankandrobot.reminderer.parser.datetime.DateTimeFormat}
          * @return null if no match is found; otherwise, the matched date
          */
-        public static java.util.Date parseDate(GrammarContext inputString,
-                                               DateTimeFormat parser)
+        public static ReDate parseDate(GrammarContext inputString,
+                                       DateTimeFormat parser)
         {
             String[] rslt = parser.find(inputString.getContext());
             if (rslt == null)

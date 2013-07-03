@@ -2,6 +2,8 @@ package com.frankandrobot.reminderer.parser.datetime;
 
 import android.content.Context;
 
+import com.frankandrobot.reminderer.datastructures.ReDate;
+
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -37,10 +39,11 @@ public interface DateTimeFormat
      * Returns a date if the input string starts with a date.
      * Otherwise, returns null.
      *
+     *
      * @param input
      * @return
      */
-    public Date parse(final String input);
+    public ReDate parse(final String input);
 
     public void setContext(Context context);
 
@@ -61,7 +64,7 @@ public interface DateTimeFormat
             parser.initialize(context);
         }
 
-        public Date parse(String input)
+        public ReDate parse(String input)
         {
             return parser.parse(input);
         }
@@ -146,9 +149,9 @@ public interface DateTimeFormat
         }
 
         @Override
-        public Date parse(String input)
+        public ReDate parse(String input)
         {
-            return sdf.parse(input, new ParsePosition(0));
+            return new ReDate(sdf.parse(input, new ParsePosition(0)));
         }
     }
 }
