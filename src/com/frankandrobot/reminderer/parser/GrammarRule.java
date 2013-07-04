@@ -83,6 +83,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
 
             llRules.add(new TimeRule(context));
             llRules.add(new DateRule(context));
+            llRules.add(new NextRule(context));
             llRules.add(new RepeatsEveryRule(context));
         }
 
@@ -202,6 +203,46 @@ abstract public class GrammarRule implements IGrammarRule<Task>
             return null;
         }
     }
+
+    // next: "next" dayParser
+    public static class NextRule extends GrammarRule
+    {
+        private Finder next = new Finder("next");
+        private DateTimeTerminal.Day dayParser;
+
+        public NextRule(Context context)
+        {
+            super(context);
+
+            dayParser = new DateTimeTerminal.Day(context);
+        }
+
+        @Override
+        public Task parse(GrammarContext inputString)
+        {
+            next.reset();
+            int curPos = inputString.getPos();
+
+            if (next.find(inputString))
+            {
+                inputString.gobble(next);
+                // eat whitespace
+                if (ContextFreeGrammar.whiteSpace.find(inputString))
+                    inputString.gobble(ContextFreeGrammar.whiteSpace);
+
+                if (dayParser.find(inputString))
+                {
+                    ReDate day = dayParser.parse(inputString);
+                    Task task = new Task();
+                    task.get(Task.Task_Calendar.class).setNextDay(day);
+                    return task;
+                }
+            }
+
+            inputString.setPos(curPos);
+            return null;
+        }
+    }
     /**
      // repeatsEvery: "repeats" "every" S
      // S: timeDuration | dayParser | "hour" | "day" | "week" | "month" | "year"
@@ -292,7 +333,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
             return null;
         }
 
-        public String value()
+        public String toString()
         {
             return token.value();
         }

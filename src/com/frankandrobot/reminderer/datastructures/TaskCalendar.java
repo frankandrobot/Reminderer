@@ -42,7 +42,7 @@ public class TaskCalendar extends DataStructure
     static private SimpleDateFormat sdfDate = new SimpleDateFormat("MM/dd/yyyy");
     static private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
 
-    private Calendar calendar;
+    private Calendar calendar = null;
     private Calendar tmpCalendar;
     private Calendar defaultTimeCal;
     protected ReDate date, day, time;

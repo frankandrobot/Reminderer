@@ -91,28 +91,7 @@ public class ContextFreeGrammar
     }
 /*
 
-    // next: "next" dayParser
-    Task next()
-    {
-        // TODO - pull out
-        Finder next = new Finder("next");
-        if (!next.find(context)) // "next" not found
-            return null;
-        int curPos = context.getPos();
-        context.gobble(next);
-        // eat whitespace
-        if (whiteSpace.find(context))
-            context.gobble(whiteSpace);
-        DateTimeTerminal.Day dayParser = new DateTimeTerminal.Day(androidContext);
-        if (!dayParser.find(context))
-        {
-            context.setPos(curPos);
-            return null;
-        }
-        Date day = dayParser.parse(context);
-        task.setNextDay(day);
-        return task;
-    }
+
 
     // repeats: "repeats" occurrence
     // occurrence: "hourly" | "daily" | "weekly" | "monthly" | "yearly"
