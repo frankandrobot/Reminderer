@@ -107,7 +107,7 @@ public class TaskCalendar extends DataStructure
             {
                 tmpCalendar.setTime(time);
                 //extract hour, min, sec
-                copyCalendarField(calendar, tmpCalendar, Calendar.HOUR);
+                copyCalendarField(calendar, tmpCalendar, Calendar.HOUR_OF_DAY);
                 copyCalendarField(calendar, tmpCalendar, Calendar.MINUTE);
                 copyCalendarField(calendar, tmpCalendar, Calendar.SECOND);
             }

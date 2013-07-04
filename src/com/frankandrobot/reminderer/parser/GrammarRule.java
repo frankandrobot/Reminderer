@@ -142,6 +142,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
             {
                 Task task = new Task();
                 task.get(Task.Task_Calendar.class).setTime(taskTime);
+                task.get(Task.Task_Calendar.class).getDate();
                 return task;
             }
 
