@@ -102,7 +102,7 @@ public class AlarmAlertActivity extends FragmentActivity implements
 	// This is called when a new Loader needs to be created. This
 	// activity only has one Loader, so we don't care about the ID.
 	return DatabaseInterface.getDueAlarmsCursorLoader(this,
-		mTask.getDateTimeForDb(), DbColumns.LTE);
+		mTask.getTimeInMillis(), DbColumns.LTE);
     }
 
     @Override

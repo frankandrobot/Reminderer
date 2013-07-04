@@ -85,7 +85,7 @@ public class ContextFreeGrammar
             return null;
         context.setPos(curPos);
         task = task == null ? new Task() : task;
-        task.set(Task.Task_Desc.class, taskString);
+        task.set(Task.Task_String.desc, taskString);
 
         return task.combine(commands.parse(context));
     }

@@ -37,13 +37,13 @@ public class DataStructure
         String tmp = "[";
         for(Object key: hmFieldValues.keySet())
         {
-            tmp += String.format("%s:%s,",
+            tmp += String.format("%s:%s,%n",
                                  key,
                                  hmFieldValues.get(key));
         }
         for(Class<?> key: hmClassValues.keySet())
         {
-            tmp += String.format("%s:%s,",
+            tmp += String.format("%s:%s,%n",
                                  key.getSimpleName(),
                                  hmClassValues.get(key));
         }

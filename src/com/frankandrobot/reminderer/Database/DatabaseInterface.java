@@ -28,8 +28,8 @@ public class DatabaseInterface {
 
     private static ContentValues addToContentValues(Task task) {
 	ContentValues values = new ContentValues();
-	values.put(DbColumns.TASK_DUE_DATE, task.getDateTimeForDb());
-	values.put(DbColumns.TASK, task.getTaskForDb());
+	values.put(DbColumns.TASK_DUE_DATE, task.getTimeInMillis());
+	values.put(DbColumns.TASK, task.getTaskDesc());
 	return values;
     }
     
@@ -37,8 +37,8 @@ public class DatabaseInterface {
 	if (Logger.LOGV) {
 	    Log.v(TAG, "Saving task:\n" + task.toString());
 	    Log.v(TAG,
-		    "task,time:" + task.getTaskForDb() + " "
-			    + task.getDateTimeForDb());
+		    "task,time:" + task.getTaskDesc() + " "
+			    + task.getTimeInMillis());
 	}
 	// create content values from Task object
 	ContentValues values = addToContentValues(task);
@@ -103,7 +103,7 @@ public class DatabaseInterface {
 		.getSystemService(Context.ALARM_SERVICE);
 	if (Logger.LOGV) {
 	    android.util.Log.v(TAG, "** setAlert id " + task.getId()
-		    + " atTime " + task.getLocaleTime());
+		    + " atTime " + task.get(Task.Task_Calendar.class).getLocaleTime());
 	}
 	Intent intent = new Intent(AlarmConstants.TASK_ALARM_ALERT);
 	Parcel out = Parcel.obtain();

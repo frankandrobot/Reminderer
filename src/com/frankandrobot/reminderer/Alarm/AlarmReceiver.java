@@ -41,10 +41,10 @@ public class AlarmReceiver extends BroadcastReceiver {
 	long now = System.currentTimeMillis();
 	SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss.SSS aaa");
 	Log.v(TAG, "AlarmReceiver.onReceive() id " + task.getId() + " setFor "
-		+ format.format(task.getDateObj()));
+		+ format.format(task.get(Task.Task_Calendar.class).getDate()));
 	
 	// Ignore false alarms caused by timezone changes
-	if (now > task.getDateTime() + AlarmConstants.STALE_WINDOW * 1000) {
+	if (now > task.getTimeInMillis() + AlarmConstants.STALE_WINDOW * 1000) {
 	    if (Logger.LOGV) {
 		Log.v(TAG, "AlarmReceiver ignoring stale alarm");
 	    }

@@ -42,13 +42,15 @@ public class TaskCalendar extends DataStructure
     static private SimpleDateFormat sdfDate = new SimpleDateFormat("MM/dd/yyyy");
     static private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
 
-    private Calendar calendar, tmpCalendar, defaultTimeCal;
-    private ReDate date, day, time;
+    private Calendar calendar;
+    private Calendar tmpCalendar;
+    private Calendar defaultTimeCal;
+    protected ReDate date, day, time;
 
     private Locale locale = Locale.getDefault();
 
-    int curDay;
-    long curTime;
+    private int curDay;
+    private long curTime;
 
     MultiOsSupport miscSupport; // = MultiOsSupport.Factory.newInstance();
 
@@ -179,6 +181,12 @@ public class TaskCalendar extends DataStructure
         this.day = day;
     }
 
+    public void setTimeInMillis(long time)
+    {
+        Calendar calendar = getCalendar();
+        calendar.setTimeInMillis(time);
+    }
+
     /**
      * Special case of setting the "next" day.
      *
@@ -234,6 +242,12 @@ public class TaskCalendar extends DataStructure
         return calendar.getDisplayName(Calendar.DAY_OF_WEEK,
                                        Calendar.LONG,
                                        locale);
+    }
+
+    public int get(int field)
+    {
+        calculateTimeAndDate();
+        return calendar.get(field);
     }
 
     public String toString()

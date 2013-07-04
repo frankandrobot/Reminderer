@@ -5,7 +5,6 @@ import android.content.Context;
 import com.frankandrobot.reminderer.datastructures.ReDate;
 import com.frankandrobot.reminderer.datastructures.Task;
 
-import java.util.Date;
 import java.util.LinkedList;
 
 abstract public class GrammarRule implements IGrammarRule<Task>
@@ -141,7 +140,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
             if (taskTime != null)
             {
                 Task task = new Task();
-                task.setTime(taskTime);
+                task.get(Task.Task_Calendar.class).setTime(taskTime);
                 return task;
             }
 
@@ -190,13 +189,13 @@ abstract public class GrammarRule implements IGrammarRule<Task>
             {
                 ReDate date = dateParser.parse(inputString);
                 Task task = new Task();
-                task.setDate(date);
+                task.get(Task.Task_Calendar.class).setDate(date);
                 return task;
             } else if (dayParser.find(inputString))
             {
                 ReDate day = dayParser.parse(inputString);
                 Task task = new Task();
-                task.setDay(day);
+                task.get(Task.Task_Calendar.class).setDay(day);
                 return task;
             }
             inputString.setPos(curPos);

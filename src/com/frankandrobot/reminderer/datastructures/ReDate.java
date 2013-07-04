@@ -47,6 +47,9 @@ public class ReDate extends Date
 
     public ReDate(Date date)
     {
+        if (date == null)
+            throw new IllegalArgumentException("date is null");
+
         this.date = date;
     }
 

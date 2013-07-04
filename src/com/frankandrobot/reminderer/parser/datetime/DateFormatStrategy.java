@@ -193,18 +193,21 @@ public interface DateFormatStrategy
             ReDate date;
             // first try to match the long format
             pos.setIndex(0);
-            date = new ReDate(longFormatter.parse(input, pos));
+            Date parsedDate = longFormatter.parse(input, pos);
+            date = parsedDate != null ? new ReDate(parsedDate) : null;
             // then try the med format
             if (date == null)
             {
                 pos.setIndex(0);
-                date = new ReDate(medFormatter.parse(input, pos));
+                parsedDate = medFormatter.parse(input, pos);
+                date = parsedDate != null ? new ReDate(parsedDate) : null;
             }
             // then try the short format
             if (date == null)
             {
                 pos.setIndex(0);
-                date = new ReDate(shortFormatter.parse(input, pos));
+                parsedDate = shortFormatter.parse(input, pos);
+                date = parsedDate != null ? new ReDate(parsedDate) : null;
             }
             // if DateFormat failed try the simpleDateFormatter
             if (date == null)
@@ -220,8 +223,10 @@ public interface DateFormatStrategy
                 {
                     simpleDateFormatter.applyPattern(customFormatPattern[i]);
                     pos.setIndex(0);
-                    date = new ReDate(simpleDateFormatter.parse(input, pos))
-                            .setYearSet(false);
+                    parsedDate = simpleDateFormatter.parse(input, pos);
+                    date = parsedDate != null
+                            ? new ReDate(parsedDate).setYearSet(false)
+                            : null;
                     if (date != null)
                     {
                         break;
