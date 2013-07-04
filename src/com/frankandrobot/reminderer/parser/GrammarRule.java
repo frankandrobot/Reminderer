@@ -2,6 +2,7 @@ package com.frankandrobot.reminderer.parser;
 
 import android.content.Context;
 
+import com.frankandrobot.reminderer.datastructures.ReDate;
 import com.frankandrobot.reminderer.datastructures.Task;
 
 import java.util.Date;
@@ -136,7 +137,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
             if (ContextFreeGrammar.whiteSpace.find(inputString))
                 inputString.gobble(ContextFreeGrammar.whiteSpace);
 
-            Date taskTime = time.parse(inputString);
+            ReDate taskTime = time.parse(inputString);
             if (taskTime != null)
             {
                 Task task = new Task();
@@ -187,13 +188,13 @@ abstract public class GrammarRule implements IGrammarRule<Task>
 
             if (dateParser.find(inputString))
             {
-                Date date = dateParser.parse(inputString);
+                ReDate date = dateParser.parse(inputString);
                 Task task = new Task();
                 task.setDate(date);
                 return task;
             } else if (dayParser.find(inputString))
             {
-                Date day = dayParser.parse(inputString);
+                ReDate day = dayParser.parse(inputString);
                 Task task = new Task();
                 task.setDay(day);
                 return task;

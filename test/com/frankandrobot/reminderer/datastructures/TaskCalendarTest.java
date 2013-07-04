@@ -37,17 +37,24 @@ public class TaskCalendarTest
     {
         SimpleDateFormat sdfDate = new SimpleDateFormat("M/d/yyyy");
 
-        //set to June 29
+        //set to June 29 1979 (past)
         TaskCalendar calendar = new TaskCalendar();
-        Date date = sdfDate.parse("6/29/2013");
+        ReDate date = new ReDate(sdfDate.parse("6/29/1979"));
+        calendar.setDate(date);
+        System.out.println(calendar.getDate());
+        assertTrue(sdfFull.format(calendar.getDate()).contains("6/29/1979"));
+
+        //set to June 29 (no year)
+        calendar = new TaskCalendar();
+        date = new ReDate(sdfDate.parse("6/29/1979")).setYearSet(false); //ignore year
         calendar.setDate(date);
         //this is before NOW, so should return June 29, 2014
         System.out.println(calendar.getDate());
         assertTrue(sdfFull.format(calendar.getDate()).contains("6/29/2014"));
 
-        //set to July 1
+        //set to July 1 (no year)
         calendar = new TaskCalendar();
-        date = sdfDate.parse("7/1/2013");
+        date = new ReDate(sdfDate.parse("7/1/2013")).setYearSet(false);
         calendar.setDate(date);
         System.out.println(calendar.getDate());
         //since you didn't set the time, it defaults to 9am
@@ -56,7 +63,7 @@ public class TaskCalendarTest
 
         //set to Jan 1, 2015
         calendar = new TaskCalendar();
-        date = sdfDate.parse("1/1/2015");
+        date = new ReDate(sdfDate.parse("1/1/2015"));
         calendar.setDate(date);
         System.out.println(calendar.getDate());
         assertTrue(sdfFull.format(calendar.getDate()).contains("1/1/2015"));
@@ -69,16 +76,16 @@ public class TaskCalendarTest
 
         //set to Sun (before)
         TaskCalendar calendar = new TaskCalendar();
-        Date date = sdfTime.parse("8:00:00");
-        calendar.setTime(date);
+        Date date = (new ReDate(sdfTime.parse("8:00:00")));
+        calendar.setTime(new ReDate(date));
         //this is before NOW, so should go to next day
         System.out.println(sdfFull.format(calendar.getDate()));
         assertTrue(sdfFull.format(calendar.getDate()).contains("7/2/2013 08:00:00"));
 
         //set to July 1 11am (after)
         calendar = new TaskCalendar();
-        date = sdfTime.parse("11:00:00");
-        calendar.setTime(date);
+        date = (new ReDate(sdfTime.parse("11:00:00")));
+        calendar.setTime(new ReDate(date));
         System.out.println(sdfFull.format(calendar.getDate()));
         assertTrue(sdfFull.format(calendar.getDate()).contains("7/1/2013 11:00:00"));
 
@@ -91,14 +98,14 @@ public class TaskCalendarTest
 
         //set to Sun (before)
         TaskCalendar calendar = new TaskCalendar();
-        calendar.setDay(sdfDay.parse("Sun"));
+        calendar.setDay((new ReDate(sdfDay.parse("Sun"))));
         //this is before NOW, so should go to next Sunday
         System.out.println(sdfFull.format(calendar.getDate()));
         assertTrue(sdfFull.format(calendar.getDate()).contains("7/7/2013 09:00:00"));
 
         //set to Mon 9:00 (before)
         calendar = new TaskCalendar();
-        calendar.setDay(sdfDay.parse("Mon"));
+        calendar.setDay((new ReDate(sdfDay.parse("Mon"))));
         System.out.println(sdfFull.format(calendar.getDate()));
         assertTrue(sdfFull.format(calendar.getDate()).contains("7/8/2013 09:00:00"));
     }
@@ -110,21 +117,21 @@ public class TaskCalendarTest
 
         //set to Sun (before)
         TaskCalendar calendar = new TaskCalendar();
-        calendar.setNextDay(sdfDay.parse("Sun"));
+        calendar.setNextDay((new ReDate(sdfDay.parse("Sun"))));
         //this is before NOW, so should go to next Sunday
         System.out.println(sdfFull.format(calendar.getDate()));
         assertTrue(sdfFull.format(calendar.getDate()).contains("7/7/2013 09:00:00"));
 
         //set to Mon (today)
         calendar = new TaskCalendar();
-        calendar.setNextDay(sdfDay.parse("Mon"));
+        calendar.setNextDay((new ReDate(sdfDay.parse("Mon"))));
         //this is today, so should go to next
         System.out.println(sdfFull.format(calendar.getDate()));
         assertTrue(sdfFull.format(calendar.getDate()).contains("7/8/2013 09:00:00"));
 
         //set to Tues 9:00 (after)
         calendar = new TaskCalendar();
-        calendar.setNextDay(sdfDay.parse("Tue"));
+        calendar.setNextDay((new ReDate(sdfDay.parse("Tue"))));
         System.out.println(sdfFull.format(calendar.getDate()));
         assertTrue(sdfFull.format(calendar.getDate()).contains("7/2/2013 09:00:00"));
     }
@@ -138,15 +145,15 @@ public class TaskCalendarTest
 
         //set to Sun (before)
         TaskCalendar calendar = new TaskCalendar();
-        calendar.setDay(sdfDay.parse("Sun"));
-        calendar.setTime(sdfTime.parse("10:00:00"));
+        calendar.setDay((new ReDate(sdfDay.parse("Sun"))));
+        calendar.setTime((new ReDate(sdfTime.parse("10:00:00"))));
         //this is before NOW, so should go to next Sunday
         System.out.println(sdfFull.format(calendar.getDate()));
         assertTrue(sdfFull.format(calendar.getDate()).contains("7/7/2013 10:00:00"));
 
         calendar = new TaskCalendar();
-        calendar.setDate(sdfDate.parse("7/3/2013"));
-        calendar.setTime(sdfTime.parse("11:00:00"));
+        calendar.setDate(new ReDate(sdfDate.parse("7/3/2013")));
+        calendar.setTime((new ReDate(sdfTime.parse("11:00:00"))));
         System.out.println(sdfFull.format(calendar.getDate()));
         assertTrue(sdfFull.format(calendar.getDate()).contains("7/3/2013 11:00:00"));
 
@@ -159,8 +166,8 @@ public class TaskCalendarTest
         SimpleDateFormat sdfDay = new SimpleDateFormat("EEE");
 
         TaskCalendar calendar = new TaskCalendar();
-        calendar.setDay(sdfDay.parse("Tue"));
-        calendar.setDate(sdfDate.parse("7/3/2013"));
+        calendar.setDay((new ReDate(sdfDay.parse("Tue"))));
+        calendar.setDate(new ReDate(sdfDate.parse("7/3/2013")));
         System.out.println(sdfFull.format(calendar.getDate()));
         //should use date
         assertTrue(sdfFull.format(calendar.getDate()).contains("7/3/2013 09:00:00"));

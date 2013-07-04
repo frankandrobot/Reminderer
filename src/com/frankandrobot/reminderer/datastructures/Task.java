@@ -186,7 +186,7 @@ public class Task extends DataStructure implements Parcelable
         }
     }
 
-    public void setDate(Date date)
+    public void setDate(ReDate date)
     {
         isDateSet = true;
         // just get the day,month,year fields from date. Ignore time fields
@@ -196,7 +196,7 @@ public class Task extends DataStructure implements Parcelable
         copyCalendarField(get(Task_Calendar.class), tmpCalendar, Calendar.YEAR);
     }
 
-    public void setTime(Date time)
+    public void setTime(ReDate time)
     {
         set(Task_Date_Boolean.isTimeSet, true);
         // just get time fields. ignore date fields
@@ -205,14 +205,14 @@ public class Task extends DataStructure implements Parcelable
         copyCalendarField(get(Task_Calendar.class), tmpCalendar, Calendar.MINUTE);
     }
 
-    public void setDay(Date day)
+    public void setDay(ReDate day)
     {
         isDaySet = true;
         tmpCalendar = initCalendar(day);
         copyCalendarField(get(Task_Calendar.class), tmpCalendar, Calendar.DAY_OF_WEEK);
     }
 
-    public void setNextDay(Date day)
+    public void setNextDay(ReDate day)
     {
         isDaySet = true;
         tmpCalendar = initCalendar(day);

@@ -59,7 +59,7 @@ abstract public class DateTimeTerminal
     /**
      * Parses and finds days in a {@link com.frankandrobot.reminderer.parser.GrammarContext} (input string)
      */
-    public static class Day implements ITerminal<java.util.Date>
+    public static class Day implements ITerminal<ReDate>
     {
         static DateTimeFormat df = new DateTimeFormat.DayFormat();
         ParsePosition matchPos = new ParsePosition(0);
@@ -69,7 +69,7 @@ abstract public class DateTimeTerminal
             df.setContext(context);
         }
 
-        public java.util.Date parse(GrammarContext inputString)
+        public ReDate parse(GrammarContext inputString)
         {
             return AbstractDateTimeTerminal.parseDate(
                     inputString,
@@ -92,7 +92,7 @@ abstract public class DateTimeTerminal
     /**
      * Parses and finds dates in a {@link com.frankandrobot.reminderer.parser.GrammarContext} (input string)
      */
-    public static class Date implements ITerminal<java.util.Date>
+    public static class Date implements ITerminal<ReDate>
     {
         static DateTimeFormat df = new DateTimeFormat.DateFormat();
         ParsePosition matchPos = new ParsePosition(0);
@@ -102,7 +102,7 @@ abstract public class DateTimeTerminal
             df.setContext(context);
         }
 
-        public java.util.Date parse(GrammarContext inputString)
+        public ReDate parse(GrammarContext inputString)
         {
             return AbstractDateTimeTerminal.parseDate(
                     inputString,
@@ -125,7 +125,7 @@ abstract public class DateTimeTerminal
     /**
      * Parses and finds times in a {@link com.frankandrobot.reminderer.parser.GrammarContext} (input string)
      */
-    public static class Time implements ITerminal
+    public static class Time implements ITerminal<ReDate>
     {
         static DateTimeFormat df = new DateTimeFormat.TimeFormat();
         ParsePosition matchPos = new ParsePosition(0);
@@ -135,7 +135,7 @@ abstract public class DateTimeTerminal
             df.setContext(context);
         }
 
-        public java.util.Date parse(GrammarContext inputString)
+        public ReDate parse(GrammarContext inputString)
         {
             return AbstractDateTimeTerminal.parseDate(
                     inputString,

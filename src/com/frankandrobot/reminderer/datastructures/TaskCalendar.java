@@ -21,10 +21,8 @@ import java.util.Locale;
  * - given "buy milk 8pm" and its 9pm, then task date = tomorrow 8pm
  * - given "buy milk Jun 1" and its June 2nd, then task date = June 1 next year.
  *
- * You can never set a date in the past.
- * 
- * <strike>The only time it will set a date in the past is when you explicitly set it in
- * the past (ex: "buy milk June 1, 1979")</strike>
+ * The only time it will set a date in the past is when you explicitly set it in
+ * the past (ex: "buy milk June 1, 1979")
  *
  * If you use the wrong date and day (ex: Monday June 23 and June 23 is a Tuesday),
  * task will use the date.
@@ -45,7 +43,7 @@ public class TaskCalendar extends DataStructure
     static private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
 
     private Calendar calendar, tmpCalendar, defaultTimeCal;
-    private Date date, day, time;
+    private ReDate date, day, time;
 
     private Locale locale = Locale.getDefault();
 
@@ -77,7 +75,7 @@ public class TaskCalendar extends DataStructure
      */
     private void calculateTimeAndDate()
     {
-        //if (calendar == null)
+        if (calendar == null)
         {
             initializeCalendars();
 
@@ -100,7 +98,8 @@ public class TaskCalendar extends DataStructure
                 //extract month, day, year
                 copyCalendarField(calendar, tmpCalendar, Calendar.MONTH);
                 copyCalendarField(calendar, tmpCalendar, Calendar.DAY_OF_MONTH);
-                copyCalendarField(calendar, tmpCalendar, Calendar.YEAR);
+                if (date.isYearSet())
+                    copyCalendarField(calendar, tmpCalendar, Calendar.YEAR);
             }
             if (time != null)
             {
@@ -136,9 +135,9 @@ public class TaskCalendar extends DataStructure
                     // then move date to 1 week later
                     calendar.add(Calendar.DAY_OF_MONTH, 7);
             }
-            else if (date != null)
+            else if (date != null && !date.isYearSet())
             {
-                // we're here because you set a date but not a day
+                // we're here because you set a year-less date but not a day
                 if (calendar.getTimeInMillis() < curTime)
                     // then move date to 1 year later
                     calendar.add(Calendar.YEAR, 1);
@@ -152,8 +151,9 @@ public class TaskCalendar extends DataStructure
      *
      * @param date Date object containing the desired date
      */
-    public void setDate(Date date)
+    public void setDate(ReDate date)
     {
+        calendar = null;
         this.date = date;
     }
 
@@ -162,8 +162,9 @@ public class TaskCalendar extends DataStructure
      *
      * @param time date containing the desired time
      */
-    public void setTime(Date time)
+    public void setTime(ReDate time)
     {
+        calendar = null;
         this.time = time;
     }
 
@@ -172,8 +173,9 @@ public class TaskCalendar extends DataStructure
      *
      * @param day date containing the desired day
      */
-    public void setDay(Date day)
+    public void setDay(ReDate day)
     {
+        calendar = null;
         this.day = day;
     }
 
@@ -185,8 +187,9 @@ public class TaskCalendar extends DataStructure
      *
      * @param day
      */
-    public void setNextDay(Date day)
+    public void setNextDay(ReDate day)
     {
+        calendar = null;
         this.day = day;
         isNextDay = true;
     }
