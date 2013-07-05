@@ -3,6 +3,7 @@ package com.frankandrobot.reminderer.parser;
 import android.content.Context;
 import android.content.res.Resources;
 
+import com.frankandrobot.reminderer.R;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.datastructures.TaskCalendar;
 
@@ -31,20 +32,35 @@ public class GrammarRuleTest
     @Before
     public void init()
     {
+        new MockUp<Resources>()
+        {
+            @Mock
+            public String[] getStringArray (int id)
+            {
+                if (id == R.array.time_format)
+                    return new String[]
+                            {
+                                    "h:mma",
+                                    "H:mm",
+                                    "ha",
+                                    "hha",
+                                    "hmma",
+                                    "hhmma"
+                            };
+                if (id == R.array.date_format)
+                    return new String[]
+                            {
+                            "M/d",
+                            "MMM d"
+                            };
+                return null;
+            }
+
+        };
+
         new NonStrictExpectations() {{
             context.getResources();
             result = resources;
-
-            resources.getStringArray(anyInt);
-            result = new String[]
-                    {
-                            "h:mma",
-                            "H:mm",
-                            "ha",
-                            "hha",
-                            "hmma",
-                            "hhmma"
-                    };
         }};
 
         new MockUp<TaskCalendar>()
@@ -100,5 +116,71 @@ public class GrammarRuleTest
         assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
                 .contains("7/1/2013 20:00:00");
         //assert(task.get(Task.Task_GrammarRule.repeats).toString().contains("hour"));
+
+        string = "hello world at 7:05am";
+        task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task.Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("7/2/2013 07:05:00");
+        //assert(task.get(Task.Task_GrammarRule.repeats).toString().contains("hour"));
+
+        string = "hello world 7:05am";
+        task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task.Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("7/2/2013 07:05:00");
+        //assert(task.get(Task.Task_GrammarRule.repeats).toString().contains("hour"));
+    }
+
+    @Test
+    public void testDateRule()
+    {
+        ContextFreeGrammar grammar = new ContextFreeGrammar(context);
+
+        String string = "hello world June 1"; // past
+        Task task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task.Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("6/1/2014 09:00:00");
+
+        string = "hello world on June 1, 2013"; //past
+        task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task.Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("6/1/2013 09:00:00");
+        //assert(task.get(Task.Task_GrammarRule.repeats).toString().contains("hour"));
+
+        string = "hello world Aug 1";
+        task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task.Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("8/1/2013 09:00:00");
+        //assert(task.get(Task.Task_GrammarRule.repeats).toString().contains("hour"));
+    }
+
+    @Test
+    public void testNextRule()
+    {
+        ContextFreeGrammar grammar = new ContextFreeGrammar(context);
+
+        String string = "hello world next Monday";
+        Task task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task.Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("7/8/2013 09:00:00");
+
+        string = "hello world next Tuesday";
+        task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task.Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("7/2/2013 09:00:00");
+
     }
 }
