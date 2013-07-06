@@ -266,4 +266,31 @@ public class GrammarRuleTest
         assert(Type.YEAR == Type.valueOf(task.get(Task_String.repeatsType)));
 
     }
+
+    @Test
+    public void testDayExpression()
+    {
+        ContextFreeGrammar grammar = new ContextFreeGrammar(context);
+
+        String string = "hello world tomorrow";
+        Task task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("7/2/2013 09:00:00");
+
+        string = "hello world tommorrow";
+        task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("7/2/2013 09:00:00");
+
+        string = "hello world today";
+        task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("7/2/2013 09:00:00");
+    }
 }

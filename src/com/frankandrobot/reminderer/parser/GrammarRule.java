@@ -5,12 +5,10 @@ import android.content.Context;
 import com.frankandrobot.reminderer.datastructures.ReDate;
 import com.frankandrobot.reminderer.datastructures.Task;
 
-import java.util.AbstractMap;
 import java.util.LinkedList;
-import java.util.Map;
 
+import static com.frankandrobot.reminderer.datastructures.Task.*;
 import static com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.*;
-import static java.util.AbstractMap.SimpleEntry;
 
 abstract public class GrammarRule implements IGrammarRule<Task>
 {
@@ -88,7 +86,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
 
             llRules.add(new TimeRule(context));
             llRules.add(new DateRule(context));
-            llRules.add(new NextRule(context));
+            llRules.add(new DayExpressionRule(context));
             llRules.add(new RepeatsRule(context));
             llRules.add(new RepeatsEveryRule(context));
         }
@@ -158,7 +156,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
     }
 
     /**
-     * date: dateParser | "on" dateParser
+     * date: dateParser | ("at"|"on") dateParser
      */
     public static class DateRule extends GrammarRule
     {
@@ -211,13 +209,17 @@ abstract public class GrammarRule implements IGrammarRule<Task>
         }
     }
 
-    // next: "next" dayParser
-    public static class NextRule extends GrammarRule
+    /**
+     * dayExpression: "next" dayParser | "today" | "tomorrow"
+     */
+    public static class DayExpressionRule extends GrammarRule
     {
         private Finder next = new Finder("next");
+        private Finder today = new Finder("today");
+        private Finder tomorrow = new Finder("tomorrow|tommorrow|tommorow|tomorow");
         private DateTimeTerminal.Day dayParser;
 
-        public NextRule(Context context)
+        public DayExpressionRule(Context context)
         {
             super(context);
 
@@ -228,6 +230,9 @@ abstract public class GrammarRule implements IGrammarRule<Task>
         public Task parse(GrammarContext inputString)
         {
             next.reset();
+            today.reset();
+            tomorrow.reset();
+
             int curPos = inputString.getPos();
 
             if (next.find(inputString))
@@ -244,6 +249,24 @@ abstract public class GrammarRule implements IGrammarRule<Task>
                     task.get(Task.Task_Calendar.class).setNextDay(day);
                     return task;
                 }
+            }
+
+            inputString.setPos(curPos);
+
+            if (today.find(inputString))
+            {
+                inputString.gobble(today);
+                Task task = new Task();
+                task.get(Task.Task_Calendar.class).setDate(new ReDate());
+                return task;
+            }
+
+            if (tomorrow.find(inputString))
+            {
+                inputString.gobble(tomorrow);
+                Task task = new Task();
+                task.get(Task.Task_Calendar.class).setTomorrow();
+                return task;
             }
 
             inputString.setPos(curPos);
@@ -287,7 +310,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
                     if (match != null) // one of hourly, daily, etc found
                     {
                         Task task = new Task();
-                        task.set(Task.Task_String.repeatsType, match.toString());
+                        task.set(Task_String.repeatsType, match.toString());
                         return task;
                     }
                 }
@@ -342,7 +365,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
                         if (match != null) // one of hourly, daily, etc found
                         {
                             Task task = new Task();
-                            task.set(Task.Task_String.repeatsType, match.toString());
+                            task.set(Task_String.repeatsType, match.toString());
                             return task;
                         }
                     }

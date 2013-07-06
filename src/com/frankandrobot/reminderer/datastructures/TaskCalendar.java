@@ -183,7 +183,7 @@ public class TaskCalendar extends DataStructure
 
     public void setTimeInMillis(long time)
     {
-        Calendar calendar = getCalendar();
+        calendar = getCalendar();
         calendar.setTimeInMillis(time);
     }
 
@@ -200,6 +200,14 @@ public class TaskCalendar extends DataStructure
         calendar = null;
         this.day = day;
         isNextDay = true;
+    }
+
+    public void setTomorrow()
+    {
+        calendar = null;
+        tmpCalendar = getCalendar();
+        tmpCalendar.add(Calendar.DAY_OF_WEEK, 1);
+        setNextDay(new ReDate(tmpCalendar.getTime()));
     }
 
     public Date getDate()
@@ -294,4 +302,5 @@ public class TaskCalendar extends DataStructure
     {
         a.set(field, b.get(field));
     }
+
 }
