@@ -11,8 +11,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.frankandrobot.reminderer.Database.DatabaseAsyncService.DatabaseHandler;
-import com.frankandrobot.reminderer.Database.DatabaseInterface;
+import com.frankandrobot.reminderer.database.DatabaseAsyncService.DatabaseHandler;
+import com.frankandrobot.reminderer.database.DatabaseInterface;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.parser.ContextFreeGrammar;
 

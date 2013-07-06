@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.Database;
+package com.frankandrobot.reminderer.database;
 
 import android.net.Uri;
 

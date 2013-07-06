@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.Helpers;
+package com.frankandrobot.reminderer.helpers;
 
 import com.frankandrobot.reminderer.datastructures.DataStructure;
 

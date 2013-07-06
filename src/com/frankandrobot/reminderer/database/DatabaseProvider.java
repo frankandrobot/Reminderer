@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.frankandrobot.reminderer.Database;
+package com.frankandrobot.reminderer.database;
 
-import com.frankandrobot.reminderer.Helpers.Logger;
+import com.frankandrobot.reminderer.helpers.Logger;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;
@@ -29,7 +29,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
-import android.text.TextUtils;
 import android.util.Log;
 
 public class DatabaseProvider extends ContentProvider {
@@ -215,29 +214,29 @@ public class DatabaseProvider extends ContentProvider {
 	// else
 	// values = new ContentValues();
 	//
-	// if (!values.containsKey(Alarm.Columns.HOUR))
-	// values.put(Alarm.Columns.HOUR, 0);
+	// if (!values.containsKey(alarm.Columns.HOUR))
+	// values.put(alarm.Columns.HOUR, 0);
 	//
-	// if (!values.containsKey(Alarm.Columns.MINUTES))
-	// values.put(Alarm.Columns.MINUTES, 0);
+	// if (!values.containsKey(alarm.Columns.MINUTES))
+	// values.put(alarm.Columns.MINUTES, 0);
 	//
-	// if (!values.containsKey(Alarm.Columns.DAYS_OF_WEEK))
-	// values.put(Alarm.Columns.DAYS_OF_WEEK, 0);
+	// if (!values.containsKey(alarm.Columns.DAYS_OF_WEEK))
+	// values.put(alarm.Columns.DAYS_OF_WEEK, 0);
 	//
-	// if (!values.containsKey(Alarm.Columns.ALARM_TIME))
-	// values.put(Alarm.Columns.ALARM_TIME, 0);
+	// if (!values.containsKey(alarm.Columns.ALARM_TIME))
+	// values.put(alarm.Columns.ALARM_TIME, 0);
 	//
-	// if (!values.containsKey(Alarm.Columns.ENABLED))
-	// values.put(Alarm.Columns.ENABLED, 0);
+	// if (!values.containsKey(alarm.Columns.ENABLED))
+	// values.put(alarm.Columns.ENABLED, 0);
 	//
-	// if (!values.containsKey(Alarm.Columns.VIBRATE))
-	// values.put(Alarm.Columns.VIBRATE, 1);
+	// if (!values.containsKey(alarm.Columns.VIBRATE))
+	// values.put(alarm.Columns.VIBRATE, 1);
 	//
-	// if (!values.containsKey(Alarm.Columns.MESSAGE))
-	// values.put(Alarm.Columns.MESSAGE, "");
+	// if (!values.containsKey(alarm.Columns.MESSAGE))
+	// values.put(alarm.Columns.MESSAGE, "");
 	//
-	// if (!values.containsKey(Alarm.Columns.ALERT))
-	// values.put(Alarm.Columns.ALERT, "");
+	// if (!values.containsKey(alarm.Columns.ALERT))
+	// values.put(alarm.Columns.ALERT, "");
 	//
 	SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 	long rowId = db.insert(DbColumns.TASK_TABLE, null, initialValues);

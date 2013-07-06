@@ -2,7 +2,7 @@ package com.frankandrobot.reminderer.datastructures;
 
 import android.annotation.SuppressLint;
 
-import com.frankandrobot.reminderer.Helpers.MultiOsSupport;
+import com.frankandrobot.reminderer.helpers.MultiOsSupport;
 
 import java.text.DateFormat;
 import java.text.ParsePosition;

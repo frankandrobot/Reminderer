@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.Alarm;
+package com.frankandrobot.reminderer.alarm;
 
 import android.app.KeyguardManager;
 import android.content.BroadcastReceiver;
@@ -7,7 +7,7 @@ import android.content.Intent;
 import android.os.Parcel;
 import android.util.Log;
 
-import com.frankandrobot.reminderer.Helpers.Logger;
+import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.datastructures.Task;
 
 import java.text.SimpleDateFormat;

@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.Alarm;
+package com.frankandrobot.reminderer.alarm;
 
 import android.app.Service;
 import android.content.Context;
@@ -13,7 +13,7 @@ import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.Log;
 
-import com.frankandrobot.reminderer.Helpers.Logger;
+import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.datastructures.Task;
 
 import java.util.Timer;
@@ -49,7 +49,7 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
 //	    switch (msg.what) {
 //	    case KILLER:
 //		if (Logger.LOGV) {
-//		    Log.v(TAG, "*********** Alarm killer triggered ***********");
+//		    Log.v(TAG, "*********** alarm killer triggered ***********");
 //		}
 //		sendKillBroadcast((Task) msg.obj);
 //		stopSelf();
@@ -64,7 +64,7 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
 	@Override
 	public void run() {
 	    if (Logger.LOGV) {
-		    Log.v(TAG, "*********** Alarm killer triggered ***********");
+		    Log.v(TAG, "*********** alarm killer triggered ***********");
 		}
 		sendKillBroadcast(mCurrentTask);
 		stopSelf();

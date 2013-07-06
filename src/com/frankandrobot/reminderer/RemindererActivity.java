@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.frankandrobot.reminderer.Helpers.MultiOsSupport;
+import com.frankandrobot.reminderer.helpers.MultiOsSupport;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.parser.ContextFreeGrammar;
 import com.frankandrobot.reminderer.parser.datetime.DateTimeFormat;

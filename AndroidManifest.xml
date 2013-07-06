@@ -20,7 +20,7 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name" >
         <provider
-            android:name=".Database.DatabaseProvider"
+            android:name=".database.DatabaseProvider"
             android:authorities="com.frankandrobot.reminderer.dbprovider"
             android:exported="false" />
         <!-- Using exported=false prevents other apps from using the database -->
@@ -39,14 +39,14 @@
             android:label="@string/app_name" >
         </activity>
         <activity
-            android:name=".Alarm.AlarmAlertActivity"
+            android:name=".alarm.AlarmAlertActivity"
             android:excludeFromRecents="true"
             android:label="@string/app_name"
             android:launchMode="singleInstance"
             android:taskAffinity="" >
         </activity>
 
-        <receiver android:name=".Alarm.AlarmReceiver" >
+        <receiver android:name=".alarm.AlarmReceiver" >
             <intent-filter>
                 <action android:name="com.frankandrobot.reminderer.TASK_ALARM_ALERT" />
                 <action android:name="com.frankandrobot.reminderer.TASK_ALARM_KILLED" />
@@ -54,18 +54,18 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".Alarm.AlarmRingerService" >
+        <service android:name=".alarm.AlarmRingerService" >
             <intent-filter>
                 <action android:name="com.frankandrobot.reminderer.TASK_ALARM_ALERT" />
             </intent-filter>
         </service>
 
-        <service android:name=".Database.DatabaseAsyncService" >
+        <service android:name=".database.DatabaseAsyncService" >
         </service>
         
-        <!-- Widget -->
+        <!-- widget -->
         <receiver
-            android:name=".Widget.RemindererWidgetProvider"
+            android:name=".widget.RemindererWidgetProvider"
             android:label="Reminderer" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

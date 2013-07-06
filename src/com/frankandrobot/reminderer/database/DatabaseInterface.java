@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.Database;
+package com.frankandrobot.reminderer.database;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -11,8 +11,8 @@ import android.os.Parcel;
 import android.support.v4.content.Loader;
 import android.util.Log;
 
-import com.frankandrobot.reminderer.Alarm.AlarmConstants;
-import com.frankandrobot.reminderer.Helpers.Logger;
+import com.frankandrobot.reminderer.alarm.AlarmConstants;
+import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.datastructures.Task;
 
 import java.util.Calendar;

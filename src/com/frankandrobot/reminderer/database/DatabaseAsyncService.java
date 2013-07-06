@@ -1,9 +1,9 @@
-package com.frankandrobot.reminderer.Database;
+package com.frankandrobot.reminderer.database;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import com.frankandrobot.reminderer.Helpers.Logger;
+import com.frankandrobot.reminderer.helpers.Logger;
 
 import android.app.IntentService;
 import android.content.ContentProviderOperation;

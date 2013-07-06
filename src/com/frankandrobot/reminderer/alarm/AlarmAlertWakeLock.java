@@ -1,6 +1,6 @@
-package com.frankandrobot.reminderer.Alarm;
+package com.frankandrobot.reminderer.alarm;
 
-import com.frankandrobot.reminderer.Helpers.Logger;
+import com.frankandrobot.reminderer.helpers.Logger;
 
 import android.content.Context;
 import android.os.PowerManager;

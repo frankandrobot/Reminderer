@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.Alarm;
+package com.frankandrobot.reminderer.alarm;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,9 +16,9 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
-import com.frankandrobot.reminderer.Database.DatabaseInterface;
-import com.frankandrobot.reminderer.Database.DbColumns;
-import com.frankandrobot.reminderer.Helpers.Logger;
+import com.frankandrobot.reminderer.database.DatabaseInterface;
+import com.frankandrobot.reminderer.database.DbColumns;
+import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.R;
 import com.frankandrobot.reminderer.datastructures.Task;
 
@@ -89,7 +89,7 @@ public class AlarmAlertActivity extends FragmentActivity implements
 	    mKilled = true;
 	    // disable snooze button since can't snooze anymore
 	    mSnooze.setEnabled(false);
-	    // Alarm alarm =
+	    // alarm alarm =
 	    // intent.getParcelableExtra(Alarms.ALARM_INTENT_EXTRA);
 	    // if (mAlarm.id == alarm.id) {
 	    // dismiss(true);

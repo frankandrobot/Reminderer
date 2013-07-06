@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.Helpers;
+package com.frankandrobot.reminderer.helpers;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

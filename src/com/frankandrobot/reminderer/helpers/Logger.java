@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.Helpers;
+package com.frankandrobot.reminderer.helpers;
 
 public class Logger {
     static public boolean LOGV = true;

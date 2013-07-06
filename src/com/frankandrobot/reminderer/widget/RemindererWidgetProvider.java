@@ -1,17 +1,13 @@
-package com.frankandrobot.reminderer.Widget;
+package com.frankandrobot.reminderer.widget;
 
 import com.frankandrobot.reminderer.AddTaskActivity;
 import com.frankandrobot.reminderer.R;
-import com.frankandrobot.reminderer.RemindererActivity;
 
 import android.app.PendingIntent;
-import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.widget.RemoteViews;
 
 public class RemindererWidgetProvider extends AppWidgetProvider {
