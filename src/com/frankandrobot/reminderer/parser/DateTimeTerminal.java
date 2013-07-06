@@ -16,11 +16,12 @@ abstract public class DateTimeTerminal
     {
 
         /**
-         * Parses an input string using the given {@link com.frankandrobot.reminderer.parser.datetime.DateTimeFormat}.
+         * Parses an input string using the given
+         * {@link DateTimeFormat}.
          *
          *
          * @param inputString the input string
-         * @param parser      a {@link com.frankandrobot.reminderer.parser.datetime.DateTimeFormat}
+         * @param parser      a {@link DateTimeFormat}
          * @return null if no match is found; otherwise, the matched date
          */
         public static ReDate parseDate(GrammarContext inputString,
@@ -57,7 +58,7 @@ abstract public class DateTimeTerminal
     }
 
     /**
-     * Parses and finds days in a {@link com.frankandrobot.reminderer.parser.GrammarContext} (input string)
+     * Parses and finds days in a {@link GrammarContext} (input string)
      */
     public static class Day implements ITerminal<ReDate>
     {
@@ -90,7 +91,7 @@ abstract public class DateTimeTerminal
     }
 
     /**
-     * Parses and finds dates in a {@link com.frankandrobot.reminderer.parser.GrammarContext} (input string)
+     * Parses and finds dates in a {@link GrammarContext} (input string)
      */
     public static class Date implements ITerminal<ReDate>
     {
@@ -123,7 +124,7 @@ abstract public class DateTimeTerminal
     }
 
     /**
-     * Parses and finds times in a {@link com.frankandrobot.reminderer.parser.GrammarContext} (input string)
+     * Parses and finds times in a {@link GrammarContext} (input string)
      */
     public static class Time implements ITerminal<ReDate>
     {

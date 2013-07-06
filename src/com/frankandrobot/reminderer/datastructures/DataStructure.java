@@ -2,7 +2,49 @@ package com.frankandrobot.reminderer.datastructures;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Calendar;
 
+/**
+ * A datastructure with auto-generated getters and setters.
+ *
+ * It is possible to write functions that take variable __names__ as arguments
+ * without using reflection.
+ *
+ * It is also possible to write javascript-like methods, such as apply(), that
+ * copy all an objects fields into another object.
+ *
+ * The {@link DataStructure} class is basically a giant hack. It started with
+ * me using a {@link HashMap} to store variable fields indexed by {@link Enum}s
+ * and then eventually morphing into this datastructure class.
+ *
+ * Usage is similar to the {@link Calendar} object.
+ *
+ * <pre>
+ * <code>
+ * class Test extends DataStructure
+ * {
+ *     public enum StringField implements Field<String>
+ *     {
+ *         description
+ *         ,name
+ *     }
+ *
+ *     public enum IntField implements Field<Integer>
+ *     {
+ *         counter
+ *     }
+ * }
+ *
+ * Test test = new Test();
+ * test.set(StringField.description, "Hello world");
+ * test.set(IntField.counter, 500);
+ * System.out.println("test.get(StringField.description");
+ * //dumping the whole datastruct also works:
+ * System.out.println(test);
+ *
+ * </code>
+ * </pre>
+ */
 public class DataStructure
 {
     public interface Field<T> {}

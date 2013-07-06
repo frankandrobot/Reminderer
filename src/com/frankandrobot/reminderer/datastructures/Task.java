@@ -3,8 +3,6 @@ package com.frankandrobot.reminderer.datastructures;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.frankandrobot.reminderer.parser.GrammarRule;
-
 import java.util.Calendar;
 
 /**

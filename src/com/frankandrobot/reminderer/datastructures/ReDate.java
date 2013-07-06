@@ -3,7 +3,10 @@ package com.frankandrobot.reminderer.datastructures;
 import java.util.Date;
 
 /**
- * Wrapper for {@link Date}
+ * Wrapper for {@link Date}.
+ *
+ * Used to tell which fields are set in the parsed date object.
+ *
  */
 public class ReDate extends Date
 {

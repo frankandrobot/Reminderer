@@ -7,8 +7,8 @@ import com.frankandrobot.reminderer.datastructures.Task;
 /**
  * A **context free grammar** is just a generalization of regular expressions.
  *
- * Each method corresponds to a non-terminal or terminal symbol in the
- * grammar. Each terminal tries to parse the input  string---either its able to
+ * Each {@link IGrammarRule} corresponds to a non-terminal or terminal symbol in the
+ * grammar. Each terminal tries to parse the input string---either its able to
  * parse the string or it can't. Partial parsing isn't supported.
  * Non-terminals call other terminals to parse a string.
  *
