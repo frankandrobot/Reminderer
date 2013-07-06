@@ -19,6 +19,9 @@ import mockit.MockUp;
 import mockit.Mocked;
 import mockit.NonStrictExpectations;
 
+import static com.frankandrobot.reminderer.datastructures.Task.*;
+import static com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.*;
+
 public class GrammarRuleTest
 {
     @Mocked
@@ -85,23 +88,9 @@ public class GrammarRuleTest
         String string = "hello world";
         Task task = grammar.parse(string);
         System.out.println(task);
-        assert(task.get(Task.Task_String.desc).contains("hello world"));
+        assert(task.get(Task_String.desc).contains("hello world"));
         assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
                 .contains("7/2/2013 09:00:00");
-    }
-
-    @Test
-    public void testEvery()
-    {
-        ContextFreeGrammar grammar = new ContextFreeGrammar(context);
-
-        String string = "hello world repeats every hour";
-        Task task = grammar.parse(string);
-        System.out.println(task);
-        assert(task.get(Task.Task_String.desc).contains("hello world"));
-        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
-                .contains("7/2/2013 09:00:00");
-        assert(task.get(Task.Task_GrammarRule.repeats).toString().contains("hour"));
     }
 
     @Test
@@ -112,7 +101,7 @@ public class GrammarRuleTest
         String string = "hello world at 8pm";
         Task task = grammar.parse(string);
         System.out.println(task);
-        assert(task.get(Task.Task_String.desc).contains("hello world"));
+        assert(task.get(Task_String.desc).contains("hello world"));
         assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
                 .contains("7/1/2013 20:00:00");
         //assert(task.get(Task.Task_GrammarRule.repeats).toString().contains("hour"));
@@ -120,7 +109,7 @@ public class GrammarRuleTest
         string = "hello world at 7:05am";
         task = grammar.parse(string);
         System.out.println(task);
-        assert(task.get(Task.Task_String.desc).contains("hello world"));
+        assert(task.get(Task_String.desc).contains("hello world"));
         assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
                 .contains("7/2/2013 07:05:00");
         //assert(task.get(Task.Task_GrammarRule.repeats).toString().contains("hour"));
@@ -128,7 +117,7 @@ public class GrammarRuleTest
         string = "hello world 7:05am";
         task = grammar.parse(string);
         System.out.println(task);
-        assert(task.get(Task.Task_String.desc).contains("hello world"));
+        assert(task.get(Task_String.desc).contains("hello world"));
         assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
                 .contains("7/2/2013 07:05:00");
         //assert(task.get(Task.Task_GrammarRule.repeats).toString().contains("hour"));
@@ -142,14 +131,14 @@ public class GrammarRuleTest
         String string = "hello world June 1"; // past
         Task task = grammar.parse(string);
         System.out.println(task);
-        assert(task.get(Task.Task_String.desc).contains("hello world"));
+        assert(task.get(Task_String.desc).contains("hello world"));
         assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
                 .contains("6/1/2014 09:00:00");
 
         string = "hello world on June 1, 2013"; //past
         task = grammar.parse(string);
         System.out.println(task);
-        assert(task.get(Task.Task_String.desc).contains("hello world"));
+        assert(task.get(Task_String.desc).contains("hello world"));
         assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
                 .contains("6/1/2013 09:00:00");
         //assert(task.get(Task.Task_GrammarRule.repeats).toString().contains("hour"));
@@ -157,7 +146,7 @@ public class GrammarRuleTest
         string = "hello world Aug 1";
         task = grammar.parse(string);
         System.out.println(task);
-        assert(task.get(Task.Task_String.desc).contains("hello world"));
+        assert(task.get(Task_String.desc).contains("hello world"));
         assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
                 .contains("8/1/2013 09:00:00");
         //assert(task.get(Task.Task_GrammarRule.repeats).toString().contains("hour"));
@@ -171,16 +160,110 @@ public class GrammarRuleTest
         String string = "hello world next Monday";
         Task task = grammar.parse(string);
         System.out.println(task);
-        assert(task.get(Task.Task_String.desc).contains("hello world"));
+        assert(task.get(Task_String.desc).contains("hello world"));
         assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
                 .contains("7/8/2013 09:00:00");
 
         string = "hello world next Tuesday";
         task = grammar.parse(string);
         System.out.println(task);
-        assert(task.get(Task.Task_String.desc).contains("hello world"));
+        assert(task.get(Task_String.desc).contains("hello world"));
         assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
                 .contains("7/2/2013 09:00:00");
+
+    }
+
+    @Test
+    public void testRepeats()
+    {
+        ContextFreeGrammar grammar = new ContextFreeGrammar(context);
+
+        String string = "hello world repeats every hour";
+        Task task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("7/2/2013 09:00:00");
+        assert(Type.HOUR == Type.valueOf(task.get(Task_String.repeatsType)));
+
+        string = "hello world repeats every day";
+        task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("7/2/2013 09:00:00");
+        assert(Type.DAY == Type.valueOf(task.get(Task_String.repeatsType)));
+
+        string = "hello world repeats every week";
+        task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("7/2/2013 09:00:00");
+        assert(Type.WEEK == Type.valueOf(task.get(Task_String.repeatsType)));
+
+        string = "hello world repeats every month";
+        task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("7/2/2013 09:00:00");
+        assert(Type.MONTH == Type.valueOf(task.get(Task_String.repeatsType)));
+
+        string = "hello world repeats every year";
+        task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("7/2/2013 09:00:00");
+        assert(Type.YEAR == Type.valueOf(task.get(Task_String.repeatsType)));
+
+    }
+
+    @Test
+    public void testRepeatsEvery()
+    {
+        ContextFreeGrammar grammar = new ContextFreeGrammar(context);
+
+        String string = "hello world repeats hourly";
+        Task task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("7/2/2013 09:00:00");
+        assert(Type.HOUR == Type.valueOf(task.get(Task_String.repeatsType)));
+
+        string = "hello world repeats daily";
+        task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("7/2/2013 09:00:00");
+        assert(Type.DAY == Type.valueOf(task.get(Task_String.repeatsType)));
+
+        string = "hello world repeats weekly";
+        task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("7/2/2013 09:00:00");
+        assert(Type.WEEK == Type.valueOf(task.get(Task_String.repeatsType)));
+
+        string = "hello world repeats monthly";
+        task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("7/2/2013 09:00:00");
+        assert(Type.MONTH == Type.valueOf(task.get(Task_String.repeatsType)));
+
+        string = "hello world repeats yearly";
+        task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task_String.desc).contains("hello world"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("7/2/2013 09:00:00");
+        assert(Type.YEAR == Type.valueOf(task.get(Task_String.repeatsType)));
 
     }
 }

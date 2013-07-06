@@ -44,11 +44,7 @@ public class Task extends DataStructure implements Parcelable
     {
         desc
         ,location
-    }
-
-    public enum Task_GrammarRule implements Field<GrammarRule.RepeatsToken>
-    {
-        repeats
+        ,repeatsType
     }
 
     public class Task_Calendar implements Field<TaskCalendar> {}

@@ -5,7 +5,12 @@ import android.content.Context;
 import com.frankandrobot.reminderer.datastructures.ReDate;
 import com.frankandrobot.reminderer.datastructures.Task;
 
+import java.util.AbstractMap;
 import java.util.LinkedList;
+import java.util.Map;
+
+import static com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.*;
+import static java.util.AbstractMap.SimpleEntry;
 
 abstract public class GrammarRule implements IGrammarRule<Task>
 {
@@ -84,6 +89,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
             llRules.add(new TimeRule(context));
             llRules.add(new DateRule(context));
             llRules.add(new NextRule(context));
+            llRules.add(new RepeatsRule(context));
             llRules.add(new RepeatsEveryRule(context));
         }
 
@@ -244,6 +250,53 @@ abstract public class GrammarRule implements IGrammarRule<Task>
             return null;
         }
     }
+
+    /**
+     * repeats: "repeats" occurrence
+     * occurrence: "hourly" | "daily" | "weekly" | "monthly" | "yearly"
+     */
+    public static class RepeatsRule extends GrammarRule
+    {
+        private Finder repeats = new Finder("repeats");
+        private LinkedList<RepeatsToken> llTokens = new LinkedList<RepeatsToken>();
+
+
+        public RepeatsRule(Context context)
+        {
+            super(context);
+
+            llTokens.add(new RepeatsToken(Type.HOUR, "hourly"));
+            llTokens.add(new RepeatsToken(Type.DAY, "daily"));
+            llTokens.add(new RepeatsToken(Type.WEEK, "weekly"));
+            llTokens.add(new RepeatsToken(Type.MONTH, "monthly"));
+            llTokens.add(new RepeatsToken(Type.YEAR, "yearly"));
+        }
+
+        @Override
+        public Task parse(GrammarContext inputString)
+        {
+            int curPos = inputString.getPos();
+
+            if (repeats.find(inputString))
+            {
+                inputString.gobble(repeats); // "repeats" found
+                // get hour, day, week, month, year
+                for (RepeatsToken token : llTokens)
+                {
+                    RepeatsToken match = token.parse(inputString);
+                    if (match != null) // one of hourly, daily, etc found
+                    {
+                        Task task = new Task();
+                        task.set(Task.Task_String.repeatsType, match.toString());
+                        return task;
+                    }
+                }
+            }
+            inputString.setPos(curPos);
+            return null;
+        }
+    }
+
     /**
      // repeatsEvery: "repeats" "every" S
      // S: timeDuration | dayParser | "hour" | "day" | "week" | "month" | "year"
@@ -258,10 +311,11 @@ abstract public class GrammarRule implements IGrammarRule<Task>
         {
             super(context);
             //TODO replace with XML
-            for(String token:new String[]{"hour", "day", "week", "month", "year"})
-            {
-                llTokens.add(new RepeatsToken(token));
-            }
+            llTokens.add(new RepeatsToken(Type.HOUR, "hour"));
+            llTokens.add(new RepeatsToken(Type.DAY, "day"));
+            llTokens.add(new RepeatsToken(Type.WEEK, "week"));
+            llTokens.add(new RepeatsToken(Type.MONTH, "month"));
+            llTokens.add(new RepeatsToken(Type.YEAR, "year"));
         }
 
         @Override
@@ -288,7 +342,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
                         if (match != null) // one of hourly, daily, etc found
                         {
                             Task task = new Task();
-                            task.set(Task.Task_GrammarRule.repeats, match);
+                            task.set(Task.Task_String.repeatsType, match.toString());
                             return task;
                         }
                     }
@@ -308,35 +362,40 @@ abstract public class GrammarRule implements IGrammarRule<Task>
         }
     }
 
-    static public class RepeatsToken implements ITerminal<RepeatsToken>
+    static public class RepeatsToken extends Finder implements ITerminal<RepeatsToken>
     {
-        private Finder token;
-
-        RepeatsToken(String token)
+        public enum Type
         {
-            this.token = new Finder(token);
+            HOUR
+            ,DAY
+            ,WEEK
+            ,MONTH
+            ,YEAR
         }
 
-        @Override
-        public boolean find(GrammarContext context)
+        private Type type;
+
+        RepeatsToken(Type name, String token)
         {
-            return token.find(context);
+            super(token);
+            type = name;
         }
 
         @Override
         public RepeatsToken parse(GrammarContext inputString)
         {
-            if (token.find(inputString))
+            if (find(inputString))
             {
-                inputString.gobble(token);
+                inputString.gobble(end());
                 return this;
             }
             return null;
         }
 
+        @Override
         public String toString()
         {
-            return token.value();
+            return type.toString();
         }
     }
 }

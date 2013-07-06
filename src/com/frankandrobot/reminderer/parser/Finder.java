@@ -9,13 +9,13 @@ import java.util.regex.Pattern;
  * The Pattern object ignores whitespace from the beginning
  * of the input expression.
  */
-public class Finder
+class Finder
 {
-    Pattern p;
-    Matcher m;
-    String val;
+    private Pattern p;
+    private Matcher m;
+    private String val;
 
-    Finder(String pattern)
+    public Finder(String pattern)
     {
         val = new String(pattern);
         p = Pattern.compile("[ \t]*" + pattern);
@@ -32,7 +32,7 @@ public class Finder
      * @param inputString a {@link GrammarContext}
      * @return true - if pattern found in the beginning of the context; false otherwise
      */
-    boolean find(GrammarContext inputString)
+    public boolean find(GrammarContext inputString)
     {
         m = p.matcher(inputString.getContext());
         if (m.find())
@@ -42,7 +42,7 @@ public class Finder
     /**
      * Gets the position in the inputString where the pattern starts
      */
-    int start()
+    public int start()
     {
         return m.start();
     }
@@ -51,12 +51,12 @@ public class Finder
      * Gets the position in the inputString where the pattern ends
      * @return
      */
-    int end()
+    public int end()
     {
         return m.end();
     }
 
-    public String value()
+    public String toString()
     {
         return val;
     }
