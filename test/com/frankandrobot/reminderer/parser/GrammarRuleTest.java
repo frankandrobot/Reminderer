@@ -291,6 +291,33 @@ public class GrammarRuleTest
         System.out.println(task);
         assert(task.get(Task_String.desc).contains("hello world"));
         assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
-                .contains("7/2/2013 09:00:00");
+                .contains("7/6/2013 09:00:00");
+    }
+
+    @Test
+    public void testAll()
+    {
+        ContextFreeGrammar grammar = new ContextFreeGrammar(context);
+
+        String string = "honduras 3am December 25";
+        Task task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task_String.desc).contains("honduras"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("12/25/2013 03:00:00");
+
+        string = "honduras 3am Dec 25";
+        task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task_String.desc).contains("honduras"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("12/25/2013 03:00:00");
+
+        string = "honduras Dec 25 3am";
+        task = grammar.parse(string);
+        System.out.println(task);
+        assert(task.get(Task_String.desc).contains("honduras"));
+        assert(sdfFull.format(task.get(Task.Task_Calendar.class).getDate()))
+                .contains("12/25/2013 03:00:00");
     }
 }
