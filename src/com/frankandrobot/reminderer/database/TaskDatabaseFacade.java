@@ -57,7 +57,7 @@ public class TaskDatabaseFacade
             }
 
         };
-        DatabaseAsyncService.startInsert(context, handler, values, postOp);
+        TaskDAOAsyncService.startInsert(context, handler, values, postOp);
     }
 
     public static void findNextAlarm(Context context, Task task)
@@ -159,7 +159,7 @@ public class TaskDatabaseFacade
     public static Cursor getDueAlarms(Context context, long time, String op)
     {
         Cursor mResult = context.getContentResolver().query(
-                DbColumns.CONTENT_URI, DbColumns.TASK_ALERT_LISTVIEW_CP,
+                TaskDAOProvider.CONTENT_URI, DbColumns.TASK_ALERT_LISTVIEW_CP,
                 DbColumns.TASK_DUE_DATE + op + "?",
                 new String[]{Long.toString(time)}, DbColumns.DEFAULT_SORT);
         return mResult;
@@ -178,7 +178,7 @@ public class TaskDatabaseFacade
                                                           long time, String OP)
     {
         return new android.support.v4.content.CursorLoader(context,
-                                                           DbColumns.CONTENT_URI,
+                                                           TaskDAOProvider.CONTENT_URI,
                                                            DbColumns.TASK_ALERT_LISTVIEW_CP,
                                                            DbColumns.TASK_DUE_DATE + OP + "?",
                                                            new String[]{Long.toString(

@@ -34,10 +34,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * postOp runs in the service thread, while the handler runs in the main UI
  * thread.
  */
-public class DatabaseAsyncService extends IntentService
+public class TaskDAOAsyncService extends IntentService
 {
 
-    private static String TAG = "DbService";
+    private static String TAG = "R:DBService";
     private static ConcurrentLinkedQueue<OperationInfo> opQueue = new ConcurrentLinkedQueue<OperationInfo>();
 
     /*
@@ -45,14 +45,14 @@ public class DatabaseAsyncService extends IntentService
      * Helper classes
      */
 
-    public DatabaseAsyncService(String name)
+    public TaskDAOAsyncService(String name)
     {
         super(name);
     }
 
-    public DatabaseAsyncService()
+    public TaskDAOAsyncService()
     {
-        super("DatabaseAsyncService");
+        super("TaskDAOAsyncService");
     }
 
     /*
@@ -78,17 +78,17 @@ public class DatabaseAsyncService extends IntentService
     {
         OperationInfo info = new OperationInfo(Operation.EVENT_ARG_INSERT,
                                                context.getContentResolver(),
-                                               DbColumns.CONTENT_URI,
+                                               TaskDAOProvider.CONTENT_URI,
                                                handler,
                                                postOp);
         info.values = values;
         ContentProviderOperation.Builder b = ContentProviderOperation
-                .newInsert(DbColumns.CONTENT_URI).withValues(info.values);
+                .newInsert(TaskDAOProvider.CONTENT_URI).withValues(info.values);
         info.cpo.add(b.build());
         info.postOp = postOp;
         opQueue.add(info);
         // go
-        context.startService(new Intent(context, DatabaseAsyncService.class));
+        context.startService(new Intent(context, TaskDAOAsyncService.class));
     }
 
     /*
@@ -291,7 +291,7 @@ public class DatabaseAsyncService extends IntentService
             this.uri = uri;
             this.handler = handler;
             this.postOp = postOp;
-            this.authority = DbColumns.AUTHORITY_NAME;
+            this.authority = TaskDAOProvider.AUTHORITY_NAME;
             cpo = new ArrayList<ContentProviderOperation>();
         }
     }

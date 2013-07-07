@@ -32,41 +32,71 @@ import android.util.Log;
 import com.frankandrobot.reminderer.helpers.Logger;
 
 /**
- * This is basically the DAO. It's called directly by the Android system.
+ * <p>The "public" DAO (available to the rest of the Android system).</p>
  *
  * Code pulled from the stock alarm app.
- *
  */
-public class TaskDatabaseProvider extends ContentProvider
+public class TaskDAOProvider extends ContentProvider
 {
-    // The DB will have tow tables: tasks and gps_tasks
-    private static final int TASKS = 1;
-    private static final int TASKS_ID = 2;
-    private static final int TASKS_DUE = 3;
+    private static String TAG = "R:Provider";
+
+    /**
+     * The authority name is the unique identifier of this provideer
+     */
+    public final static String AUTHORITY_NAME = "com.frankandrobot.reminderer.dbprovider";
+    public final static Uri DUEDATE_URI = Uri.parse("content://" + AUTHORITY_NAME
+                                                            + "/" + DbColumns.TASK_TABLE + "/"
+                                                            + DbColumns.TASK_DUE_DATE);
+    // URIs
+    public final static Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY_NAME
+                                                            + "/" + DbColumns.TASK_TABLE);
+    /**
+     * A {@link UriMatcher} is a helper object that helps parse incoming
+     * Uri requests.
+     * <p/>
+     * This uri matcher supports the following Uris:
+     * <p/>
+     * - com.frankandrobot.reminderer.dbprovider/tasks
+     * - com.frankandrobot.reminderer.dbprovider/tasks/#
+     * - com.frankandrobot.reminderer.dbprovider/duedate/#
+     */
+    private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+
+    /**
+     * Get all tasks
+     */
+    private static final int TASKS_URI = 1;
+
+    /**
+     * Get task with specific ID
+     */
+    private static final int TASK_ID_URI = 2;
+
+    /**
+     * Get tasks due on specific date and time
+     */
+    private static final int TASKS_DUE_URI = 3;
+
     private static final int GPS_TASKS = 4;
     private static final int GPS_TASKS_ID = 5;
-    private static final UriMatcher sURLMatcher = new UriMatcher(
-            UriMatcher.NO_MATCH);
 
     static
     {
         // com.frankandrobot.reminderer.dbprovider/tasks
-        sURLMatcher.addURI(DbColumns.AUTHORITY_NAME, DbColumns.TASK_TABLE,
-                           TASKS);
-        sURLMatcher.addURI(DbColumns.AUTHORITY_NAME, DbColumns.TASK_TABLE
-                + "/#", TASKS_ID);
-        sURLMatcher.addURI(DbColumns.AUTHORITY_NAME, DbColumns.TASK_TABLE
-                + "/duedate/#", TASKS_DUE);
-        sURLMatcher.addURI(DbColumns.AUTHORITY_NAME, "gps_tasks", GPS_TASKS);
-        sURLMatcher.addURI(DbColumns.AUTHORITY_NAME, "gps_tasks/#",
-                           GPS_TASKS_ID);
-
+        uriMatcher.addURI(AUTHORITY_NAME, DbColumns.TASK_TABLE, TASKS_URI);
+        uriMatcher.addURI(AUTHORITY_NAME,
+                          DbColumns.TASK_TABLE + "/#",
+                          TASK_ID_URI);
+        uriMatcher.addURI(AUTHORITY_NAME,
+                          DbColumns.TASK_TABLE + "/duedate/#",
+                          TASKS_DUE_URI);
+        uriMatcher.addURI(AUTHORITY_NAME, "gps_tasks", GPS_TASKS);
+        uriMatcher.addURI(AUTHORITY_NAME, "gps_tasks/#", GPS_TASKS_ID);
     }
 
-    private static String TAG = "R:Provider";
     private SQLiteOpenHelper mOpenHelper;
 
-    public TaskDatabaseProvider()
+    public TaskDAOProvider()
     {
     }
 
@@ -78,110 +108,108 @@ public class TaskDatabaseProvider extends ContentProvider
     }
 
     @Override
-    public Cursor query(Uri url, String[] projectionIn, String selection,
-                        String[] selectionArgs, String sort)
+    public Cursor query(Uri url,
+                        String[] projectionIn,
+                        String selection,
+                        String[] selectionArgs,
+                        String sort)
     {
         if (Logger.LOGV)
             Log.v(TAG, "query() ");
+
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
 
         // Generate the body of the query
-        int match = sURLMatcher.match(url);
-        switch (match)
+        switch (uriMatcher.match(url))
         {
-            case TASKS: // query is for all tasks
+            case TASKS_URI: // query is for all tasks
                 qb.setTables(DbColumns.TASK_TABLE);
                 break;
-            case TASKS_ID: // query is for specific task
+            case TASK_ID_URI: // query is for specific task
                 qb.setTables(DbColumns.TASK_TABLE);
                 qb.appendWhere(DbColumns.TASK_ID + "=");
                 qb.appendWhere(url.getPathSegments().get(1));
                 break;
-            case TASKS_DUE: // query is for specific task
+            case TASKS_DUE_URI: // query is for specific task
                 qb.setTables(DbColumns.TASK_TABLE);
                 qb.appendWhere(DbColumns.TASK_DUE_DATE + "=");
                 qb.appendWhere(url.getPathSegments().get(1));
                 break;
             default:
-                throw new IllegalArgumentException("Unknown URL " + url);
+                throw new IllegalArgumentException("Unknown URI " + url);
         }
 
         SQLiteDatabase db = mOpenHelper.getReadableDatabase();
         Cursor ret = qb.query(db, projectionIn, selection, selectionArgs, null,
                               null, sort);
 
-        if (ret == null)
+        if (ret == null && Logger.LOGV)
         {
-            if (Logger.LOGV)
-                Log.v(TAG, "query: failed");
+            Log.v(TAG, "query: failed");
         }
         else
         {
             ret.setNotificationUri(getContext().getContentResolver(), url);
         }
+
         return ret;
     }
 
+    /**
+     * Required. Returns the MIME type of the Uri.
+     *
+     * @param url
+     * @return
+     */
     @Override
     public String getType(Uri url)
     {
-        int match = sURLMatcher.match(url);
-        switch (match)
+        switch (uriMatcher.match(url))
         {
-            case TASKS:
-                return "vnd.android.cursor.dir/" + DbColumns.AUTHORITY_NAME + "."
-                        + DbColumns.TASK_TABLE;
-            case TASKS_ID:
-                return "vnd.android.cursor.item/" + DbColumns.AUTHORITY_NAME + "."
-                        + DbColumns.TASK_TABLE;
-            case TASKS_DUE:
-                return "vnd.android.cursor.item/" + DbColumns.AUTHORITY_NAME + "."
-                        + DbColumns.TASK_TABLE + ".duedate";
-            case GPS_TASKS:
-                return "vnd.android.cursor.dir/" + DbColumns.AUTHORITY_NAME
-                        + ".gps_tasks";
-            case GPS_TASKS_ID:
-                return "vnd.android.cursor.item/" + DbColumns.AUTHORITY_NAME
-                        + ".gps_tasks";
-
+            case TASKS_URI:
+                return "vnd.android.cursor.dir/" + AUTHORITY_NAME + "." + DbColumns.TASK_TABLE;
+            case TASK_ID_URI:
+                return "vnd.android.cursor.item/" + AUTHORITY_NAME + "." + DbColumns.TASK_TABLE;
+            case TASKS_DUE_URI:
+                return "vnd.android.cursor.item/" + AUTHORITY_NAME + "."
+                               + DbColumns.TASK_TABLE + ".duedate";
             default:
-                throw new IllegalArgumentException("Unknown URL");
+                throw new IllegalArgumentException("Unknown URII");
         }
     }
 
     @Override
-    public int update(Uri url, ContentValues values, String where,
+    public int update(Uri url,
+                      ContentValues values,
+                      String where,
                       String[] whereArgs)
     {
-        int count;
-        long rowId = 0;
-        int match = sURLMatcher.match(url);
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-        switch (match)
+
+        int count;
+        long rowId;
+
+        switch (uriMatcher.match(url))
         {
-            case TASKS_ID:
+            case TASK_ID_URI:
             {
-                // ex: "com..frankandrobot.reminderer.dbprovider/tasks/1"
-                String segment = url.getPathSegments().get(1);
-                rowId = Long.parseLong(segment);
+                // "com..frankandrobot.reminderer.dbprovider/tasks/#"
+                rowId = Long.parseLong(url.getPathSegments().get(1));
                 count = db.update("tasks", values, "_id=" + rowId, null);
                 break;
             }
-            case GPS_TASKS_ID:
-            {
-                String segment = url.getPathSegments().get(1);
-                rowId = Long.parseLong(segment);
-                count = db.update("gps_tasks", values, "_id=" + rowId, null);
-                break;
-            }
+
             default:
             {
-                throw new UnsupportedOperationException("Cannot update URL: " + url);
+                throw new IllegalArgumentException("Cannot update URL: " + url);
             }
         }
+
         if (Logger.LOGV)
             Log.v(TAG, "*** notifyChange() rowId: " + rowId + " url " + url);
+
         getContext().getContentResolver().notifyChange(url, null);
+
         return count;
     }
 
@@ -189,8 +217,9 @@ public class TaskDatabaseProvider extends ContentProvider
     public Uri insert(Uri url, ContentValues initialValues)
     {
         if (Logger.LOGV)
-            Log.v(TAG, "Inserting valuse " + url.toString());
-        if (sURLMatcher.match(url) != TASKS)
+            Log.v(TAG, "Inserting values " + url.toString());
+
+        if (uriMatcher.match(url) != TASKS_URI)
         {
             throw new IllegalArgumentException("Cannot insert into URL: " + url);
         }
@@ -233,7 +262,7 @@ public class TaskDatabaseProvider extends ContentProvider
         }
         if (Logger.LOGV)
             Log.v(TAG, "Added task rowId = " + rowId);
-        Uri newUrl = ContentUris.withAppendedId(DbColumns.CONTENT_URI, rowId);
+        Uri newUrl = ContentUris.withAppendedId(CONTENT_URI, rowId);
         getContext().getContentResolver().notifyChange(newUrl, null);
         return newUrl;
     }
@@ -244,7 +273,7 @@ public class TaskDatabaseProvider extends ContentProvider
         // SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         // int count;
         // long rowId = 0;
-        // switch (sURLMatcher.match(url)) {
+        // switch (uriMatcher.match(url)) {
         // case ALARMS:
         // count = db.delete("alarms", where, whereArgs);
         // break;
@@ -272,7 +301,7 @@ public class TaskDatabaseProvider extends ContentProvider
     private static class TaskDAOHelper extends SQLiteOpenHelper
     {
         private static final String DATABASE_NAME = "reminderer.db";
-        private static final int DATABASE_VERSION = 2;
+        private static final int DATABASE_VERSION = 1;
 
         public TaskDAOHelper(Context context)
         {
@@ -286,7 +315,7 @@ public class TaskDatabaseProvider extends ContentProvider
             dbCreateString += "CREATE TABLE " + DbColumns.TASK_TABLE;
             dbCreateString += "(";
             dbCreateString += DbColumns.TASK_ID
-                    + " INTEGER PRIMARY KEY AUTOINCREMENT,";
+                                      + " INTEGER PRIMARY KEY AUTOINCREMENT,";
             dbCreateString += DbColumns.TASK + " TEXT NOT NULL, ";
             dbCreateString += DbColumns.TASK_DUE_DATE + " INTEGER";
             dbCreateString += ");";
@@ -301,8 +330,8 @@ public class TaskDatabaseProvider extends ContentProvider
         {
             if (Logger.LOGV)
                 Log.v(TAG, "Upgrading database from version " + oldVersion
-                        + " to " + currentVersion
-                        + ", which will destroy all old data");
+                                   + " to " + currentVersion
+                                   + ", which will destroy all old data");
             // TODO mike fix
             db.execSQL("DROP TABLE IF EXISTS " + DbColumns.TASK_TABLE);
             onCreate(db);
