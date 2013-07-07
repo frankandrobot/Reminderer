@@ -12,7 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.frankandrobot.reminderer.database.DatabaseAsyncService.DatabaseHandler;
-import com.frankandrobot.reminderer.database.DatabaseInterface;
+import com.frankandrobot.reminderer.database.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.parser.ContextFreeGrammar;
 
@@ -48,8 +48,8 @@ public class AddTaskActivity extends Activity {
 	    @Override
 	    public void onClick(View arg0) {
 		if (mTask != null)
-		    DatabaseInterface.addTask(AddTaskActivity.this, mHandler,
-			    mTask);
+		    TaskDatabaseFacade.addTask(AddTaskActivity.this, mHandler,
+                                       mTask);
 
 	    }
 

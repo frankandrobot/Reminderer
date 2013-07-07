@@ -16,7 +16,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
-import com.frankandrobot.reminderer.database.DatabaseInterface;
+import com.frankandrobot.reminderer.database.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.DbColumns;
 import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.R;
@@ -101,8 +101,9 @@ public class AlarmAlertActivity extends FragmentActivity implements
     public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
 	// This is called when a new Loader needs to be created. This
 	// activity only has one Loader, so we don't care about the ID.
-	return DatabaseInterface.getDueAlarmsCursorLoader(this,
-		mTask.getTimeInMillis(), DbColumns.LTE);
+	return TaskDatabaseFacade.getDueAlarmsCursorLoader(this,
+                                                       mTask.getTimeInMillis(),
+                                                       DbColumns.LTE);
     }
 
     @Override
