@@ -20,6 +20,7 @@ public class AddTaskActivity extends Activity
 {
     Task mTask;
     Handler mHandler = new AddHandler();
+    TaskDatabaseFacade mDatabse = new TaskDatabaseFacade();
 
     /**
      * Called when the activity is first created.
@@ -56,8 +57,9 @@ public class AddTaskActivity extends Activity
             public void onClick(View arg0)
             {
                 if (mTask != null)
-                    TaskDatabaseFacade.addTask(AddTaskActivity.this, mHandler,
-                                               mTask);
+                    mDatabse.addTask(AddTaskActivity.this,
+                                     mHandler,
+                                     mTask);
 
             }
 

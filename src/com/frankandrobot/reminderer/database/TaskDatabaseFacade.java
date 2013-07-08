@@ -2,6 +2,7 @@ package com.frankandrobot.reminderer.database;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +18,8 @@ import com.frankandrobot.reminderer.helpers.Logger;
 
 import java.util.Calendar;
 
+import static com.frankandrobot.reminderer.database.TaskDAOService.*;
+
 /**
  * The app-specific interface to the database
  *
@@ -25,7 +28,7 @@ public class TaskDatabaseFacade
 {
     static private String TAG = "R:DbInterface";
 
-    private static ContentValues addToContentValues(Task task)
+    private static ContentValues createContentValues(Task task)
     {
         ContentValues values = new ContentValues();
         values.put(DbColumns.TASK_DUE_DATE, task.getTimeInMillis());
@@ -33,19 +36,17 @@ public class TaskDatabaseFacade
         return values;
     }
 
-    public static void addTask(final Context context,
+    public void addTask(final Context context,
                                Handler handler,
                                final Task task)
     {
         if (Logger.LOGV)
         {
-            Log.v(TAG, "Saving task:\n" + task.toString());
-            Log.v(TAG,
-                  "task,time:" + task.getTaskDesc() + " "
-                          + task.getTimeInMillis());
+            Log.v(TAG, "Saving task:\n" + task);
         }
+
         // create content values from Task object
-        ContentValues values = addToContentValues(task);
+        ContentValues values = createContentValues(task);
         // add content values to db
         Runnable postOp = new Runnable()
         {
@@ -57,7 +58,20 @@ public class TaskDatabaseFacade
             }
 
         };
-        TaskDAOAsyncService.startInsert(context, handler, values, postOp);
+
+        OperationInfo info = new OperationInfo(Operation.EVENT_ARG_INSERT,
+                                               context.getContentResolver(),
+                                               TaskDAOProvider.CONTENT_URI,
+                                               handler,
+                                               postOp);
+        info.values = values;
+        ContentProviderOperation.Builder b = ContentProviderOperation
+                                                     .newInsert(TaskDAOProvider.CONTENT_URI).withValues(info.values);
+        info.cpo.add(b.build());
+        info.postOp = postOp;
+        opQueue.add(info);
+        // go
+        context.startService(new Intent(context, TaskDAOService.class));
     }
 
     public static void findNextAlarm(Context context, Task task)

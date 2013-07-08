@@ -60,7 +60,7 @@
             </intent-filter>
         </service>
 
-        <service android:name=".database.TaskDAOAsyncService" >
+        <service android:name=".database.TaskDAOService" >
         </service>
         
         <!-- widget -->
