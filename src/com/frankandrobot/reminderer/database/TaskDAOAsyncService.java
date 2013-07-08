@@ -1,6 +1,7 @@
 package com.frankandrobot.reminderer.database;
 
 import android.app.IntentService;
+import android.app.Service;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentResolver;
@@ -33,17 +34,15 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * The postOp is optional. The difference between the handler and postOp is that
  * postOp runs in the service thread, while the handler runs in the main UI
  * thread.
+ *
+ * Recall, an {@link IntentService} is a {@link Service} that runs all requests
+ * in a single worker thread and automatically stops when there are no more
+ * requests.
  */
 public class TaskDAOAsyncService extends IntentService
 {
-
     private static String TAG = "R:DBService";
     private static ConcurrentLinkedQueue<OperationInfo> opQueue = new ConcurrentLinkedQueue<OperationInfo>();
-
-    /*
-     * ///////////////////////////////////////////////////////////////////
-     * Helper classes
-     */
 
     public TaskDAOAsyncService(String name)
     {
@@ -54,10 +53,6 @@ public class TaskDAOAsyncService extends IntentService
     {
         super("TaskDAOAsyncService");
     }
-
-    /*
-     * /////////////////////////////////////////////////////////////////////////
-     */
 
     /**
      * Adds the content values to the queue.
@@ -73,8 +68,10 @@ public class TaskDAOAsyncService extends IntentService
      * @param values
      * @param postOp
      */
-    public static void startInsert(Context context, Handler handler,
-                                   ContentValues values, Runnable postOp)
+    public static void startInsert(Context context,
+                                   Handler handler,
+                                   ContentValues values,
+                                   Runnable postOp)
     {
         OperationInfo info = new OperationInfo(Operation.EVENT_ARG_INSERT,
                                                context.getContentResolver(),
@@ -83,7 +80,7 @@ public class TaskDAOAsyncService extends IntentService
                                                postOp);
         info.values = values;
         ContentProviderOperation.Builder b = ContentProviderOperation
-                .newInsert(TaskDAOProvider.CONTENT_URI).withValues(info.values);
+                 .newInsert(TaskDAOProvider.CONTENT_URI).withValues(info.values);
         info.cpo.add(b.build());
         info.postOp = postOp;
         opQueue.add(info);
@@ -95,7 +92,7 @@ public class TaskDAOAsyncService extends IntentService
      * /////////////////////////////////////////////////////////////////////////
      */
 
-    /*
+    /**
      * This runs the service to perform the CRUD:
      *
      * (1) calls the db operation
