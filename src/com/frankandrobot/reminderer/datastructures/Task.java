@@ -1,7 +1,11 @@
 package com.frankandrobot.reminderer.datastructures;
 
+import android.content.ContentValues;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import com.frankandrobot.reminderer.database.DbColumns;
+import com.frankandrobot.reminderer.database.DbColumns.TaskCol;
 
 import java.util.Calendar;
 
@@ -47,7 +51,10 @@ public class Task extends DataStructure implements Parcelable
 
     public class Task_Calendar implements Field<TaskCalendar> {}
 
-    private int id;
+    public enum Task_Long implements Field<Long>
+    {
+        id
+    }
 
     public Task()
     {
@@ -59,7 +66,7 @@ public class Task extends DataStructure implements Parcelable
         set(Task_Calendar.class, new TaskCalendar());
         get(Task_Calendar.class).setTimeInMillis(p.readLong());
         set(Task_String.desc, p.readString());
-        id = p.readInt();
+        set(Task_Long.id, (long)p.readInt());
     }
 
     // ////////////////////////////////////////////////////////////////////////////
@@ -67,16 +74,6 @@ public class Task extends DataStructure implements Parcelable
     /*
      * Start of database methods - convenience functions
      */
-
-    /**
-     * Gets id
-     *
-     * @return
-     */
-    public int getIdForDb()
-    {
-        return getId();
-    }
 
     /**
      * Gets task
@@ -114,14 +111,9 @@ public class Task extends DataStructure implements Parcelable
      * Start of methods used for displaying dates in user's locale
      */
 
-    public int getId()
+    public long getId()
     {
-        return id;
-    }
-
-    public void setId(final int id)
-    {
-        this.id = id;
+        return get(Task_Long.id);
     }
 
     /*
@@ -166,7 +158,7 @@ public class Task extends DataStructure implements Parcelable
         p.writeLong(getTimeInMillis());
         p.writeLong(System.currentTimeMillis());
         p.writeString(get(Task_String.desc));
-        p.writeInt(id);
+        p.writeLong(get(Task_Long.id));
     }
 
     @Override
@@ -191,5 +183,23 @@ public class Task extends DataStructure implements Parcelable
                 : get(Task_Calendar.class).day;
 
         return (T) this;
+    }
+
+    public ContentValues toContentValues()
+    {
+        ContentValues values = new ContentValues();
+
+        if (get(Task_Long.id) != null) values.put("id", get(Task_Long.id));
+
+        values.put(TaskCol.TASK_DESC.toString(), get(Task_String.desc));
+
+        if (get(Task_String.repeatsType) != null)
+            values.put(TaskCol.TASK_REPEATS_TYPE.toString(),
+                       get(Task_String.repeatsType));
+
+        values.put(TaskCol.TASK_DUE_DATE.toString(),
+                   get(Task_Calendar.class).getDate().getTime());
+
+        return values;
     }
 }

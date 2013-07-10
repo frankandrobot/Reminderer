@@ -68,7 +68,7 @@ public class TaskDAOService extends IntentService
 
         OperationInfo args;
 
-        synchronized (opQueue)
+        /*synchronized (opQueue)
         {
             if (opQueue.size() == 0)
             {
@@ -79,16 +79,16 @@ public class TaskDAOService extends IntentService
                 return;
             }
             args = opQueue.poll();
-        }
+        }*/
 
-        if (args == null)
+        /*if (args == null)
         {
             if (Logger.LOGE)
                 Log.e(TAG, "onHandleIntent: args is null");
             return;
-        }
+        }*/
 
-        ContentResolver resolver = args.resolver;
+       /* ContentResolver resolver = args.resolver;
         if (resolver != null)
         {
 
@@ -103,11 +103,11 @@ public class TaskDAOService extends IntentService
                                                 args.selection,
                                                 args.selectionArgs,
                                                 args.orderBy);
-            /*
+            *//*
 		     * Calling getCount() causes the cursor window to be filled,
 		     * which will make the first access on the main thread a lot
 		     * faster
-		     */
+		     *//*
                         if (cursor != null)
                         {
                             cursor.getCount();
@@ -171,7 +171,7 @@ public class TaskDAOService extends IntentService
             }
 
             reply.sendToTarget();
-        }
+        }*/
 
     }
 

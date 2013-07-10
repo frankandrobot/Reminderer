@@ -11,7 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.frankandrobot.reminderer.database.TaskDAOAsyncService.DatabaseHandler;
+import com.frankandrobot.reminderer.database.TaskDAOService;
 import com.frankandrobot.reminderer.database.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.parser.ContextFreeGrammar;
@@ -20,7 +20,7 @@ public class AddTaskActivity extends Activity
 {
     Task mTask;
     Handler mHandler = new AddHandler();
-    TaskDatabaseFacade mDatabse = new TaskDatabaseFacade();
+    TaskDatabaseFacade mDatabse;
 
     /**
      * Called when the activity is first created.
@@ -78,9 +78,11 @@ public class AddTaskActivity extends Activity
 
         });
 
+        mDatabse = new TaskDatabaseFacade(getApplicationContext());
+
     }
 
-    class AddHandler extends DatabaseHandler
+    class AddHandler extends TaskDAOService.DatabaseHandler
     {
 
         @Override

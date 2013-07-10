@@ -46,7 +46,7 @@ public class TaskDAOProvider extends ContentProvider
     public final static String AUTHORITY_NAME = "com.frankandrobot.reminderer.dbprovider";
     public final static Uri DUEDATE_URI = Uri.parse("content://" + AUTHORITY_NAME
                                                             + "/" + DbColumns.TASK_TABLE + "/"
-                                                            + DbColumns.TASK_DUE_DATE);
+                                                            + DbColumns.TaskCol.TASK_DUE_DATE);
     // URIs
     public final static Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY_NAME
                                                             + "/" + DbColumns.TASK_TABLE);
@@ -127,12 +127,12 @@ public class TaskDAOProvider extends ContentProvider
                 break;
             case TASK_ID_URI: // query is for specific task
                 qb.setTables(DbColumns.TASK_TABLE);
-                qb.appendWhere(DbColumns.TASK_ID + "=");
+                qb.appendWhere(DbColumns.TaskCol.TASK_ID + "=");
                 qb.appendWhere(url.getPathSegments().get(1));
                 break;
             case TASKS_DUE_URI: // query is for specific task
                 qb.setTables(DbColumns.TASK_TABLE);
-                qb.appendWhere(DbColumns.TASK_DUE_DATE + "=");
+                qb.appendWhere(DbColumns.TaskCol.TASK_DUE_DATE + "=");
                 qb.appendWhere(url.getPathSegments().get(1));
                 break;
             default:
@@ -314,10 +314,10 @@ public class TaskDAOProvider extends ContentProvider
             String dbCreateString = "";
             dbCreateString += "CREATE TABLE " + DbColumns.TASK_TABLE;
             dbCreateString += "(";
-            dbCreateString += DbColumns.TASK_ID
+            dbCreateString += DbColumns.TaskCol.TASK_ID
                                       + " INTEGER PRIMARY KEY AUTOINCREMENT,";
-            dbCreateString += DbColumns.TASK + " TEXT NOT NULL, ";
-            dbCreateString += DbColumns.TASK_DUE_DATE + " INTEGER";
+            dbCreateString += DbColumns.TaskCol.TASK_DESC + " TEXT NOT NULL, ";
+            dbCreateString += DbColumns.TaskCol.TASK_DUE_DATE + " INTEGER";
             dbCreateString += ");";
             if (Logger.LOGV)
                 Log.v(TAG, "dbCreateString:" + dbCreateString);

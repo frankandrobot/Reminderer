@@ -28,12 +28,11 @@ public class TaskDatabaseFacade
 {
     static private String TAG = "R:DbInterface";
 
-    private static ContentValues createContentValues(Task task)
+    private TaskDAO taskDAO;
+
+    public TaskDatabaseFacade(Context context)
     {
-        ContentValues values = new ContentValues();
-        values.put(DbColumns.TASK_DUE_DATE, task.getTimeInMillis());
-        values.put(DbColumns.TASK, task.getTaskDesc());
-        return values;
+        taskDAO = new TaskDAO(context);
     }
 
     public void addTask(final Context context,
@@ -45,7 +44,9 @@ public class TaskDatabaseFacade
             Log.v(TAG, "Saving task:\n" + task);
         }
 
-        // create content values from Task object
+        taskDAO.create(task);
+
+        /*// create content values from Task object
         ContentValues values = createContentValues(task);
         // add content values to db
         Runnable postOp = new Runnable()
@@ -71,7 +72,7 @@ public class TaskDatabaseFacade
         info.postOp = postOp;
         opQueue.add(info);
         // go
-        context.startService(new Intent(context, TaskDAOService.class));
+        context.startService(new Intent(context, TaskDAOService.class));*/
     }
 
     public static void findNextAlarm(Context context, Task task)
@@ -101,7 +102,7 @@ public class TaskDatabaseFacade
         }
         // get the task in the first row
         nextAlarms.moveToNext(); // row pointer starts at -1
-        int index = nextAlarms.getColumnIndex(DbColumns.TASK_DUE_DATE);
+        int index = nextAlarms.getColumnIndex(DbColumns.TaskCol.TASK_DUE_DATE.toString());
         long dueTime = nextAlarms.getLong(index);
         if (Logger.LOGV)
         {
@@ -118,7 +119,7 @@ public class TaskDatabaseFacade
         }
         // get ids of these tasks
         long ids[] = new long[nextAlarms.getCount()];
-        index = nextAlarms.getColumnIndex(DbColumns.TASK_ID);
+        index = nextAlarms.getColumnIndex(DbColumns.TaskCol.TASK_ID.toString());
         int len = 0;
         while (nextAlarms.moveToNext())
         {
@@ -174,7 +175,7 @@ public class TaskDatabaseFacade
     {
         Cursor mResult = context.getContentResolver().query(
                 TaskDAOProvider.CONTENT_URI, DbColumns.TASK_ALERT_LISTVIEW_CP,
-                DbColumns.TASK_DUE_DATE + op + "?",
+                DbColumns.TaskCol.TASK_DUE_DATE + op + "?",
                 new String[]{Long.toString(time)}, DbColumns.DEFAULT_SORT);
         return mResult;
     }
@@ -194,7 +195,7 @@ public class TaskDatabaseFacade
         return new android.support.v4.content.CursorLoader(context,
                                                            TaskDAOProvider.CONTENT_URI,
                                                            DbColumns.TASK_ALERT_LISTVIEW_CP,
-                                                           DbColumns.TASK_DUE_DATE + OP + "?",
+                                                           DbColumns.TaskCol.TASK_DUE_DATE + OP + "?",
                                                            new String[]{Long.toString(
                                                                    time)},
                                                            DbColumns.DEFAULT_SORT);
@@ -211,7 +212,7 @@ public class TaskDatabaseFacade
             return "";
         // save row position
         int origPos = cursor.getPosition();
-        int index = cursor.getColumnIndex(DbColumns.TASK_DUE_DATE);
+        int index = cursor.getColumnIndex(DbColumns.TaskCol.TASK_DUE_DATE.toString());
         cursor.moveToFirst();
         String row = "*****Cursor*****\n";
         while (cursor.moveToNext())
