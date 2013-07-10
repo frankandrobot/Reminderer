@@ -1,6 +1,7 @@
 package com.frankandrobot.reminderer.datastructures;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -59,6 +60,15 @@ public class Task extends DataStructure implements Parcelable
     public Task()
     {
         set(Task_Calendar.class, new TaskCalendar());
+    }
+
+    public Task(Cursor cursor)
+    {
+        super();
+        set(Task_Long.id, cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_ID.toString())));
+        get(Task_Calendar.class).setTimeInMillis(cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_DUE_DATE.toString())));
+        set(Task_String.desc, cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.toString())));
+        set(Task_String.repeatsType, cursor.getString(cursor.getColumnIndex(TaskCol.TASK_REPEATS_TYPE.toString())));
     }
 
     public Task(Parcel p)

@@ -17,6 +17,8 @@ import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
 
 import java.util.Calendar;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import static com.frankandrobot.reminderer.database.TaskDAOService.*;
 
@@ -27,6 +29,8 @@ import static com.frankandrobot.reminderer.database.TaskDAOService.*;
 public class TaskDatabaseFacade
 {
     static private String TAG = "R:DbInterface";
+
+    private Executor executor = Executors.newSingleThreadExecutor();
 
     private TaskDAO taskDAO;
 
@@ -44,7 +48,14 @@ public class TaskDatabaseFacade
             Log.v(TAG, "Saving task:\n" + task);
         }
 
-        taskDAO.create(task);
+        executor.execute(new Runnable() {
+            @Override
+            public void run()
+            {
+                taskDAO.create(task);
+            }
+        });
+
 
         /*// create content values from Task object
         ContentValues values = createContentValues(task);
@@ -73,6 +84,28 @@ public class TaskDatabaseFacade
         opQueue.add(info);
         // go
         context.startService(new Intent(context, TaskDAOService.class));*/
+    }
+
+    public void findTask(final String taskID)
+    {
+        if (Logger.LOGV)
+        {
+            Log.v(TAG, "finding task:\n" + taskID);
+        }
+
+        executor.execute(new Runnable() {
+            @Override
+            public void run()
+            {
+                Cursor cursor = taskDAO.find(taskID);
+                if (cursor != null)
+                {
+                    cursor.moveToFirst();
+
+                    Task task = new Task(cursor);
+                }
+            }
+        });
     }
 
     public static void findNextAlarm(Context context, Task task)

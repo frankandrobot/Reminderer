@@ -37,5 +37,14 @@ public class DbColumns
         {
             return value == null ? super.toString() : value;
         }
+
+        public static String[] getAllColumns()
+        {
+            String[] aCols = new String[values().length];
+            int len = 0;
+            for(TaskCol col:values())
+                aCols[len++] = col.toString();
+            return aCols;
+        }
     }
 }

@@ -17,6 +17,7 @@
 package com.frankandrobot.reminderer.database;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -142,32 +143,42 @@ public class TaskDAO
         return (Task) task.set(Task.Task_Long.id, rowId);
     }
 
-    public int delete(Uri url, String where, String[] whereArgs)
+    public Cursor find(final String taskID)
     {
-        return 0;
-        // SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-        // int count;
-        // long rowId = 0;
-        // switch (uriMatcher.match(url)) {
-        // case ALARMS:
-        // count = db.delete("alarms", where, whereArgs);
-        // break;
-        // case ALARMS_ID:
-        // String segment = url.getPathSegments().get(1);
-        // rowId = Long.parseLong(segment);
-        // if (TextUtils.isEmpty(where)) {
-        // where = "_id=" + segment;
-        // } else {
-        // where = "_id=" + segment + " AND (" + where + ")";
-        // }
-        // count = db.delete("alarms", where, whereArgs);
-        // break;
-        // default:
-        // throw new IllegalArgumentException("Cannot delete from URL: " + url);
-        // }
-        //
-        // getContext().getContentResolver().notifyChange(url, null);
-        // return count;
+        SQLiteDatabase db = mOpenHelper.getReadableDatabase();
+
+        Cursor cursor = db.query(TASK_TABLE,
+                                 TaskCol.getAllColumns(),
+                                 TaskCol.TASK_ID + "=?",
+                                 new String[]{String.valueOf(taskID)},
+                                 null,
+                                 null,
+                                 null,
+                                 null);
+
+        return cursor;
+    }
+
+    public void delete(Task task)
+    {
+         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+         int count = db.delete(TASK_TABLE,
+                               TaskCol.TASK_ID + "= ?",
+                               new String[]{String.valueOf(task.getId())});
+
+         if (count <= 0) throw new SQLException("Unable to delete task");
+         else if (count > 1) throw new SQLException("Wierd. More than one deleted task had the same id.");    }
+
+    public void update(Task task)
+    {
+        SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        int count = db.update(TASK_TABLE,
+                              task.toContentValues(),
+                              TaskCol.TASK_ID + "= ?",
+                              new String[]{String.valueOf(task.getId())});
+
+        if (count <= 0) throw new SQLException("Unable to update task");
+        else if (count > 1) throw new SQLException("Wierd. More than one updated task had the same id.");
     }
 
     /**
