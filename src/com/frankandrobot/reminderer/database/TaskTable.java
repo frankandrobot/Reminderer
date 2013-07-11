@@ -1,11 +1,14 @@
 package com.frankandrobot.reminderer.database;
 
+import android.database.sqlite.SQLiteDatabase;
+import android.provider.BaseColumns;
+
 import com.frankandrobot.reminderer.datastructures.Task;
 
 /**
  * Columns for the {@link Task} model
  */
-public class DbColumns
+public class TaskTable
 {
     public final static String TASK_TABLE = "task";
     // projection used to display in alert listview
@@ -46,5 +49,26 @@ public class DbColumns
                 aCols[len++] = col.toString();
             return aCols;
         }
+    }
+
+    static protected void createTable(SQLiteDatabase db)
+    {
+        String dbCreateString = "";
+        dbCreateString += "CREATE TABLE " + TASK_TABLE;
+        dbCreateString += "(";
+        dbCreateString += TaskCol.TASK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,";
+        dbCreateString += TaskCol.TASK_DESC + " TEXT NOT NULL, ";
+        dbCreateString += TaskCol.TASK_REPEATS_TYPE + " TEXT, ";
+        dbCreateString += TaskCol.TASK_DUE_DATE + " INTEGER";
+        dbCreateString += ");";
+        db.execSQL(dbCreateString);
+    }
+
+    static protected void upgradeTable(SQLiteDatabase db,
+                                      int oldVersion,
+                                      int currentVersion)
+    {
+        db.execSQL("DROP TABLE IF EXISTS " + TASK_TABLE);
+        createTable(db);
     }
 }

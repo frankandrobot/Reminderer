@@ -21,13 +21,12 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.net.Uri;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
 
-import static com.frankandrobot.reminderer.database.DbColumns.*;
+import static com.frankandrobot.reminderer.database.TaskTable.*;
 
 /**
  * Responsible for the CRUD.
@@ -59,16 +58,16 @@ public class TaskDAO
         switch (uriMatcher.match(url))
         {
             case TASKS_URI: // query is for all tasks
-                qb.setTables(DbColumns.TASK_TABLE);
+                qb.setTables(TaskTable.TASK_TABLE);
                 break;
             case TASK_ID_URI: // query is for specific task
-                qb.setTables(DbColumns.TASK_TABLE);
-                qb.appendWhere(DbColumns.TASK_ID + "=");
+                qb.setTables(TaskTable.TASK_TABLE);
+                qb.appendWhere(TaskTable.TASK_ID + "=");
                 qb.appendWhere(url.getPathSegments().get(1));
                 break;
             case TASKS_DUE_URI: // query is for specific task
-                qb.setTables(DbColumns.TASK_TABLE);
-                qb.appendWhere(DbColumns.TASK_DUE_DATE + "=");
+                qb.setTables(TaskTable.TASK_TABLE);
+                qb.appendWhere(TaskTable.TASK_DUE_DATE + "=");
                 qb.appendWhere(url.getPathSegments().get(1));
                 break;
             default:

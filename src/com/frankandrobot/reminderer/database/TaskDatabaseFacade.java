@@ -2,8 +2,6 @@ package com.frankandrobot.reminderer.database;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.content.ContentProviderOperation;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -19,8 +17,6 @@ import com.frankandrobot.reminderer.helpers.Logger;
 import java.util.Calendar;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-
-import static com.frankandrobot.reminderer.database.TaskDAOService.*;
 
 /**
  * The app-specific interface to the database
@@ -73,12 +69,12 @@ public class TaskDatabaseFacade
 
         OperationInfo info = new OperationInfo(Operation.EVENT_ARG_INSERT,
                                                context.getContentResolver(),
-                                               TaskDAOProvider.CONTENT_URI,
+                                               TaskProvider.CONTENT_URI,
                                                handler,
                                                postOp);
         info.values = values;
         ContentProviderOperation.Builder b = ContentProviderOperation
-                                                     .newInsert(TaskDAOProvider.CONTENT_URI).withValues(info.values);
+                                                     .newInsert(TaskProvider.CONTENT_URI).withValues(info.values);
         info.cpo.add(b.build());
         info.postOp = postOp;
         opQueue.add(info);
@@ -121,7 +117,7 @@ public class TaskDatabaseFacade
         disableAlert(context);
         // get all tasks due after curTime
         long curTime = System.currentTimeMillis();
-        Cursor nextAlarms = getDueAlarms(context, curTime, DbColumns.GTE);
+        Cursor nextAlarms = getDueAlarms(context, curTime, TaskTable.GTE);
         if (nextAlarms == null)
         {
             Log.d(TAG, "Error occurred. No upcoming tasks due");
@@ -135,7 +131,7 @@ public class TaskDatabaseFacade
         }
         // get the task in the first row
         nextAlarms.moveToNext(); // row pointer starts at -1
-        int index = nextAlarms.getColumnIndex(DbColumns.TaskCol.TASK_DUE_DATE.toString());
+        int index = nextAlarms.getColumnIndex(TaskTable.TaskCol.TASK_DUE_DATE.toString());
         long dueTime = nextAlarms.getLong(index);
         if (Logger.LOGV)
         {
@@ -144,7 +140,7 @@ public class TaskDatabaseFacade
         }
         // get all tasks due at dueTime
         nextAlarms.close(); // close previous
-        nextAlarms = getDueAlarms(context, dueTime, DbColumns.EQ);
+        nextAlarms = getDueAlarms(context, dueTime, TaskTable.EQ);
         if (nextAlarms == null)
         {
             Log.d(TAG, "Something went wrong. nextAlarms should not be null");
@@ -152,7 +148,7 @@ public class TaskDatabaseFacade
         }
         // get ids of these tasks
         long ids[] = new long[nextAlarms.getCount()];
-        index = nextAlarms.getColumnIndex(DbColumns.TaskCol.TASK_ID.toString());
+        index = nextAlarms.getColumnIndex(TaskTable.TaskCol.TASK_ID.toString());
         int len = 0;
         while (nextAlarms.moveToNext())
         {
@@ -207,9 +203,9 @@ public class TaskDatabaseFacade
     public static Cursor getDueAlarms(Context context, long time, String op)
     {
         Cursor mResult = context.getContentResolver().query(
-                TaskDAOProvider.CONTENT_URI, DbColumns.TASK_ALERT_LISTVIEW_CP,
-                DbColumns.TaskCol.TASK_DUE_DATE + op + "?",
-                new String[]{Long.toString(time)}, DbColumns.DEFAULT_SORT);
+                TaskProvider.CONTENT_URI, TaskTable.TASK_ALERT_LISTVIEW_CP,
+                TaskTable.TaskCol.TASK_DUE_DATE + op + "?",
+                new String[]{Long.toString(time)}, TaskTable.DEFAULT_SORT);
         return mResult;
     }
 
@@ -226,12 +222,12 @@ public class TaskDatabaseFacade
                                                           long time, String OP)
     {
         return new android.support.v4.content.CursorLoader(context,
-                                                           TaskDAOProvider.CONTENT_URI,
-                                                           DbColumns.TASK_ALERT_LISTVIEW_CP,
-                                                           DbColumns.TaskCol.TASK_DUE_DATE + OP + "?",
+                                                           TaskProvider.CONTENT_URI,
+                                                           TaskTable.TASK_ALERT_LISTVIEW_CP,
+                                                           TaskTable.TaskCol.TASK_DUE_DATE + OP + "?",
                                                            new String[]{Long.toString(
                                                                    time)},
-                                                           DbColumns.DEFAULT_SORT);
+                                                           TaskTable.DEFAULT_SORT);
     }
 
     /**
@@ -245,7 +241,7 @@ public class TaskDatabaseFacade
             return "";
         // save row position
         int origPos = cursor.getPosition();
-        int index = cursor.getColumnIndex(DbColumns.TaskCol.TASK_DUE_DATE.toString());
+        int index = cursor.getColumnIndex(TaskTable.TaskCol.TASK_DUE_DATE.toString());
         cursor.moveToFirst();
         String row = "*****Cursor*****\n";
         while (cursor.moveToNext())

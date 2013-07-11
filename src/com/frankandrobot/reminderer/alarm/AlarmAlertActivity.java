@@ -17,7 +17,7 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
 import com.frankandrobot.reminderer.database.TaskDatabaseFacade;
-import com.frankandrobot.reminderer.database.DbColumns;
+import com.frankandrobot.reminderer.database.TaskTable;
 import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.R;
 import com.frankandrobot.reminderer.datastructures.Task;
@@ -69,7 +69,7 @@ public class AlarmAlertActivity extends FragmentActivity implements
 
 	// setup due tasks list view
 	mAdapter = new SimpleCursorAdapter(this, R.layout.alarm_alert_row,
-		null, DbColumns.TASK_ALERT_LISTVIEW_NO_CP, new int[] {
+		null, TaskTable.TASK_ALERT_LISTVIEW_NO_CP, new int[] {
 			R.id.task_text, R.id.task_due_date });
 	ListView lv = (ListView) findViewById(R.id.dueTasks);
 	lv.setAdapter(mAdapter);
@@ -103,7 +103,7 @@ public class AlarmAlertActivity extends FragmentActivity implements
 	// activity only has one Loader, so we don't care about the ID.
 	return TaskDatabaseFacade.getDueAlarmsCursorLoader(this,
                                                        mTask.getTimeInMillis(),
-                                                       DbColumns.LTE);
+                                                       TaskTable.LTE);
     }
 
     @Override

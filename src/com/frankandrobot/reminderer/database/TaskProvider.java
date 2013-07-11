@@ -31,12 +31,13 @@ import android.util.Log;
 
 import com.frankandrobot.reminderer.helpers.Logger;
 
+import static com.frankandrobot.reminderer.database.TaskTable.*;
+
 /**
- * <p>The "public" DAO (available to the rest of the Android system).</p>
+ * <p>The DAO without the DAO..</p>
  *
- * Code pulled from the stock alarm app.
  */
-public class TaskDAOProvider extends ContentProvider
+public class TaskProvider extends ContentProvider
 {
     private static String TAG = "R:Provider";
 
@@ -45,11 +46,11 @@ public class TaskDAOProvider extends ContentProvider
      */
     public final static String AUTHORITY_NAME = "com.frankandrobot.reminderer.dbprovider";
     public final static Uri DUEDATE_URI = Uri.parse("content://" + AUTHORITY_NAME
-                                                            + "/" + DbColumns.TASK_TABLE + "/"
-                                                            + DbColumns.TaskCol.TASK_DUE_DATE);
+                                                            + "/" + TASK_TABLE + "/"
+                                                            + TaskCol.TASK_DUE_DATE);
     // URIs
     public final static Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY_NAME
-                                                            + "/" + DbColumns.TASK_TABLE);
+                                                            + "/" + TASK_TABLE);
     /**
      * A {@link UriMatcher} is a helper object that helps parse incoming
      * Uri requests.
@@ -83,12 +84,12 @@ public class TaskDAOProvider extends ContentProvider
     static
     {
         // com.frankandrobot.reminderer.dbprovider/tasks
-        uriMatcher.addURI(AUTHORITY_NAME, DbColumns.TASK_TABLE, TASKS_URI);
+        uriMatcher.addURI(AUTHORITY_NAME, TASK_TABLE, TASKS_URI);
         uriMatcher.addURI(AUTHORITY_NAME,
-                          DbColumns.TASK_TABLE + "/#",
+                          TASK_TABLE + "/#",
                           TASK_ID_URI);
         uriMatcher.addURI(AUTHORITY_NAME,
-                          DbColumns.TASK_TABLE + "/duedate/#",
+                          TASK_TABLE + "/duedate/#",
                           TASKS_DUE_URI);
         uriMatcher.addURI(AUTHORITY_NAME, "gps_tasks", GPS_TASKS);
         uriMatcher.addURI(AUTHORITY_NAME, "gps_tasks/#", GPS_TASKS_ID);
@@ -96,7 +97,7 @@ public class TaskDAOProvider extends ContentProvider
 
     private SQLiteOpenHelper mOpenHelper;
 
-    public TaskDAOProvider()
+    public TaskProvider()
     {
     }
 
@@ -123,16 +124,16 @@ public class TaskDAOProvider extends ContentProvider
         switch (uriMatcher.match(url))
         {
             case TASKS_URI: // query is for all tasks
-                qb.setTables(DbColumns.TASK_TABLE);
+                qb.setTables(TASK_TABLE);
                 break;
             case TASK_ID_URI: // query is for specific task
-                qb.setTables(DbColumns.TASK_TABLE);
-                qb.appendWhere(DbColumns.TaskCol.TASK_ID + "=");
+                qb.setTables(TASK_TABLE);
+                qb.appendWhere(TaskCol.TASK_ID + "=");
                 qb.appendWhere(url.getPathSegments().get(1));
                 break;
             case TASKS_DUE_URI: // query is for specific task
-                qb.setTables(DbColumns.TASK_TABLE);
-                qb.appendWhere(DbColumns.TaskCol.TASK_DUE_DATE + "=");
+                qb.setTables(TASK_TABLE);
+                qb.appendWhere(TaskCol.TASK_DUE_DATE + "=");
                 qb.appendWhere(url.getPathSegments().get(1));
                 break;
             default:
@@ -155,28 +156,6 @@ public class TaskDAOProvider extends ContentProvider
         return ret;
     }
 
-    /**
-     * Required. Returns the MIME type of the Uri.
-     *
-     * @param url
-     * @return
-     */
-    @Override
-    public String getType(Uri url)
-    {
-        switch (uriMatcher.match(url))
-        {
-            case TASKS_URI:
-                return "vnd.android.cursor.dir/" + AUTHORITY_NAME + "." + DbColumns.TASK_TABLE;
-            case TASK_ID_URI:
-                return "vnd.android.cursor.item/" + AUTHORITY_NAME + "." + DbColumns.TASK_TABLE;
-            case TASKS_DUE_URI:
-                return "vnd.android.cursor.item/" + AUTHORITY_NAME + "."
-                               + DbColumns.TASK_TABLE + ".duedate";
-            default:
-                throw new IllegalArgumentException("Unknown URII");
-        }
-    }
 
     @Override
     public int update(Uri url,
@@ -255,7 +234,7 @@ public class TaskDAOProvider extends ContentProvider
         // values.put(alarm.Columns.ALERT, "");
         //
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-        long rowId = db.insert(DbColumns.TASK_TABLE, null, initialValues);
+        long rowId = db.insert(TASK_TABLE, null, initialValues);
         if (rowId < 0)
         {
             throw new SQLException("Failed to insert row into " + url);
@@ -296,6 +275,29 @@ public class TaskDAOProvider extends ContentProvider
     }
 
     /**
+     * Required. Returns the MIME type of the Uri.
+     *
+     * @param url
+     * @return
+     */
+    @Override
+    public String getType(Uri url)
+    {
+        switch (uriMatcher.match(url))
+        {
+            case TASKS_URI:
+                return "vnd.android.cursor.dir/" + AUTHORITY_NAME + "." + TASK_TABLE;
+            case TASK_ID_URI:
+                return "vnd.android.cursor.item/" + AUTHORITY_NAME + "." + TASK_TABLE;
+            case TASKS_DUE_URI:
+                return "vnd.android.cursor.item/" + AUTHORITY_NAME + "."
+                               + TASK_TABLE + ".duedate";
+            default:
+                throw new IllegalArgumentException("Unknown URII");
+        }
+    }
+
+    /**
      * Used to create and upgrade the database
      */
     private static class TaskDAOHelper extends SQLiteOpenHelper
@@ -311,17 +313,9 @@ public class TaskDAOProvider extends ContentProvider
         @Override
         public void onCreate(SQLiteDatabase db)
         {
-            String dbCreateString = "";
-            dbCreateString += "CREATE TABLE " + DbColumns.TASK_TABLE;
-            dbCreateString += "(";
-            dbCreateString += DbColumns.TaskCol.TASK_ID
-                                      + " INTEGER PRIMARY KEY AUTOINCREMENT,";
-            dbCreateString += DbColumns.TaskCol.TASK_DESC + " TEXT NOT NULL, ";
-            dbCreateString += DbColumns.TaskCol.TASK_DUE_DATE + " INTEGER";
-            dbCreateString += ");";
-            if (Logger.LOGV)
-                Log.v(TAG, "dbCreateString:" + dbCreateString);
-            db.execSQL(dbCreateString);
+            if (Logger.LOGV) Log.v(TAG, "Creating table");
+
+            TaskTable.createTable(db);
         }
 
         @Override
@@ -332,9 +326,8 @@ public class TaskDAOProvider extends ContentProvider
                 Log.v(TAG, "Upgrading database from version " + oldVersion
                                    + " to " + currentVersion
                                    + ", which will destroy all old data");
-            // TODO mike fix
-            db.execSQL("DROP TABLE IF EXISTS " + DbColumns.TASK_TABLE);
-            onCreate(db);
+
+            TaskTable.upgradeTable(db, oldVersion, currentVersion);
         }
     }
 }

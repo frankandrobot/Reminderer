@@ -5,14 +5,11 @@ import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
-import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
-import android.os.RemoteException;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.helpers.Logger;
@@ -247,7 +244,7 @@ public class TaskDAOService extends IntentService
             this.uri = uri;
             this.handler = handler;
             this.postOp = postOp;
-            this.authority = TaskDAOProvider.AUTHORITY_NAME;
+            this.authority = TaskProvider.AUTHORITY_NAME;
             cpo = new ArrayList<ContentProviderOperation>();
         }
     }

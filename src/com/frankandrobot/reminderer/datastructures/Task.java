@@ -5,8 +5,7 @@ import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.frankandrobot.reminderer.database.DbColumns;
-import com.frankandrobot.reminderer.database.DbColumns.TaskCol;
+import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 
 import java.util.Calendar;
 
