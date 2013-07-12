@@ -1,0 +1,17 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-07-11T14:18:56-04:00
+
+====== MultiThreading ======
+Created Thursday 11 July 2013
+
+Reasons to use the Android framework for threading: you must implement the following on your own:
+
+* Synchronization with the main thread if you post back results to the user interface
+* No default for canceling the thread
+* No default thread pooling
+* No default for handling configuration changes in Android
+
+Source:
+
+http://www.vogella.com/articles/AndroidBackgroundProcessing/article.html

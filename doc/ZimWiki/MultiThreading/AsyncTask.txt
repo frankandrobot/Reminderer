@@ -1,0 +1,16 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-07-11T14:30:23-04:00
+
+====== AsyncTask ======
+Created Thursday 11 July 2013
+
+The AsyncTask class encapsulates the creation of a background process and the synchronization with the main thread. It also supports reporting progress of the running tasks.
+
+Android executes AsyncTask tasks before Android 1.6 and again as of Android 3.0 in sequence by default.
+
+You can tell Android to run it in parallel with the usage of the executeOnExecutor() method, specifying AsyncTask.THREAD_POOL_EXECUTOR as first parameter.
+
+The AsyncTask does not handle configuration changes automatically, i.e. if the activity is recreated, the programmer has to handle that in his coding.
+
+A common solution to this is to declare the AsyncTask in a retained headless fragment. See Section 8, “Fragments and background processing” for more information.

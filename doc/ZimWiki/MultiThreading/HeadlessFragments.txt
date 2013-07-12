@@ -1,0 +1,13 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-07-11T15:20:08-04:00
+
+====== HeadlessFragments ======
+Created Thursday 11 July 2013
+
+Are fragments with no UI (onCreate() returns null).
+
+These are used to store data (including threads) across configuration changes.
+
+Source
+* http://blogactivity.wordpress.com/2011/09/01/proper-use-of-asynctask/

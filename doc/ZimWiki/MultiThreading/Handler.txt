@@ -1,0 +1,10 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-07-11T14:20:10-04:00
+
+====== Handler ======
+Created Thursday 11 July 2013
+
+The Handler class can be used to register to a thread and provides a simple channel to send data to this thread.
+
+A Handler object registers itself with the thread in which it is created. For example, if you create a new instance of the Handler class in the onCreate() method of your activity, the resulting Handler object can be used to post data to the main thread.
