@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Handler;
 import android.os.Parcel;
+import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
 
@@ -26,13 +27,43 @@ public class TaskDatabaseFacade
 {
     static private String TAG = "R:DbInterface";
 
+    static public int ADD_TASK_LOADER_ID = 0;
+
     private Executor executor = Executors.newSingleThreadExecutor();
 
+    private Context context;
     private TaskDAO taskDAO;
 
     public TaskDatabaseFacade(Context context)
     {
         taskDAO = new TaskDAO(context);
+        this.context = context;
+    }
+
+    public AddTask getAddTaskLoader(Task task) { return new AddTask(context, task); }
+
+    private class AddTask extends AsyncTaskLoader<Boolean>
+    {
+        private Task task;
+
+        public AddTask(Context context, Task task) {
+            super(context);
+
+            this.task = task;
+        }
+
+        @Override
+        public Boolean loadInBackground()
+        {
+            if (Logger.LOGV)
+            {
+                Log.v(TAG, "Saving task:\n" + task);
+            }
+
+            taskDAO.create(task);
+
+            return true;
+        }
     }
 
     public void addTask(final Context context,
