@@ -1,0 +1,71 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-07-12T21:52:58-04:00
+
+====== MultiThreading ======
+Created Friday 12 July 2013
+
+The goals:
+
+1. It should be readable and easy to maintain
+2. It should be generic enough so that the "database" can be a sqlite database or something over the network.
+3. It should be multi-thread safe. By "thread safe":
+   a. it should NOT run in the main UI thread,
+   b. database calls should not conflict with each other
+   c. the system should know how to communicate results back to the main UI thread.)
+4. It should know about configuration changes (like changing the phone orientation)
+
+===== Solution =====
+(1) is subjective but you can follow common sense
+rules like KISS---Keep It Simple Stupid. For coding, KISS means that each class has a very specific set of functionality. 
+
+For example, your app can have two sets of classes for internal database calls and another for external database calls ("external" as in the Android system via Intents and [[ContentProviders]]). Both sets of classes can use [[ContentProviders]] and Intents but in the interest of keeping things easy to understand, use two sets of classes...unless both require the same exact functionality. 
+
+Another way to satisfy (1) is to do things the "Android way". (Other developers, including your future self, shouldn't have to struggle to learn your code.)
+
+(2) is actually pretty easy: just implement a class that abstracts all the lo-level CRUD. For example, one class can handle sqlite databases and another class with the same interface can handle a Google drive backend.
+
+You can handle (3) and (4) by using Android classes. 
+For getting data into views, use a [[LoaderManager.]] For creating/updating/deleting data, here are some suggested solutions:
+
+* [[AsyncTask]] - unfortunately, [[AsyncTask]] doesn't know about configuration changes.
+* [[AsyncTaskLoader]] 
+* headless fragments - Fragments without a UI. 
+ 
+AsyncTaskLoaders unfortunately execute all operations /at
+the same time/, so there's no guarantee that the other is
+correct, so you get inconsistent data. 
+
+Let's talk about inconsistent data. This is the classic
+multi-threading problem:
+
+| Thread 1                        | Thread 2                        |
+| Object x = //read value from db |                                 |
+| if (x == null)                  |                                 |
+| //insert x into db              | Object x = //read value from db |
+|                                 | if (x == null)                  |
+|                                 | //insert x into db              |
+
+The result is that x gets inserted twice. Using
+begin*Transaction() doesn't help either unless you get a
+reserved lock. This way only one thread will get the lock
+and insert x. 
+
+The problem with this solution is that well you are now in
+multi-thread land where everything is not as it seems.
+AsyncTaskLoader tries to run all tasks at the same time, so
+you have no guarantee on the order that your database
+operations get executed. 
+
+Is there a better solution? For most apps, you don't have to
+worry about 100's of users all trying to get the same data.
+What I'm trying to get at is that you don't need to worry
+about multi-threading. Your "users" are the person using the
+phone and maybe a handful of background threads. So you can
+probably get away with the following:
+
+ + Create a class that abstracts the lo-level database access.
+ + Create a ContentProvider using the class above.
+ + Create a class that encapsulates business logic. Ex: add
+   a task 
+

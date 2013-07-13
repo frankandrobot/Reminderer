@@ -1,0 +1,11 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-07-12T21:27:26-04:00
+
+====== MultiThreadingGotchas ======
+Created Friday 12 July 2013
+
+Excellent Links:
+* http://www.ibm.com/developerworks/library/j-thread/
+* http://www.drdobbs.com/tools/avoiding-classic-threading-problems/231000499?pgno=2
+* http://stackoverflow.com/questions/461896/what-is-the-most-frequent-concurrency-issue-youve-encountered-in-java
