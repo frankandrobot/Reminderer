@@ -1,9 +1,0 @@
-Content-Type: text/x-zim-wiki
-Wiki-Format: zim 0.4
-Creation-Date: 2013-07-10T21:41:44-04:00
-
-====== Database ======
-Created Wednesday 10 July 2013
-
-Two goals:
-

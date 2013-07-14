@@ -2,6 +2,7 @@ package com.frankandrobot.reminderer;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.helpers.MultiOsSupport;
@@ -14,7 +15,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-public class RemindererActivity extends Activity {
+public class RemindererActivity extends FragmentActivity {
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {

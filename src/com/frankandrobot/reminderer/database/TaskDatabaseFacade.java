@@ -12,10 +12,12 @@ import android.support.v4.content.Loader;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.alarm.AlarmConstants;
+import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
 
 import java.util.Calendar;
+import java.util.LinkedList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -28,21 +30,21 @@ public class TaskDatabaseFacade
     static private String TAG = "R:DbInterface";
 
     static public int ADD_TASK_LOADER_ID = 0;
+    static public int LOAD_TASKS_LOADER_ID = 1;
 
-    private Executor executor = Executors.newSingleThreadExecutor();
+    public TaskDatabaseFacade() {}
 
-    private Context context;
-    private TaskDAO taskDAO;
-
-    public TaskDatabaseFacade(Context context)
+    public AddTask getAddTaskLoader(Context context, Task task)
     {
-        taskDAO = new TaskDAO(context);
-        this.context = context;
+        return new AddTask(context, task);
     }
 
-    public AddTask getAddTaskLoader(Task task) { return new AddTask(context, task); }
+    public LoadTasks getLoadTasksLoader(Context context)
+    {
+        return new LoadTasks(context);
+    }
 
-    private class AddTask extends AsyncTaskLoader<Boolean>
+    static private class AddTask extends AsyncTaskLoader<Void>
     {
         private Task task;
 
@@ -50,19 +52,60 @@ public class TaskDatabaseFacade
             super(context);
 
             this.task = task;
+
         }
 
         @Override
-        public Boolean loadInBackground()
+        public Void loadInBackground()
         {
             if (Logger.LOGV)
             {
                 Log.v(TAG, "Saving task:\n" + task);
             }
 
-            taskDAO.create(task);
+            if (task != null)
+                getContext().getContentResolver().insert(TaskProvider.CONTENT_URI,
+                                                         task.toContentValues());
 
-            return true;
+            return null;
+        }
+    }
+
+    static private class LoadTasks extends AsyncTaskLoader<String[]>
+    {
+        public LoadTasks(Context context)
+        {
+            super(context);
+        }
+
+        @Override
+        public String[] loadInBackground()
+        {
+            if (Logger.LOGV)
+            {
+                Log.v(TAG, "Loading tasks");
+            }
+
+            Cursor cursor = getContext().getContentResolver().query(TaskProvider.CONTENT_URI,
+                                                                    new String[]{TaskCol.TASK_DESC.toString()},
+                                                                    null,
+                                                                    null,
+                                                                    null);
+
+            if (cursor != null)
+            {
+                LinkedList<String> llTasks = new LinkedList<String>();
+
+                cursor.moveToFirst();
+                while (!cursor.isAfterLast())
+                {
+                    llTasks.add(cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.toString())));
+                    cursor.moveToNext();
+                }
+                return llTasks.toArray(new String[llTasks.size()]);
+            }
+
+            return new String[0];
         }
     }
 
@@ -70,7 +113,7 @@ public class TaskDatabaseFacade
                                Handler handler,
                                final Task task)
     {
-        if (Logger.LOGV)
+        /*if (Logger.LOGV)
         {
             Log.v(TAG, "Saving task:\n" + task);
         }
@@ -81,7 +124,7 @@ public class TaskDatabaseFacade
             {
                 taskDAO.create(task);
             }
-        });
+        });*/
 
 
         /*// create content values from Task object
@@ -113,7 +156,7 @@ public class TaskDatabaseFacade
         context.startService(new Intent(context, TaskDAOService.class));*/
     }
 
-    public void findTask(final String taskID)
+    /*public void findTask(final String taskID)
     {
         if (Logger.LOGV)
         {
@@ -133,7 +176,7 @@ public class TaskDatabaseFacade
                 }
             }
         });
-    }
+    }*/
 
     public static void findNextAlarm(Context context, Task task)
     {

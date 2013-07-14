@@ -1,9 +1,13 @@
 package com.frankandrobot.reminderer.database;
 
+import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
+import android.util.Log;
 
 import com.frankandrobot.reminderer.datastructures.Task;
+import com.frankandrobot.reminderer.helpers.Logger;
 
 /**
  * Columns for the {@link Task} model
@@ -51,24 +55,49 @@ public class TaskTable
         }
     }
 
-    static protected void createTable(SQLiteDatabase db)
+    /**
+     * Used to create and upgrade the database
+     */
+    static class TaskTableHelper extends SQLiteOpenHelper
     {
-        String dbCreateString = "";
-        dbCreateString += "CREATE TABLE " + TASK_TABLE;
-        dbCreateString += "(";
-        dbCreateString += TaskCol.TASK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,";
-        dbCreateString += TaskCol.TASK_DESC + " TEXT NOT NULL, ";
-        dbCreateString += TaskCol.TASK_REPEATS_TYPE + " TEXT, ";
-        dbCreateString += TaskCol.TASK_DUE_DATE + " INTEGER";
-        dbCreateString += ");";
-        db.execSQL(dbCreateString);
-    }
+        private static final String DATABASE_NAME = "reminderer.db";
+        private static final int DATABASE_VERSION = 2;
+        private static final String TAG = "R:TaskHelper";
 
-    static protected void upgradeTable(SQLiteDatabase db,
-                                      int oldVersion,
-                                      int currentVersion)
-    {
-        db.execSQL("DROP TABLE IF EXISTS " + TASK_TABLE);
-        createTable(db);
+        public TaskTableHelper(Context context)
+        {
+            super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase db)
+        {
+            if (Logger.LOGV) Log.v(TAG, "Creating table");
+
+            String dbCreateString = "";
+            dbCreateString += "CREATE TABLE " + TASK_TABLE;
+            dbCreateString += "(";
+            dbCreateString += TaskCol.TASK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,";
+            dbCreateString += TaskCol.TASK_DESC + " TEXT NOT NULL, ";
+            dbCreateString += TaskCol.TASK_REPEATS_TYPE + " TEXT, ";
+            dbCreateString += TaskCol.TASK_DUE_DATE + " INTEGER";
+            dbCreateString += ");";
+            db.execSQL(dbCreateString);
+
+        }
+
+        @Override
+        public void onUpgrade(SQLiteDatabase db, int oldVersion,
+                              int currentVersion)
+        {
+            if (Logger.LOGV)
+                Log.v(TAG, "Upgrading database from version " + oldVersion
+                                   + " to " + currentVersion
+                                   + ", which will destroy all old data");
+
+            db.execSQL("DROP TABLE IF EXISTS " + TASK_TABLE);
+            onCreate(db);
+
+        }
     }
 }

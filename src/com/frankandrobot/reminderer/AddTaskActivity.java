@@ -1,12 +1,12 @@
 package com.frankandrobot.reminderer;
 
-import android.app.Activity;
 import android.content.ContentProviderResult;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,14 +16,15 @@ import android.widget.Toast;
 import com.frankandrobot.reminderer.database.TaskDAOService;
 import com.frankandrobot.reminderer.database.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.datastructures.Task;
+import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.parser.ContextFreeGrammar;
 
 public class AddTaskActivity extends FragmentActivity
 {
     Task mTask;
     Handler mHandler = new AddHandler();
-    TaskDatabaseFacade mDatabse;
-    LoaderManager.LoaderCallbacks<Boolean> mLoader = new LoaderCall();
+    TaskDatabaseFacade taskDatabase;
+    LoaderManager.LoaderCallbacks<Void> taskSaver = new TaskSaver();
 
     /**
      * Called when the activity is first created.
@@ -60,10 +61,14 @@ public class AddTaskActivity extends FragmentActivity
             public void onClick(View arg0)
             {
                 if (mTask != null)
-                    mDatabse.addTask(AddTaskActivity.this,
-                                     mHandler,
-                                     mTask);
+                {
+                    if (Logger.LOGV)
+                        Log.v("", "clicked() ");
 
+                    getSupportLoaderManager().restartLoader(TaskDatabaseFacade.ADD_TASK_LOADER_ID,
+                                                            null,
+                                                            taskSaver).forceLoad();
+                }
             }
 
         });
@@ -81,26 +86,28 @@ public class AddTaskActivity extends FragmentActivity
 
         });
 
-        mDatabse = new TaskDatabaseFacade(getApplicationContext());
+        taskDatabase = new TaskDatabaseFacade();
 
-        getSupportLoaderManager().initLoader(TaskDatabaseFacade.ADD_TASK_LOADER_ID, null, mLoader);
+        getSupportLoaderManager().initLoader(TaskDatabaseFacade.ADD_TASK_LOADER_ID,
+                                             null,
+                                             taskSaver);
     }
 
-    class LoaderCall implements LoaderManager.LoaderCallbacks<Boolean>
+    class TaskSaver implements LoaderManager.LoaderCallbacks<Void>
     {
         @Override
-        public Loader<Boolean> onCreateLoader(int i, Bundle bundle) {
-            return mDatabse.getAddTaskLoader(mTask);
+        public Loader<Void> onCreateLoader(int i, Bundle bundle) {
+            return taskDatabase.getAddTaskLoader(getApplicationContext(), mTask);
         }
 
         @Override
-        public void onLoadFinished(Loader<Boolean> booleanLoader, Boolean aBoolean) {
+        public void onLoadFinished(Loader<Void> booleanLoader, Void aBoolean) {
             Toast.makeText(AddTaskActivity.this, "Task added",
                     Toast.LENGTH_SHORT).show();
         }
 
         @Override
-        public void onLoaderReset(Loader<Boolean> booleanLoader) {
+        public void onLoaderReset(Loader<Void> booleanLoader) {
 
         }
 

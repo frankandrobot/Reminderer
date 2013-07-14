@@ -19,7 +19,6 @@ package com.frankandrobot.reminderer.database;
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -104,7 +103,7 @@ public class TaskProvider extends ContentProvider
     @Override
     public boolean onCreate()
     {
-        mOpenHelper = new TaskDAOHelper(getContext());
+        mOpenHelper = new TaskTableHelper(getContext());
         return true;
     }
 
@@ -297,37 +296,4 @@ public class TaskProvider extends ContentProvider
         }
     }
 
-    /**
-     * Used to create and upgrade the database
-     */
-    private static class TaskDAOHelper extends SQLiteOpenHelper
-    {
-        private static final String DATABASE_NAME = "reminderer.db";
-        private static final int DATABASE_VERSION = 1;
-
-        public TaskDAOHelper(Context context)
-        {
-            super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        }
-
-        @Override
-        public void onCreate(SQLiteDatabase db)
-        {
-            if (Logger.LOGV) Log.v(TAG, "Creating table");
-
-            TaskTable.createTable(db);
-        }
-
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion,
-                              int currentVersion)
-        {
-            if (Logger.LOGV)
-                Log.v(TAG, "Upgrading database from version " + oldVersion
-                                   + " to " + currentVersion
-                                   + ", which will destroy all old data");
-
-            TaskTable.upgradeTable(db, oldVersion, currentVersion);
-        }
-    }
 }
