@@ -14,10 +14,13 @@ import android.util.Log;
  * 
  */
 class AlarmAlertWakeLock {
-    private static String TAG = "R:WakeLock";
+    final private static AlarmAlertWakeLock instance = new AlarmAlertWakeLock();
+    static AlarmAlertWakeLock getInstance() { return instance; }
+
+    final private static String TAG = "R:WakeLock";
     private static PowerManager.WakeLock sCpuWakeLock;
 
-    static void acquireCpuWakeLock(Context context) {
+    void acquireCpuWakeLock(Context context) {
 	if (Logger.LOGV)
 	    Log.v(TAG, "Acquiring cpu wake lock");
 	if (sCpuWakeLock != null) {
@@ -28,12 +31,13 @@ class AlarmAlertWakeLock {
 		.getSystemService(Context.POWER_SERVICE);
 
 	sCpuWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK
-		| PowerManager.ACQUIRE_CAUSES_WAKEUP
-		| PowerManager.ON_AFTER_RELEASE, TAG);
+		| PowerManager.ACQUIRE_CAUSES_WAKEUP //force screen to turn on
+		| PowerManager.ON_AFTER_RELEASE, //makes screen stay on longer
+            TAG);
 	sCpuWakeLock.acquire();
     }
 
-    static void releaseCpuLock() {
+    void releaseCpuLock() {
 	if (Logger.LOGV)
 	    Log.v(TAG, "Releasing cpu wake lock");
 	if (sCpuWakeLock != null) {
