@@ -64,7 +64,7 @@ public class AlarmHelper
             AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
             Intent intent = new Intent(AlarmConstants.TASK_ALARM_ALERT);
-            intent.putExtra(AlarmConstants.INTENT_NEXT_TASK_DUETIME, nextDueTime);
+            intent.putExtra(AlarmConstants.TASK_DUETIME, nextDueTime);
             PendingIntent sender = PendingIntent.getBroadcast(context,
                                                               0,
                                                               intent,

@@ -9,14 +9,15 @@ public class AlarmConstants
     // from the alarm manager.
     public static final String TASK_ALARM_ALERT = "com.frankandrobot.reminderer.TASK_ALARM_ALERT";
     public static final String TASK_ALARM_KILLED = "com.frankandrobot.reminderer.TASK_ALARM_KILLED";
-    // This extra is the raw alarm object data. It is used in the
-    // AlarmManagerService to avoid a ClassNotFoundException when filling in
-    // the Intent extras.
+    /** This extra is the raw alarm object data. It is used in the
+      * AlarmManagerService to avoid a ClassNotFoundException when filling in
+      * the Intent extras.
+     * */
     public static final String TASK_RAW_DATA = "intent.extra.task_raw";
     /**
      * The next task due time
      */
-    public static final String INTENT_NEXT_TASK_DUETIME = "intent.extra.nexttaskduetime";
+    public static final String TASK_DUETIME = "com.frankandrobot.reminderer.nexttaskduetime";
     /**
      * Play alarm up to 10 minutes before silencing
      */
