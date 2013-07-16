@@ -24,16 +24,16 @@ public class AlarmHelper
     /**
      * Finds the next task(s) due after the given task and enables them.
      *
+     * Idea is that you get a Cursor containing all of the tasks due after
+     * the current time. The problem is that there may be more than one task
+     * due at the same time. So you get the task in the first row of the
+     * Cursor. The time this task is due is the next task due time.
+     *
      * @param context
      * @param dueTime
      */
     public void findAndEnableNextTasksDue(Context context, long dueTime)
     {
-        // Idea is that you get a Cursor containing all of the tasks due after
-        // the current time. The problem is that there may be more than one task
-        // due at the same time. So you get the task in the first row of the
-        // Cursor. Then you get all tasks due at the same time as that task
-
         // disable the old alarm if any
         disableAlert(context);
 
