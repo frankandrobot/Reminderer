@@ -61,35 +61,16 @@ public class AlarmHelper
                 Log.v(TAG, dumpCursor(nextAlarms));
             }
 
-            // get all tasks due at dueTime
-            nextAlarms.close(); // close previous
-            nextAlarms = getDueAlarmIds(context, nextDueTime, "=");
-            if (nextAlarms == null)
-            {
-                Log.e(TAG, "Something went wrong. Couldn't query the next due alarms");
-            }
-            else
-            {
-                // get ids of these tasks
-                long ids[] = new long[nextAlarms.getCount()];
-                index = nextAlarms.getColumnIndex(TaskCol.TASK_ID.toString());
-                int len = 0;
-                while (nextAlarms.moveToNext())
-                {
-                    ids[len++] = nextAlarms.getLong(index);
-                }
-                nextAlarms.close();
+            AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
-                AlarmManager am = (AlarmManager) context
-                        .getSystemService(Context.ALARM_SERVICE);
+            Intent intent = new Intent(AlarmConstants.TASK_ALARM_ALERT);
+            intent.putExtra(AlarmConstants.INTENT_NEXT_TASK_DUETIME, nextDueTime);
+            PendingIntent sender = PendingIntent.getBroadcast(context,
+                                                              0,
+                                                              intent,
+                                                              PendingIntent.FLAG_CANCEL_CURRENT);
 
-                Intent intent = new Intent(AlarmConstants.TASK_ALARM_ALERT);
-                intent.putExtra(AlarmConstants.TASK_ID_DATA, ids);
-                PendingIntent sender = PendingIntent.getBroadcast(context, 0, intent,
-                        PendingIntent.FLAG_CANCEL_CURRENT);
-
-                am.set(AlarmManager.RTC_WAKEUP, nextDueTime, sender);
-            }
+            am.set(AlarmManager.RTC_WAKEUP, nextDueTime, sender);
         }
     }
 
@@ -100,11 +81,11 @@ public class AlarmHelper
      */
     private void disableAlert(Context context)
     {
-        AlarmManager am = (AlarmManager) context
-                .getSystemService(Context.ALARM_SERVICE);
-        PendingIntent sender = PendingIntent.getBroadcast(context, 0,
-                new Intent(AlarmConstants.TASK_ALARM_ALERT),
-                PendingIntent.FLAG_CANCEL_CURRENT);
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        PendingIntent sender = PendingIntent.getBroadcast(context,
+                                                          0,
+                                                          new Intent(AlarmConstants.TASK_ALARM_ALERT),
+                                                          PendingIntent.FLAG_CANCEL_CURRENT);
         am.cancel(sender);
     }
 
