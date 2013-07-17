@@ -76,7 +76,7 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
     public void onCreate() {
 	mAlarmKiller = new Timer();
 	mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-	AlarmAlertWakeLock.acquireCpuWakeLock(this);
+	AlarmAlertWakeLock.getInstance().acquireCpuWakeLock(this);
     }
 
     @Override
@@ -84,7 +84,7 @@ public class AlarmRingerService extends Service implements OnPreparedListener,
 	mAlarmKiller.cancel();
 	mAlarmKiller = null;
 	stop();
-	AlarmAlertWakeLock.releaseCpuLock();
+	AlarmAlertWakeLock.getInstance().releaseCpuLock();
     }
 
     @Override

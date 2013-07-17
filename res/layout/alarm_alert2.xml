@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@android:drawable/dialog_frame">
+
+    <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/due_now"
+            android:id="@+id/AlarmTitle"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="5dp"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="5dp"
+            android:layout_alignParentEnd="false"
+            style="@android:style/TextAppearance.DialogWindowTitle"
+            android:background="@android:drawable/title_bar"/>
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dismiss"
+            android:id="@+id/dimiss_button"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="10dip"
+            android:layout_marginBottom="10dip"
+            />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/snooze"
+            android:id="@+id/snooze_button"
+            android:layout_alignBottom="@+id/dimiss_button"
+            android:layout_alignRight="@+id/AlarmTitle"
+            android:layout_marginRight="10dip"/>
+
+    <fragment
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:name="com.frankandrobot.reminderer.widget.SimpleListFragment"
+            android:id="@+id/fragment"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="75dp"
+            android:layout_above="@+id/dimiss_button"
+            android:layout_below="@+id/AlarmTitle"
+            tools:layout="@layout/simplelistview"/>
+</RelativeLayout>

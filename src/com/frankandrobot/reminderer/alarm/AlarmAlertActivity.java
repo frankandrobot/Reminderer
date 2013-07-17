@@ -33,7 +33,6 @@ public class AlarmAlertActivity extends FragmentActivity
     protected Button mDismiss, mSnooze;
     Task mTask;
     SimpleCursorAdapter mAdapter;
-
     // Receives the TASK_ALARM_KILLED action from the AlarmRingerService.
     private BroadcastReceiver mReceiver = new BroadcastReceiver()
     {
@@ -110,9 +109,11 @@ public class AlarmAlertActivity extends FragmentActivity
     {
         // This is called when a new Loader needs to be created. This
         // activity only has one Loader, so we don't care about the ID.
-        return TaskDatabaseFacade.getDueAlarmsCursorLoader(this,
+        /*return TaskDatabaseFacade.getDueAlarmsCursorLoader(this,
                                                            mTask.getTimeInMillis(),
                                                            TaskTable.LTE);
+                                                           */
+        return null;
     }
 
     @Override

@@ -35,14 +35,14 @@ public class AlarmReceiver extends BroadcastReceiver
         {
             // Maintain a cpu wake lock until the AlarmAlert and AlarmKlaxon can
             // pick it up.
-            AlarmAlertWakeLock.getInstance().acquireCpuWakeLock(context);
+            //AlarmAlertWakeLock.getInstance().acquireCpuWakeLock(context);
 
             // Close dialogs and window shade
             Intent closeDialogs = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
             context.sendBroadcast(closeDialogs);
 
             // Decide which activity to start based on the state of the keyguard.
-            Class c = AlarmAlertActivity.class;
+            Class c = AlarmActivity.class;
             KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
             if (km.inKeyguardRestrictedInputMode())
             {
@@ -61,7 +61,7 @@ public class AlarmReceiver extends BroadcastReceiver
             // Play the alarm alert and vibrate the device.
             Intent playAlarm = new Intent(AlarmConstants.TASK_ALARM_ALERT);
             playAlarm.putExtra(AlarmConstants.TASK_DUETIME, dueTime);
-            context.startService(playAlarm);
+            //context.startService(playAlarm);
         }
     }
 
