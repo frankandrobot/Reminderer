@@ -33,46 +33,35 @@ public class AlarmReceiver extends BroadcastReceiver
         long dueTime = intent.getLongExtra(AlarmConstants.TASK_DUETIME, 0);
         if (dueTime != 0)
         {
-            // Ignore false alarms caused by timezone changes
-            if (now > dueTime + AlarmConstants.STALE_WINDOW * 1000)
+            // Maintain a cpu wake lock until the AlarmAlert and AlarmKlaxon can
+            // pick it up.
+            AlarmAlertWakeLock.getInstance().acquireCpuWakeLock(context);
+
+            // Close dialogs and window shade
+            Intent closeDialogs = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+            context.sendBroadcast(closeDialogs);
+
+            // Decide which activity to start based on the state of the keyguard.
+            Class c = AlarmAlertActivity.class;
+            KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+            if (km.inKeyguardRestrictedInputMode())
             {
-                if (Logger.LOGV)
-                {
-                    Log.v(TAG, "ignoring stale alarm");
-                }
+                // Use the full screen activity for security.
+                //    c = AlarmAlertFullScreen.class;
             }
-            else
-            {
-                // Maintain a cpu wake lock until the AlarmAlert and AlarmKlaxon can
-                // pick it up.
-                AlarmAlertWakeLock.getInstance().acquireCpuWakeLock(context);
 
-                // Close dialogs and window shade
-                Intent closeDialogs = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-                context.sendBroadcast(closeDialogs);
+            // launch UI, explicitly stating that this is not due to user action
+            // so that the current app's notification management is not disturbed
+            Intent alarmAlert = new Intent(context, c);
+            alarmAlert.putExtra(AlarmConstants.TASK_DUETIME, dueTime);
+            alarmAlert.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                                        | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+            context.startActivity(alarmAlert);
 
-                // Decide which activity to start based on the state of the keyguard.
-                Class c = AlarmAlertActivity.class;
-                KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
-                if (km.inKeyguardRestrictedInputMode())
-                {
-                    // Use the full screen activity for security.
-                    //    c = AlarmAlertFullScreen.class;
-                }
-
-                // launch UI, explicitly stating that this is not due to user action
-                // so that the current app's notification management is not disturbed
-                Intent alarmAlert = new Intent(context, c);
-                alarmAlert.putExtra(AlarmConstants.TASK_DUETIME, dueTime);
-                alarmAlert.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                                            | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
-                context.startActivity(alarmAlert);
-
-                // Play the alarm alert and vibrate the device.
-                Intent playAlarm = new Intent(AlarmConstants.TASK_ALARM_ALERT);
-                playAlarm.putExtra(AlarmConstants.TASK_DUETIME, dueTime);
-                context.startService(playAlarm);
-            }
+            // Play the alarm alert and vibrate the device.
+            Intent playAlarm = new Intent(AlarmConstants.TASK_ALARM_ALERT);
+            playAlarm.putExtra(AlarmConstants.TASK_DUETIME, dueTime);
+            context.startService(playAlarm);
         }
     }
 
