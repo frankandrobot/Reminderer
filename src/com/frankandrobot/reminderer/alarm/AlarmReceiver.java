@@ -46,6 +46,7 @@ public class AlarmReceiver extends BroadcastReceiver
             KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
             if (km.inKeyguardRestrictedInputMode())
             {
+                Log.v(TAG, "wuz in keygard mode");
                 // Use the full screen activity for security.
                 //    c = AlarmAlertFullScreen.class;
             }

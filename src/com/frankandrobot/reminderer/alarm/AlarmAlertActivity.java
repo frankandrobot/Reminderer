@@ -3,24 +3,15 @@ package com.frankandrobot.reminderer.alarm;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
-import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
-import com.frankandrobot.reminderer.R;
-import com.frankandrobot.reminderer.database.TaskDatabaseFacade;
-import com.frankandrobot.reminderer.database.TaskTable;
 import com.frankandrobot.reminderer.datastructures.Task;
-import com.frankandrobot.reminderer.helpers.Logger;
 
 //TODO finish pulling from AlarmAlert
 //TODO implement save state for mKilled
@@ -50,11 +41,11 @@ public class AlarmAlertActivity extends FragmentActivity
         }
     };
 
-    @Override
+   /* @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.alarm_alert);
+        setContentView(R.layout.alarm_activity);
 
         mTask = getIntent().getParcelableExtra(AlarmConstants.TASK_INTENT_EXTRA);
 
@@ -95,7 +86,7 @@ public class AlarmAlertActivity extends FragmentActivity
         ListView lv = (ListView) findViewById(R.id.dueTasks);
         lv.setAdapter(mAdapter);
         getSupportLoaderManager().initLoader(0, null, this);
-    }
+    }*/
 
     @Override
     protected void onDestroy()

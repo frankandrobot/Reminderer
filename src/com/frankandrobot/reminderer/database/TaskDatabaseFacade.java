@@ -1,26 +1,16 @@
 package com.frankandrobot.reminderer.database;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
-import android.os.Handler;
-import android.os.Parcel;
 import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.Loader;
 import android.util.Log;
 
-import com.frankandrobot.reminderer.alarm.AlarmConstants;
 import com.frankandrobot.reminderer.alarm.AlarmHelper;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
 
-import java.util.Calendar;
 import java.util.LinkedList;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 /**
  * The app-specific interface to the database
@@ -31,7 +21,8 @@ public class TaskDatabaseFacade
     static private String TAG = "R:TaskFacade";
 
     static public int ADD_TASK_LOADER_ID = 0;
-    static public int LOAD_TASKS_LOADER_ID = 1;
+    static public int LOAD_ALL_TASKS_LOADER_ID = 1;
+    static public int LOAD_TASKS_LOADER_ID = 2;
 
     public TaskDatabaseFacade() {}
 
@@ -40,9 +31,14 @@ public class TaskDatabaseFacade
         return new AddTask(context, task);
     }
 
-    public LoadTasks getLoadTasksLoader(Context context)
+    public LoadAllTasks getLoadAllTasksLoader(Context context)
     {
-        return new LoadTasks(context);
+        return new LoadAllTasks(context);
+    }
+
+    public LoadTasks getLoadTasksLoader(Context context, long dueTime)
+    {
+        return new LoadTasks(context, dueTime);
     }
 
     static private class AddTask extends AsyncTaskLoader<Void>
@@ -75,9 +71,9 @@ public class TaskDatabaseFacade
         }
     }
 
-    static private class LoadTasks extends AsyncTaskLoader<String[]>
+    static private class LoadAllTasks extends AsyncTaskLoader<String[]>
     {
-        public LoadTasks(Context context)
+        public LoadAllTasks(Context context)
         {
             super(context);
         }
@@ -94,6 +90,47 @@ public class TaskDatabaseFacade
                                                                     new String[]{TaskCol.TASK_DESC.toString()},
                                                                     null,
                                                                     null,
+                                                                    null);
+
+            if (cursor != null)
+            {
+                LinkedList<String> llTasks = new LinkedList<String>();
+
+                cursor.moveToFirst();
+                while (!cursor.isAfterLast())
+                {
+                    llTasks.add(cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.toString())));
+                    cursor.moveToNext();
+                }
+                return llTasks.toArray(new String[llTasks.size()]);
+            }
+
+            return new String[0];
+        }
+    }
+
+    static private class LoadTasks extends AsyncTaskLoader<String[]>
+    {
+        private long dueTime;
+
+        public LoadTasks(Context context, long dueTime)
+        {
+            super(context);
+            this.dueTime = dueTime;
+        }
+
+        @Override
+        public String[] loadInBackground()
+        {
+            if (Logger.LOGV)
+            {
+                Log.v(TAG, "Loading tasks");
+            }
+
+            Cursor cursor = getContext().getContentResolver().query(TaskProvider.CONTENT_URI,
+                                                                    new String[]{TaskCol.TASK_DESC.toString()},
+                                                                    TaskCol.TASK_DUE_DATE+"=?",
+                                                                    new String[]{String.valueOf(dueTime)},
                                                                     null);
 
             if (cursor != null)

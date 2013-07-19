@@ -5,7 +5,8 @@
                 android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:background="@android:drawable/dialog_frame">
+              android:background="@android:drawable/dialog_frame"
+              android:id="@+id/alarm_activity">
 
     <TextView
             android:layout_width="fill_parent"
@@ -44,8 +45,8 @@
     <fragment
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:name="com.frankandrobot.reminderer.widget.SimpleListFragment"
-            android:id="@+id/fragment"
+            android:name="com.frankandrobot.reminderer.widget.DueListFragment"
+            android:id="@+id/alarm_duelist"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="75dp"
             android:layout_above="@+id/dimiss_button"

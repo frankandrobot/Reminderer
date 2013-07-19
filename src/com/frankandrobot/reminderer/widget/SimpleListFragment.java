@@ -21,7 +21,7 @@ public class SimpleListFragment extends ListFragment implements LoaderCallbacks<
                                            layout.simple_list_item_1);
         setListAdapter(adapter);
 
-        getLoaderManager().initLoader(TaskDatabaseFacade.LOAD_TASKS_LOADER_ID,
+        getLoaderManager().initLoader(TaskDatabaseFacade.LOAD_ALL_TASKS_LOADER_ID,
                                       null,
                                       this).forceLoad();
     }
@@ -30,7 +30,7 @@ public class SimpleListFragment extends ListFragment implements LoaderCallbacks<
     public Loader<String[]> onCreateLoader(int i, Bundle bundle)
     {
         return new TaskDatabaseFacade()
-                .getLoadTasksLoader(getActivity().getApplicationContext());
+                .getLoadAllTasksLoader(getActivity().getApplicationContext());
     }
 
     @Override

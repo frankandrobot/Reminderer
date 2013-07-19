@@ -3,18 +3,15 @@ package com.frankandrobot.reminderer.alarm;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Window;
 import android.view.WindowManager;
 
 import com.frankandrobot.reminderer.R;
-import com.frankandrobot.reminderer.R.layout;
 import com.frankandrobot.reminderer.helpers.Logger;
+import com.frankandrobot.reminderer.widget.DueListFragment;
 
 /**
  * Alarm Clock alarm alert: pops visible indicator and plays alarm
@@ -23,6 +20,7 @@ import com.frankandrobot.reminderer.helpers.Logger;
  */
 public class AlarmActivity extends FragmentActivity
 {
+    private static final String TAG = "R:AlarmActivity";
 
     protected static final String SCREEN_OFF = "screen_off";
     // These defaults must match the values in res/xml/settings.xml
@@ -50,8 +48,6 @@ public class AlarmActivity extends FragmentActivity
     {
         super.onCreate(icicle);
 
-        long dueTime = getIntent().getLongExtra(AlarmConstants.TASK_DUETIME, 0);
-
         // Get the volume/camera button behavior setting
         /*final String vol = PreferenceManager.getDefaultSharedPreferences(this)
                                    .getString(SettingsActivity.KEY_VOLUME_BEHAVIOR,
@@ -66,61 +62,28 @@ public class AlarmActivity extends FragmentActivity
                      | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                      | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
-        updateLayout();
+        updateLayout(getIntent());
 
         // Register to get the alarm killed intent.
         //registerReceiver(mReceiver, new IntentFilter(Alarms.ALARM_KILLED));
     }
 
-    private void updateLayout()
+    private void updateLayout(Intent intent)
     {
-        setContentView(R.layout.alarm_alert2);
+        setContentView(R.layout.alarm_activity);
+
+        long dueTime = intent.getLongExtra(AlarmConstants.TASK_DUETIME, 0);
+
+        setDueTime(dueTime);
     }
-        /*
-        LayoutInflater inflater = LayoutInflater.from(this);
 
-        setContentView(inflater.inflate(R.layout.alarm_alert, null));
+    private void setDueTime(long dueTime)
+    {
+        DueListFragment fragment = (DueListFragment) getSupportFragmentManager()
+                                                             .findFragmentById(R.id.alarm_duelist);
+        fragment.setDueTime(dueTime);
 
-        *//* set clock face *//*
-        SharedPreferences settings = getSharedPreferences(AlarmClock.PREFERENCES,
-                                                          0);
-        int face = settings.getInt(AlarmClock.PREF_CLOCK_FACE, 0);
-        if (face < 0 || face >= AlarmClock.CLOCKS.length)
-        {
-            face = 0;
-        }
-        ViewGroup clockView = (ViewGroup) findViewById(R.id.clockView);
-        inflater.inflate(AlarmClock.CLOCKS[face], clockView);
-        View clockLayout = findViewById(R.id.clock);
-        if (clockLayout instanceof DigitalClock)
-        {
-            ((DigitalClock) clockLayout).setAnimate();
-        }
-
-        *//* snooze behavior: pop a snooze confirmation view, kick alarm
-manager. *//*
-        Button snooze = (Button) findViewById(R.id.snooze);
-        snooze.requestFocus();
-        snooze.setOnClickListener(new Button.OnClickListener()
-        {
-            public void onClick(View v)
-            {
-                snooze();
-            }
-        });
-
-        *//* dismiss button: close notification *//*
-        findViewById(R.id.dismiss).setOnClickListener(new Button.OnClickListener()
-        {
-            public void onClick(View v)
-            {
-                dismiss(false);
-            }
-        });
-
-        *//* Set the title from the passed in alarm *//*
-        setTitle();
-    }*/
+    }
 
  /*   // Attempt to snooze this alert.
     private void snooze()
@@ -194,23 +157,24 @@ manager. *//*
         }
         finish();
     }
-
-    *//**
+*/
+    /**
      * this is called when a second alarm is triggered while a
      * previous alert window is still active.
-     *//*
+     */
     @Override
     protected void onNewIntent(Intent intent)
     {
         super.onNewIntent(intent);
 
-        if (Logger.LOGV) Log.v(TAG, "AlarmAlert.OnNewIntent()");
+        if (Logger.LOGV) Log.v(TAG, "onNewIntent()");
 
-        mAlarm = intent.getParcelableExtra(Alarms.ALARM_INTENT_EXTRA);
+        long dueTime = intent.getLongExtra(AlarmConstants.TASK_DUETIME, 0);
 
-        setTitle();
+        setDueTime(dueTime);
     }
 
+    /**
     @Override
     protected void onStop()
     {
