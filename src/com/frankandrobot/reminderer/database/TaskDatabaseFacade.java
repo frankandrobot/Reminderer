@@ -1,5 +1,6 @@
 package com.frankandrobot.reminderer.database;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.content.AsyncTaskLoader;
@@ -63,8 +64,8 @@ public class TaskDatabaseFacade
 
             if (task != null)
             {
-                getContext().getContentResolver().insert(TaskProvider.CONTENT_URI,
-                                                         task.toContentValues());
+                ContentResolver resolver = getContext().getContentResolver();
+                resolver.insert(TaskProvider.CONTENT_URI, task.toContentValues());
                 alarmHelper.findAndEnableNextTasksDue(getContext(), System.currentTimeMillis());
             }
             return null;

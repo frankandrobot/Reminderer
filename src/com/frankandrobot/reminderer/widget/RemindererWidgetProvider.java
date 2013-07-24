@@ -23,7 +23,7 @@ public class RemindererWidgetProvider extends AppWidgetProvider {
 	    final PendingIntent launchAddTaskPendingIntent = PendingIntent
 		    .getActivity(context, 0 /* no requestCode */,
 			    launchAddTaskIntent, 0 /* no flags */);
-	    updateViews.setOnClickPendingIntent(R.id.submit,
+	    updateViews.setOnClickPendingIntent(R.id.add_new_button,
 		    launchAddTaskPendingIntent);
 	    appWidgetManager.updateAppWidget(appWidgetIds[i], updateViews);
 	    

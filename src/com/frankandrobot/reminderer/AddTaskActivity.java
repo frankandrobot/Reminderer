@@ -35,7 +35,7 @@ public class AddTaskActivity extends FragmentActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_task);
 
-        Button add = (Button) this.findViewById(R.id.submit);
+        Button add = (Button) this.findViewById(R.id.add_new_button);
         add.setOnClickListener(new View.OnClickListener()
         {
 
@@ -53,7 +53,7 @@ public class AddTaskActivity extends FragmentActivity
 
         });
 
-        Button save = (Button) findViewById(R.id.save);
+        Button save = (Button) findViewById(R.id.save_button);
         save.setOnClickListener(new View.OnClickListener()
         {
 
