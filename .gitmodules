@@ -1,0 +1,3 @@
+[submodule "robolectric"]
+	path = robolectric
+	url = git://github.com/frankandrobot/robolectric.git
