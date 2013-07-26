@@ -1,17 +1,15 @@
 package com.frankandrobot.reminderer;
 
-import android.app.Activity;
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.widget.Button;
 import android.widget.EditText;
 
 import com.frankandrobot.reminderer.R.id;
 import com.frankandrobot.reminderer.database.TaskProvider;
 import com.frankandrobot.reminderer.database.TaskTable;
-import com.frankandrobot.reminderer.datastructures.Task;
-import com.frankandrobot.reminderer.datastructures.Task.Task_String;
+import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,14 +19,19 @@ import org.robolectric.shadows.ShadowContentResolver;
 
 import static org.junit.Assert.assertTrue;
 
+
 @RunWith(RobolectricTestRunner.class)
 public class AddTaskActivityTest
 {
+    SQLiteDatabase _db;
+    //IProfileManager _mgr;
+
     @Test
     public void testOnCreate() throws Exception
     {
         TaskProvider provider = new TaskProvider();
         AddTaskActivity activity = Robolectric.buildActivity(AddTaskActivity.class).create().get();
+
         //Activity activity = new Activity();
         ContentResolver resolver = activity.getContentResolver();
 
@@ -41,7 +44,7 @@ public class AddTaskActivityTest
         addNewButton.performClick();
 
         Button saveButton = (Button) activity.findViewById(id.save_button);
-        //saveButton.performClick();
+        saveButton.performClick();
 
 
 //        Task task = new Task();
@@ -56,5 +59,12 @@ public class AddTaskActivityTest
             null);
 
         assertTrue(cursor != null);
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast())
+        {
+            System.out.println((cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.toString()))));
+            cursor.moveToNext();
+        }
     }
 }
