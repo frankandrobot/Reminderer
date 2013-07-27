@@ -73,6 +73,12 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name=".alarm.AlarmManager$PhoneBoot" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
         <service android:name=".alarm.AlarmRingerService" >
             <intent-filter>
                 <action android:name="com.frankandrobot.reminderer.TASK_ALARM_ALERT" />

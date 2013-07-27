@@ -1,7 +1,7 @@
 package com.frankandrobot.reminderer.alarm;
 
-import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -17,9 +17,9 @@ import static com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 /**
  * Convenience methods used by {@link TaskDatabaseFacade}
  */
-public class AlarmHelper
+public class AlarmManager
 {
-    final private static String TAG = "R:AlarmHelper";
+    final private static String TAG = "R:AlarmManager";
 
     /**
      * Finds the next task(s) due after the given task and enables them.
@@ -29,10 +29,10 @@ public class AlarmHelper
      * due at the same time. So you get the task in the first row of the
      * Cursor. The time this task is due is the next task due time.
      *
-     * @param context
-     * @param dueTime
+     * @param context the context
+     * @param dueTime find tasks after dueTime
      */
-    public void findAndEnableNextTasksDue(Context context, long dueTime)
+    public long findAndEnableNextTasksDue(Context context, long dueTime)
     {
         // disable the old alarm if any
         disableAlert(context);
@@ -61,7 +61,7 @@ public class AlarmHelper
                 Log.v(TAG, dumpCursor(nextAlarms));
             }
 
-            AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            android.app.AlarmManager am = (android.app.AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
             Intent intent = new Intent(AlarmConstants.TASK_ALARM_ALERT);
             intent.putExtra(AlarmConstants.TASK_DUETIME, nextDueTime);
@@ -70,18 +70,21 @@ public class AlarmHelper
                                                               intent,
                                                               PendingIntent.FLAG_CANCEL_CURRENT);
 
-            am.set(AlarmManager.RTC_WAKEUP, nextDueTime, sender);
+            am.set(android.app.AlarmManager.RTC_WAKEUP, nextDueTime, sender);
+
+            return nextDueTime;
         }
+        return 0;
     }
 
     /**
      * Cancels any pending alarms
      *
-     * @param context
+     * @param context da context
      */
     private void disableAlert(Context context)
     {
-        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        android.app.AlarmManager am = (android.app.AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         PendingIntent sender = PendingIntent.getBroadcast(context,
                                                           0,
                                                           new Intent(AlarmConstants.TASK_ALARM_ALERT),
@@ -90,28 +93,27 @@ public class AlarmHelper
     }
 
     /**
-     * Gets all alarms due after given time
+     * Gets all alarms due after, before, at the given time
      *
-     * @param context
-     * @param dueTime
+     * @param context da contex
+     * @param dueTime the time to compare
      * @param op is one of =, <=, >=
      * @return
      */
     private Cursor getDueAlarmIds(Context context, long dueTime, String op)
     {
-        Cursor mResult = context.getContentResolver().query(
+        return context.getContentResolver().query(
                 TaskProvider.CONTENT_URI,
                 new String[]{TaskCol.TASK_ID.toString(), TaskCol.TASK_DUE_DATE.toString()},
                 TaskCol.TASK_DUE_DATE + op + "?",
                 new String[]{Long.toString(dueTime)},
                 DEFAULT_SORT);
-        return mResult;
     }
 
     /**
      * Convenience method to print out the alarm cursor
      *
-     * @param cursor
+     * @param cursor the cursor to dump
      */
     private static String dumpCursor(Cursor cursor)
     {
@@ -131,5 +133,16 @@ public class AlarmHelper
             return row;
         }
         return "";
+    }
+
+    public static class PhoneBoot extends BroadcastReceiver
+    {
+
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            new AlarmManager().findAndEnableNextTasksDue(context,
+                                                         System.currentTimeMillis());
+        }
     }
 }

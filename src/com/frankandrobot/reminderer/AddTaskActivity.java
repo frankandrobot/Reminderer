@@ -2,7 +2,6 @@ package com.frankandrobot.reminderer;
 
 import android.content.ContentProviderResult;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -22,7 +21,6 @@ import com.frankandrobot.reminderer.parser.ContextFreeGrammar;
 public class AddTaskActivity extends FragmentActivity
 {
     Task mTask;
-    Handler mHandler = new AddHandler();
     TaskDatabaseFacade taskDatabase;
     LoaderManager.LoaderCallbacks<Void> taskSaver = new TaskSaver();
 

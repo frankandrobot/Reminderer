@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.support.v4.content.AsyncTaskLoader;
 import android.util.Log;
 
-import com.frankandrobot.reminderer.alarm.AlarmHelper;
+import com.frankandrobot.reminderer.alarm.AlarmManager;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
@@ -42,10 +42,10 @@ public class TaskDatabaseFacade
         return new LoadTasks(context, dueTime);
     }
 
-    static private class AddTask extends AsyncTaskLoader<Void>
+    static protected class AddTask extends AsyncTaskLoader<Void>
     {
         private Task task;
-        private AlarmHelper alarmHelper = new AlarmHelper();
+        private AlarmManager alarmHelper = new AlarmManager();
 
         public AddTask(Context context, Task task) {
             super(context);
