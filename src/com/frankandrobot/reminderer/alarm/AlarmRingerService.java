@@ -34,13 +34,17 @@ import java.util.TimerTask;
 public class AlarmRingerService extends Service
 {
     private static final String TAG = "R:AlarmRinger";
+
     private static final long[] sVibratePattern = new long[]{500, 500};
     // Volume suggested by media team for in-call alarms.
     private static final float IN_CALL_VOLUME = 0.125f;
-    private static float VOLUME;
 
-    private Vibrator mVibrator;
+    private AudioManager audioManager;
+
     private MediaPlayer mMediaPlayer;
+    private PhoneVibrator phoneVibrator;
+    private float systemAlarmVolume;
+    private AudioFocusMonitor focusMonitor = new AudioFocusMonitor();
 
     private long mStartTime;
     // Internal messages
@@ -76,29 +80,12 @@ public class AlarmRingerService extends Service
 
     };
 
-    private MediaPlayerAudioFocusMonitor focusMonitor = new MediaPlayerAudioFocusMonitor();
-
     @Override
     public void onCreate()
     {
         mAlarmKiller = new Timer();
-        mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
         AlarmAlertWakeLock.getInstance().acquireCpuWakeLock(this);
-
-        // Check if in silent mode
-        AudioManager am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-
-
-        switch (am.getRingerMode()) {
-            case AudioManager.RINGER_MODE_NORMAL:
-                VOLUME = (float) am.getStreamVolume(AudioManager.STREAM_ALARM)
-                                   / (float) am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
-                break;
-            default:
-                VOLUME = 0f;
-                break;
-        }
-
     }
 
     @Override
@@ -123,7 +110,21 @@ public class AlarmRingerService extends Service
 
         if (intent != null)
         {
-            new MediaPlayerSetup().setup();
+            audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
+            int ringerMode = audioManager.getRingerMode();
+
+            //enable alarm sound
+            if (ringerMode == AudioManager.RINGER_MODE_NORMAL)
+            {
+                new MediaPlayerSetup().setup();
+            }
+            //enable vibrator
+            if (ringerMode == AudioManager.RINGER_MODE_NORMAL
+                    || ringerMode == AudioManager.RINGER_MODE_SILENT)
+            {
+                phoneVibrator = new PhoneVibrator().setup().start();
+            }
             return START_STICKY;
         }
 
@@ -174,10 +175,11 @@ public class AlarmRingerService extends Service
             if (Logger.LOGV) Log.v(TAG, "setupMediaPlayer()");
 
             //pre-setup before calling onPrepare
+            systemAlarmVolume = (float) audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
+                                  / (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM);
             mMediaPlayer = new MediaPlayer();
             mMediaPlayer.setOnErrorListener(new MediaPlayerErrorListener());
-            // TODO reenable looping
-            // mMediaPlayer.setLooping(true);
+            mMediaPlayer.setLooping(true);
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             try
             {
@@ -189,9 +191,6 @@ public class AlarmRingerService extends Service
                 Log.e(TAG, "Couldn't load ringer: " + e.toString());
                 mMediaPlayer.release();
                 mMediaPlayer = null;
-                // can't play ringer but can run vibrator and continue other
-                // processing
-                finalProcessing();
                 return;
             }
             mMediaPlayer.setOnPreparedListener(new MediaPlayerSetup());
@@ -208,7 +207,7 @@ public class AlarmRingerService extends Service
         public void onPrepared(MediaPlayer arg0)
         {
             if (Logger.LOGV) Log.v(TAG, "onPrepared()");
-            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
             int result = audioManager.requestAudioFocus(focusMonitor,
                                                         AudioManager.STREAM_MUSIC,
                                                         AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
@@ -221,11 +220,9 @@ public class AlarmRingerService extends Service
             else
             {
                 if (Logger.LOGV) Log.v(TAG, "playing ringtone");
-                mMediaPlayer.setVolume(VOLUME, VOLUME);
+                mMediaPlayer.setVolume(systemAlarmVolume, systemAlarmVolume);
                 mMediaPlayer.start();
             }
-            // start vibrator and timer to kill service
-            finalProcessing();
             // logic continues in onAudioFocusChange
         }
     }
@@ -234,7 +231,7 @@ public class AlarmRingerService extends Service
      * This is how we handle phone calls and other cases when the audio is in
      * use
      */
-    class MediaPlayerAudioFocusMonitor implements OnAudioFocusChangeListener
+    class AudioFocusMonitor implements OnAudioFocusChangeListener
     {
         @Override
         public void onAudioFocusChange(int focusChange)
@@ -248,8 +245,8 @@ public class AlarmRingerService extends Service
                         // resume playback
                         if (!mMediaPlayer.isPlaying())
                         {
-                            if (Logger.LOGV) Log.v(TAG, "playing alarm at max volume");
-                            mMediaPlayer.setVolume(VOLUME, VOLUME);
+                            if (Logger.LOGV) Log.v(TAG, "playing alarm at system alarm volume");
+                            mMediaPlayer.setVolume(systemAlarmVolume, systemAlarmVolume);
                             mMediaPlayer.start();
                         }
                         break;
@@ -328,7 +325,7 @@ public class AlarmRingerService extends Service
             mMediaPlayer = null;
         }
         // Stop vibrator
-        mVibrator.cancel();
+        phoneVibrator.stop();
         disableKiller();
     }
 
@@ -354,16 +351,31 @@ public class AlarmRingerService extends Service
     }
 
     /**
-     * Start the vibrator, enable the timer to kill the service, record
-     * startTime
+     * Start the vibrator
      */
-    private void finalProcessing()
+    class PhoneVibrator
     {
-    /* Start the vibrator */
-        mVibrator.vibrate(sVibratePattern, 0);
-        // set the timer to kill the alarm
-        //enableKiller(mCurrentTask);
-        //mPlaying = true;
-        mStartTime = System.currentTimeMillis();
+        private Vibrator mVibrator;
+
+        public PhoneVibrator setup()
+        {
+            mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            return this;
+        }
+
+        public PhoneVibrator start()
+        {
+            mVibrator.vibrate(sVibratePattern, 0);
+            // set the timer to kill the alarm
+            //enableKiller(mCurrentTask);
+            //mPlaying = true;
+            mStartTime = System.currentTimeMillis();
+            return this;
+        }
+
+        public void stop()
+        {
+            mVibrator.cancel();
+        }
     }
 }
