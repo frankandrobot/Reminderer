@@ -46,7 +46,7 @@ public class AlarmReceiver extends BroadcastReceiver
             KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
             if (km.inKeyguardRestrictedInputMode())
             {
-                Log.v(TAG, "wuz in keygard mode");
+                Log.v(TAG, "wuz in keyguard mode");
                 // Use the full screen activity for security.
                 //    c = AlarmAlertFullScreen.class;
             }
@@ -61,8 +61,10 @@ public class AlarmReceiver extends BroadcastReceiver
 
             // Play the alarm alert and vibrate the device.
             Intent playAlarm = new Intent(AlarmConstants.TASK_ALARM_ALERT);
-            playAlarm.putExtra(AlarmConstants.TASK_DUETIME, dueTime);
-            //context.startService(playAlarm);
+            context.startService(playAlarm);
+
+            //grab a wake lock so the service can play the alarm
+            AlarmAlertWakeLock.getInstance().acquireCpuWakeLock(context);
         }
     }
 

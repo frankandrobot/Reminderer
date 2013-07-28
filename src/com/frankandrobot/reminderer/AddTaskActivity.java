@@ -20,6 +20,8 @@ import com.frankandrobot.reminderer.parser.ContextFreeGrammar;
 
 public class AddTaskActivity extends FragmentActivity
 {
+    final static private String TAG = "R:AddTaskActivity";
+
     Task mTask;
     TaskDatabaseFacade taskDatabase;
     LoaderManager.LoaderCallbacks<Void> taskSaver = new TaskSaver();
@@ -61,7 +63,7 @@ public class AddTaskActivity extends FragmentActivity
                 if (mTask != null)
                 {
                     if (Logger.LOGV)
-                        Log.v("", "clicked() ");
+                        Log.v(TAG, "clicked() ");
 
                     getSupportLoaderManager().restartLoader(TaskDatabaseFacade.ADD_TASK_LOADER_ID,
                                                             null,

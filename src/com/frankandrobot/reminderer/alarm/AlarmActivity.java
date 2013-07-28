@@ -6,10 +6,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 
 import com.frankandrobot.reminderer.R;
+import com.frankandrobot.reminderer.R.id;
 import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.widget.DueListFragment;
 
@@ -48,11 +52,7 @@ public class AlarmActivity extends FragmentActivity
     {
         super.onCreate(icicle);
 
-        // Get the volume/camera button behavior setting
-        /*final String vol = PreferenceManager.getDefaultSharedPreferences(this)
-                                   .getString(SettingsActivity.KEY_VOLUME_BEHAVIOR,
-                                              DEFAULT_VOLUME_BEHAVIOR);
-        mVolumeBehavior = Integer.parseInt(vol);*/
+
 
         requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
 
@@ -64,6 +64,14 @@ public class AlarmActivity extends FragmentActivity
 
         updateLayout(getIntent());
 
+        Button dismiss = (Button) findViewById(id.dimiss_button);
+        dismiss.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view)
+            {
+                dismiss(false);
+            }
+        });
         // Register to get the alarm killed intent.
         //registerReceiver(mReceiver, new IntentFilter(Alarms.ALARM_KILLED));
     }
@@ -142,7 +150,7 @@ public class AlarmActivity extends FragmentActivity
     {
         return (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
     }
-
+*/
     // Dismiss the alarm.
     private void dismiss(boolean killed)
     {
@@ -150,14 +158,16 @@ public class AlarmActivity extends FragmentActivity
         // the notification or stop the service.
         if (!killed)
         {
+/*
             // Cancel the notification and stop playing the alarm
             NotificationManager nm = getNotificationManager();
             nm.cancel(mAlarm.id);
-            stopService(new Intent(Alarms.ALARM_ALERT_ACTION));
+*/
+            stopService(new Intent(AlarmConstants.TASK_ALARM_ALERT));
         }
         finish();
     }
-*/
+
     /**
      * this is called when a second alarm is triggered while a
      * previous alert window is still active.
