@@ -256,6 +256,10 @@ public class AlarmRingerService extends Service
             {
                 if (Logger.LOGV) Log.v(TAG, "playing ringtone");
                 mMediaPlayer.setVolume(systemAlarmVolume, systemAlarmVolume);
+                if (mMediaPlayer.isPlaying())
+                {
+                    mMediaPlayer.seekTo(0);
+                }
                 mMediaPlayer.start();
             }
             // logic continues in onAudioFocusChange
