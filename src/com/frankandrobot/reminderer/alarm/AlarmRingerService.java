@@ -27,7 +27,7 @@ import java.util.TimerTask;
 //DONE alarm comes in then get phone call/start music
 //DONE headphones plugged in (and listening to music or on call)
 //DONE return audio focus when done
-//TODO handle what happens when two alarms are due back to back?
+//DONE handle what happens when two alarms are due back to back?
 //DONE handle when user kills alarm
 //DONE handle when alarm expires
 
@@ -42,7 +42,8 @@ public class AlarmRingerService extends Service
     private AudioManager audioManager;
 
     private MediaPlayer mMediaPlayer;
-    private PhoneVibrator phoneVibrator;
+    private PhoneVibrator phoneVibrator = null;
+    private MediaPlayerSetup mediaPlayerSetup = null;
     private float systemAlarmVolume;
     private AudioFocusMonitor focusMonitor = new AudioFocusMonitor();
 
@@ -103,6 +104,16 @@ public class AlarmRingerService extends Service
         return null;
     }
 
+    /**
+     * Called with each request to the start the service.
+     *
+     * The only tricky part is handling back-to-back alarms.
+     *
+     * @param intent
+     * @param flags
+     * @param startId
+     * @return
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
@@ -114,16 +125,28 @@ public class AlarmRingerService extends Service
 
             int ringerMode = audioManager.getRingerMode();
 
-            //enable alarm sound
-            if (ringerMode == AudioManager.RINGER_MODE_NORMAL)
+            synchronized(this)
             {
-                new MediaPlayerSetup().setup();
-            }
-            //enable vibrator
-            if (ringerMode == AudioManager.RINGER_MODE_NORMAL
-                    || ringerMode == AudioManager.RINGER_MODE_SILENT)
-            {
-                phoneVibrator = new PhoneVibrator().setup().start();
+                //enable alarm sound
+                if (ringerMode == AudioManager.RINGER_MODE_NORMAL)
+                {
+                    //if the media player is already setup don't set it up again
+                    if (mediaPlayerSetup == null)
+                    {
+                        mediaPlayerSetup = new MediaPlayerSetup().setup();
+                    }
+                    mediaPlayerSetup.start();
+                }
+                //enable vibrator
+                if (ringerMode == AudioManager.RINGER_MODE_NORMAL
+                        || ringerMode == AudioManager.RINGER_MODE_SILENT)
+                {
+                    if (phoneVibrator == null)
+                    {
+                        phoneVibrator = new PhoneVibrator().setup();
+                    }
+                    phoneVibrator.start();
+                }
             }
             return START_STICKY;
         }
@@ -159,18 +182,16 @@ public class AlarmRingerService extends Service
      *
      * As per the docs, since this is a Service we should use #prepareAsync.
      *
-     * NOTE: we can probably simplify #setup by using one of the static
-     * MediaPlayer.create() methods
-     *
      * NOTE: Instead of using the TelephonyManager to figure out if we're on a call,
-     * we get an audio focus. The callback to requestAudioFocus() tells us if
-     * other apps are using the audio.
+     * we get an audio focus.
      */
     class MediaPlayerSetup implements OnPreparedListener
     {
+        private boolean isPrepared = false;
+
         public MediaPlayerSetup() {}
 
-        public void setup()
+        public MediaPlayerSetup setup()
         {
             if (Logger.LOGV) Log.v(TAG, "setupMediaPlayer()");
 
@@ -191,11 +212,11 @@ public class AlarmRingerService extends Service
                 Log.e(TAG, "Couldn't load ringer: " + e.toString());
                 mMediaPlayer.release();
                 mMediaPlayer = null;
-                return;
+                return null;
             }
             mMediaPlayer.setOnPreparedListener(new MediaPlayerSetup());
-            mMediaPlayer.prepareAsync();
             // logic continues in onPrepared
+            return this;
         }
 
         /**
@@ -206,7 +227,21 @@ public class AlarmRingerService extends Service
         @Override
         public void onPrepared(MediaPlayer arg0)
         {
-            if (Logger.LOGV) Log.v(TAG, "onPrepared()");
+            if (Logger.LOGV) Log.v(TAG, "onPrepared() media player");
+            isPrepared = true;
+            startPlayback();
+        }
+
+        public void start()
+        {
+            if (Logger.LOGV) Log.v(TAG, "start() media player");
+            if (!isPrepared) mMediaPlayer.prepareAsync();
+            else startPlayback();
+        }
+
+        private void startPlayback()
+        {
+            if (Logger.LOGV) Log.v(TAG, "start()");
 
             int result = audioManager.requestAudioFocus(focusMonitor,
                                                         AudioManager.STREAM_MUSIC,
