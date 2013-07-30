@@ -65,6 +65,9 @@ public class AlarmReceiver extends BroadcastReceiver
 
             //grab a wake lock so the service can play the alarm
             AlarmAlertWakeLock.getInstance().acquireCpuWakeLock(context);
+
+            //get the next alarm
+            new AlarmManager().findAndEnableNextTasksDue(context, dueTime + (long) 1);
         }
     }
 

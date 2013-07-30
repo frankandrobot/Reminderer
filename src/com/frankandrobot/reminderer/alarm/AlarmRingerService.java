@@ -109,10 +109,10 @@ public class AlarmRingerService extends Service
      *
      * The only tricky part is handling back-to-back alarms.
      *
-     * @param intent
-     * @param flags
-     * @param startId
-     * @return
+     * @param intent the intent
+     * @param flags the flags
+     * @param startId the startId
+     * @return sticky flag
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
@@ -214,7 +214,7 @@ public class AlarmRingerService extends Service
                 mMediaPlayer = null;
                 return null;
             }
-            mMediaPlayer.setOnPreparedListener(new MediaPlayerSetup());
+            mMediaPlayer.setOnPreparedListener(this);
             // logic continues in onPrepared
             return this;
         }
