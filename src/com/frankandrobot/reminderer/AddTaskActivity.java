@@ -86,7 +86,7 @@ public class AddTaskActivity extends FragmentActivity
 
         });
 
-        taskDatabase = new TaskDatabaseFacade();
+        taskDatabase = new TaskDatabaseFacade(this);
 
         getSupportLoaderManager().initLoader(TaskDatabaseFacade.ADD_TASK_LOADER_ID,
                                              null,

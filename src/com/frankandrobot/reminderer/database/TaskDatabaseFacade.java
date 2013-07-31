@@ -25,7 +25,9 @@ public class TaskDatabaseFacade
     static public int LOAD_ALL_TASKS_LOADER_ID = 1;
     static public int LOAD_TASKS_LOADER_ID = 2;
 
-    public TaskDatabaseFacade() {}
+    private Context context;
+
+    public TaskDatabaseFacade(Context context) { this.context = context; }
 
     public AddTask getAddTaskLoader(Context context, Task task)
     {
@@ -151,4 +153,27 @@ public class TaskDatabaseFacade
         }
     }
 
+    public String[] getTasksDueAt(long dueTime)
+    {
+        Cursor cursor = context.getContentResolver().query(TaskProvider.CONTENT_URI,
+                                                           new String[]{TaskCol.TASK_DESC.toString()},
+                                                           TaskCol.TASK_DUE_DATE+"=?",
+                                                           new String[]{String.valueOf(dueTime)},
+                                                           null);
+
+        if (cursor != null)
+        {
+            LinkedList<String> llTasks = new LinkedList<String>();
+
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast())
+            {
+                llTasks.add(cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.toString())));
+                cursor.moveToNext();
+            }
+            return llTasks.toArray(new String[llTasks.size()]);
+        }
+
+        return new String[0];
+    }
 }

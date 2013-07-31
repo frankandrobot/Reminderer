@@ -33,10 +33,6 @@ public class AlarmReceiver extends BroadcastReceiver
         long dueTime = intent.getLongExtra(AlarmConstants.TASK_DUETIME, 0);
         if (dueTime != 0)
         {
-            // Maintain a cpu wake lock until the AlarmAlert and AlarmKlaxon can
-            // pick it up.
-            //AlarmAlertWakeLock.getInstance().acquireCpuWakeLock(context);
-
             // Close dialogs and window shade
             Intent closeDialogs = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
             context.sendBroadcast(closeDialogs);

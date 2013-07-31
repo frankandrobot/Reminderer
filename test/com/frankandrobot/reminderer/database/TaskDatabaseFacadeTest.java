@@ -47,7 +47,7 @@ public class TaskDatabaseFacadeTest
         task.set(Task_String.desc, "hello world");
         task.set(Task_Calendar.class, new TaskCalendar());
 
-        AddTask addTask = new TaskDatabaseFacade().getAddTaskLoader(activity.getApplicationContext(),
+        AddTask addTask = new TaskDatabaseFacade(activity).getAddTaskLoader(activity.getApplicationContext(),
                                                                     task);
         addTask.loadInBackground();
 
@@ -76,7 +76,7 @@ public class TaskDatabaseFacadeTest
         task2.get(Task_Calendar.class).setTomorrow();
 
         //add the task
-        AddTask addTask2 = new TaskDatabaseFacade().getAddTaskLoader(activity.getApplicationContext(),
+        AddTask addTask2 = new TaskDatabaseFacade(activity).getAddTaskLoader(activity.getApplicationContext(),
                                                                     task2);
         addTask2.loadInBackground();
 
@@ -86,7 +86,7 @@ public class TaskDatabaseFacadeTest
         task1.set(Task_Calendar.class, new TaskCalendar());
 
         //add the task
-        AddTask addTask1 = new TaskDatabaseFacade().getAddTaskLoader(activity.getApplicationContext(),
+        AddTask addTask1 = new TaskDatabaseFacade(activity).getAddTaskLoader(activity.getApplicationContext(),
                                                                      task2);
         addTask1.loadInBackground();
 

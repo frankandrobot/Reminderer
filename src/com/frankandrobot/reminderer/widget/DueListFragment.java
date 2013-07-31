@@ -1,10 +1,14 @@
 package com.frankandrobot.reminderer.widget;
 
+import android.R;
 import android.R.layout;
 import android.app.Activity;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.Loader;
 import android.widget.ArrayAdapter;
 
@@ -67,16 +71,29 @@ public class DueListFragment extends ListFragment implements LoaderCallbacks<Str
     @Override
     public Loader<String[]> onCreateLoader(int i, Bundle bundle)
     {
-        return new TaskDatabaseFacade()
+        return new TaskDatabaseFacade(getActivity())
                 .getLoadTasksLoader(getActivity().getApplicationContext(),
                                     dueTime);
     }
 
     @Override
-    public void onLoadFinished(Loader<String[]> loader, String[] strings)
+    public void onLoadFinished(Loader<String[]> loader, String[] aTaskDesc)
     {
-        for(String task:strings)
-            adapter.add(task);
+        for(String taskDesc:aTaskDesc)
+            adapter.add(taskDesc);
+
+        String notText = aTaskDesc[0]
+                                 + ((aTaskDesc.length > 1) ? " and others " : "");
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(getActivity())
+                        .setSmallIcon(R.drawable.sym_def_app_icon)
+                        .setContentTitle("Task(s) are due")
+                        .setContentText(notText);
+
+        NotificationManager mNotificationManager = (NotificationManager)
+                              getActivity().getApplicationContext()
+                                      .getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(1, mBuilder.getNotification());
     }
 
     @Override
