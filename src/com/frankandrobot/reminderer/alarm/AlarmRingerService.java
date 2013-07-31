@@ -13,7 +13,6 @@ import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.Log;
 
-import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
 
 import java.util.Timer;
@@ -38,6 +37,7 @@ public class AlarmRingerService extends Service
     private static final long[] sVibratePattern = new long[]{500, 500};
     // Volume suggested by media team for in-call alarms.
     private static final float IN_CALL_VOLUME = 0.125f;
+    private static final long ALARM_TIMEOUT = 1000 * 30;
 
     private AudioManager audioManager;
 
@@ -46,55 +46,22 @@ public class AlarmRingerService extends Service
     private MediaPlayerSetup mediaPlayerSetup = null;
     private float systemAlarmVolume;
     private AudioFocusMonitor focusMonitor = new AudioFocusMonitor();
-
-    private long mStartTime;
-    // Internal messages
-//    private static final int KILLER = 1000;
-//    
-//    private Handler mHandler = new Handler() {
-//	public void handleMessage(Message msg) {
-//	    switch (msg.what) {
-//	    case KILLER:
-//		if (Logger.LOGV) {
-//		    Log.v(TAG, "*********** alarm killer triggered ***********");
-//		}
-//		sendKillBroadcast((Task) msg.obj);
-//		stopSelf();
-//		break;
-//	    }
-//	}
-//    };
-    private Timer mAlarmKiller;
-    private TimerTask mAlarmKillerTask = new TimerTask()
-    {
-
-        @Override
-        public void run()
-        {
-            if (Logger.LOGV)
-            {
-                Log.v(TAG, "*********** alarm killer triggered ***********");
-            }
-            //sendKillBroadcast(mCurrentTask);
-            stopSelf();
-        }
-
-    };
+    private StopAlarmTimer stopAlarmTimer;
 
     @Override
     public void onCreate()
     {
-        mAlarmKiller = new Timer();
-
         AlarmAlertWakeLock.getInstance().acquireCpuWakeLock(this);
     }
 
     @Override
     public void onDestroy()
     {
-        mAlarmKiller.cancel();
-        mAlarmKiller = null;
         stop();
+
+        stopAlarmTimer.cancel();
+        stopAlarmTimer = null;
+
         AlarmAlertWakeLock.getInstance().releaseCpuLock();
     }
 
@@ -147,6 +114,13 @@ public class AlarmRingerService extends Service
                     }
                     phoneVibrator.start();
                 }
+                //setup alarm killer
+                if (stopAlarmTimer != null)
+                {
+                    stopAlarmTimer.cancel();
+                }
+                stopAlarmTimer = new StopAlarmTimer(true);
+                stopAlarmTimer.start();
             }
             return START_STICKY;
         }
@@ -335,7 +309,7 @@ public class AlarmRingerService extends Service
         }
     }
 
-    private void sendKillBroadcast(Task task)
+    /*private void sendKillBroadcast(Task task)
     {
         long millis = System.currentTimeMillis() - mStartTime;
         int minutes = (int) Math.round(millis / 60000.0);
@@ -344,12 +318,12 @@ public class AlarmRingerService extends Service
         // alarmKilled.putExtra(Alarms.ALARM_KILLED_TIMEOUT, minutes);
         // tell alarm receiver to stop notification & update AlarmAlertActivity
         sendBroadcast(alarmKilled);
-    }
+    }*/
 
     /**
      * Stops alarm audio and disables alarm if it not snoozed and not repeating
      */
-    public void stop()
+    synchronized public void stop()
     {
         if (Logger.LOGV) Log.v(TAG, "stop()");
         if (mMediaPlayer != null)
@@ -363,30 +337,7 @@ public class AlarmRingerService extends Service
             mMediaPlayer.release();
             mMediaPlayer = null;
         }
-        // Stop vibrator
         phoneVibrator.stop();
-        disableKiller();
-    }
-
-    /**
-     * Kills alarm audio after ALARM_TIMEOUT_SECONDS, so the alarm won't run all
-     * day.
-     * <p/>
-     * This just cancels the audio, but leaves the notification popped, so the
-     * user will know that the alarm tripped.
-     */
-    private void enableKiller(Task task)
-    {
-        mAlarmKiller.schedule(mAlarmKillerTask,
-                              1000 * AlarmConstants.ALARM_TIMEOUT_SECONDS);
-//	mHandler.sendMessageDelayed(mHandler.obtainMessage(KILLER, task),
-//		1000 * AlarmConstants.ALARM_TIMEOUT_SECONDS);
-    }
-
-    private void disableKiller()
-    {
-        mAlarmKillerTask.cancel();
-//	mHandler.removeMessages(KILLER);
     }
 
     /**
@@ -405,16 +356,39 @@ public class AlarmRingerService extends Service
         public PhoneVibrator start()
         {
             mVibrator.vibrate(sVibratePattern, 0);
-            // set the timer to kill the alarm
-            //enableKiller(mCurrentTask);
-            //mPlaying = true;
-            mStartTime = System.currentTimeMillis();
             return this;
         }
 
-        public void stop()
+        public PhoneVibrator stop()
         {
             mVibrator.cancel();
+            return this;
+        }
+    }
+
+    class StopAlarmTimer extends Timer
+    {
+        private TimerTask mAlarmKillerTask = new TimerTask()
+        {
+
+            @Override
+            public void run()
+            {
+                if (Logger.LOGV)
+                {
+                    Log.v(TAG, "*********** alarm killer triggered ***********");
+                }
+                //sendKillBroadcast(mCurrentTask);
+                stopSelf();
+            }
+
+        };
+
+        public StopAlarmTimer(boolean b) { super(b); }
+
+        public void start()
+        {
+            this.schedule(mAlarmKillerTask, ALARM_TIMEOUT);
         }
     }
 }
