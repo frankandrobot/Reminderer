@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.Loader;
-import android.widget.SimpleCursorAdapter;
+import android.support.v4.widget.SimpleCursorAdapter;
 
 import com.frankandrobot.reminderer.database.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
