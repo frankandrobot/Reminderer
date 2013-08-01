@@ -30,7 +30,7 @@ public class SimpleListFragment extends ListFragment implements LoaderCallbacks<
     public Loader<String[]> onCreateLoader(int i, Bundle bundle)
     {
         return new TaskDatabaseFacade(getActivity())
-                .getLoadAllTasksLoader(getActivity().getApplicationContext());
+                .getLoadAllTasksLoader();
     }
 
     @Override

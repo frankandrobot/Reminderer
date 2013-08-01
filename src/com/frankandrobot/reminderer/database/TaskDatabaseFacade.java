@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.CursorLoader;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.alarm.AlarmManager;
@@ -24,24 +25,30 @@ public class TaskDatabaseFacade
     static public int ADD_TASK_LOADER_ID = 0;
     static public int LOAD_ALL_TASKS_LOADER_ID = 1;
     static public int LOAD_TASKS_LOADER_ID = 2;
+    static public int CURSOR_LOAD_ALL_TASKS_LOADER_ID = 3;
 
     private Context context;
 
     public TaskDatabaseFacade(Context context) { this.context = context; }
 
-    public AddTask getAddTaskLoader(Context context, Task task)
+    public AddTask getAddTaskLoader(Task task)
     {
         return new AddTask(context, task);
     }
 
-    public LoadAllTasks getLoadAllTasksLoader(Context context)
+    public LoadAllTasks getLoadAllTasksLoader()
     {
         return new LoadAllTasks(context);
     }
 
-    public LoadTasks getLoadTasksLoader(Context context, long dueTime)
+    public LoadTasks getLoadTasksLoader(long dueTime)
     {
         return new LoadTasks(context, dueTime);
+    }
+
+    public CursorLoadAllTasks getCursorLoadAllTasksLoader()
+    {
+        return new CursorLoadAllTasks(context);
     }
 
     static protected class AddTask extends AsyncTaskLoader<Void>
@@ -153,27 +160,18 @@ public class TaskDatabaseFacade
         }
     }
 
-    public String[] getTasksDueAt(long dueTime)
+    static private class CursorLoadAllTasks extends CursorLoader
     {
-        Cursor cursor = context.getContentResolver().query(TaskProvider.CONTENT_URI,
-                                                           new String[]{TaskCol.TASK_DESC.toString()},
-                                                           TaskCol.TASK_DUE_DATE+"=?",
-                                                           new String[]{String.valueOf(dueTime)},
-                                                           null);
-
-        if (cursor != null)
+        public CursorLoadAllTasks(Context context)
         {
-            LinkedList<String> llTasks = new LinkedList<String>();
-
-            cursor.moveToFirst();
-            while (!cursor.isAfterLast())
-            {
-                llTasks.add(cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.toString())));
-                cursor.moveToNext();
-            }
-            return llTasks.toArray(new String[llTasks.size()]);
+            super(context);
+            this.setUri(TaskProvider.CONTENT_URI);
+            this.setProjection(TaskCol.getColumns(TaskCol.TASK_ID,
+                                                  TaskCol.TASK_DESC,
+                                                  TaskCol.TASK_DUE_DATE));
+            this.setSelection(null);
+            this.setSelectionArgs(null);
+            this.setSortOrder(null);
         }
-
-        return new String[0];
     }
 }

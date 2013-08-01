@@ -72,8 +72,7 @@ public class AlarmDueListFragment extends ListFragment implements LoaderCallback
     public Loader<String[]> onCreateLoader(int i, Bundle bundle)
     {
         return new TaskDatabaseFacade(getActivity())
-                .getLoadTasksLoader(getActivity().getApplicationContext(),
-                                    dueTime);
+                .getLoadTasksLoader(dueTime);
     }
 
     @Override

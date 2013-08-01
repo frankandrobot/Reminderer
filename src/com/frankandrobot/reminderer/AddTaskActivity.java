@@ -97,7 +97,7 @@ public class AddTaskActivity extends FragmentActivity
     {
         @Override
         public Loader<Void> onCreateLoader(int i, Bundle bundle) {
-            return taskDatabase.getAddTaskLoader(getApplicationContext(), mTask);
+            return taskDatabase.getAddTaskLoader(mTask);
         }
 
         @Override

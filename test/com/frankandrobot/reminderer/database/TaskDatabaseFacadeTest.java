@@ -47,8 +47,7 @@ public class TaskDatabaseFacadeTest
         task.set(Task_String.desc, "hello world");
         task.set(Task_Calendar.class, new TaskCalendar());
 
-        AddTask addTask = new TaskDatabaseFacade(activity).getAddTaskLoader(activity.getApplicationContext(),
-                                                                    task);
+        AddTask addTask = new TaskDatabaseFacade(activity).getAddTaskLoader(task);
         addTask.loadInBackground();
 
         ContentResolver resolver = activity.getContentResolver();
@@ -76,8 +75,7 @@ public class TaskDatabaseFacadeTest
         task2.get(Task_Calendar.class).setTomorrow();
 
         //add the task
-        AddTask addTask2 = new TaskDatabaseFacade(activity).getAddTaskLoader(activity.getApplicationContext(),
-                                                                    task2);
+        AddTask addTask2 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
         addTask2.loadInBackground();
 
         //add the second one
@@ -86,8 +84,7 @@ public class TaskDatabaseFacadeTest
         task1.set(Task_Calendar.class, new TaskCalendar());
 
         //add the task
-        AddTask addTask1 = new TaskDatabaseFacade(activity).getAddTaskLoader(activity.getApplicationContext(),
-                                                                     task2);
+        AddTask addTask1 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
         addTask1.loadInBackground();
 
         assertThat(new AlarmManager().findAndEnableNextTasksDue(activity,

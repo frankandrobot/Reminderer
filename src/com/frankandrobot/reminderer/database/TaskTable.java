@@ -3,7 +3,6 @@ package com.frankandrobot.reminderer.database;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.provider.BaseColumns;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.datastructures.Task;
@@ -52,6 +51,14 @@ public class TaskTable
             for(TaskCol col:values())
                 aCols[len++] = col.toString();
             return aCols;
+        }
+        public static String[] getColumns(TaskCol... aCols)
+        {
+            String[] aStrCols = new String[aCols.length];
+            int len = 0;
+            for(TaskCol col:aCols)
+                aStrCols[len++] = col.toString();
+            return aStrCols;
         }
     }
 

@@ -21,7 +21,5 @@
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             tools:layout="@layout/simplelistview"
-            android:layout_alignParentEnd="false"
-            android:layout_alignParentStart="false"
             android:layout_below="@+id/add_new_button"/>
 </RelativeLayout>
