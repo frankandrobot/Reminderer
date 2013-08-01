@@ -381,7 +381,6 @@ public class AlarmRingerService extends Service
                 //sendKillBroadcast(mCurrentTask);
                 stopSelf();
             }
-
         };
 
         public StopAlarmTimer(boolean b) { super(b); }

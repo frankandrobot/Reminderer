@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.widget;
+package com.frankandrobot.reminderer.alarm;
 
 import android.R;
 import android.R.layout;
@@ -14,7 +14,7 @@ import android.widget.ArrayAdapter;
 
 import com.frankandrobot.reminderer.database.TaskDatabaseFacade;
 
-public class DueListFragment extends ListFragment implements LoaderCallbacks<String[]>
+public class AlarmDueListFragment extends ListFragment implements LoaderCallbacks<String[]>
 {
     private ArrayAdapter<String> adapter;
     private long dueTime;
