@@ -17,8 +17,7 @@ import com.frankandrobot.reminderer.database.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.Calendar;
 
 public class MainTaskListFragment extends ListFragment implements
                                                        TaskLoaderListener<Cursor>
@@ -56,11 +55,16 @@ public class MainTaskListFragment extends ListFragment implements
         adapter.swapCursor(null);
     }
 
+    static private class ViewHolder
+    {
+        public TextView taskDesc;
+        public TextView taskDueDate;
+    }
+
     private class TaskCursorAdapter extends SimpleCursorAdapter
     {
-        private SimpleDateFormat sdfLong = new SimpleDateFormat("MMM d, hh:mmaa");
-        private SimpleDateFormat sdfShort = new SimpleDateFormat("hh:mm aa");
-        private SimpleDateFormat sdfDay = new SimpleDateFormat("DD yyyy");
+         private Calendar now = Calendar.getInstance();
+        private Calendar dueCal = Calendar.getInstance();
 
         public TaskCursorAdapter(Context context,
                                  int layout,
@@ -73,29 +77,74 @@ public class MainTaskListFragment extends ListFragment implements
         }
 
         @Override
-        public void bindView(View view, Context context, Cursor cursor) {
-            TextView taskDesc = (TextView)view.findViewById(id.task_desc_textview);
-            taskDesc.setText(cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.toString())));
-            TextView dueDate = (TextView)view.findViewById((id.task_due_date_textview));
-            long due = cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_DUE_DATE.toString()));
-            Date time = new Date(due);
-            Date now = new Date();
-            if (sdfDay.format(time).equals(sdfDay.format(now)))
-            {
-                dueDate.setText(sdfShort.format(time));
-            }
-            else
-            {
-                dueDate.setText(sdfLong.format(time));
-            }
+        public Cursor swapCursor(Cursor c)
+        {
+            //update now time every time the cursor gets reloaded
+            now.setTimeInMillis(System.currentTimeMillis());
+            return super.swapCursor(c);
         }
 
+        /**
+         * Gets the due date from the TASK_DUE_DATE column
+         * in the cursor
+         *
+         * NOTE: Can be improved by removing the use of {@link Calendar}
+         *
+         * @param cursor the cursor
+         */
+        public String getDueDate(Cursor cursor)
+        {
+            //this method is slow because it uses a Calendar obj, which is expensive
+            long dueDate = cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_DUE_DATE.toString()));
+            dueCal.setTimeInMillis(dueDate);
+
+            // if same day and and same year
+            if (dueCal.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR)
+                    && dueCal.get(Calendar.YEAR) == now.get(Calendar.YEAR))
+            {
+                //ex: 11:20pm
+                return String.format("%1$tl:%1$tM%1$tp", dueDate);
+            }
+            else if (dueCal.get(Calendar.YEAR) == now.get(Calendar.YEAR))
+            {
+                //ex: Jun 1 11:20pm
+                return String.format("%1$tb %1$te, %1$tl:%1$tM%1$tp", dueDate);
+            }
+            return String.format("%1$tm/%1$te/%1$ty, %1$tl:%1$tM%1$tp", dueDate);
+        }
+        /**
+         * Uses the holder pattern for performance boost.
+         *
+         * @param position the position
+         * @param convertView the convertView
+         * @param parent the parent
+         * @return
+         */
         @Override
-        public View newView(Context context, Cursor cursor, ViewGroup parent) {
-            LayoutInflater inflater = LayoutInflater.from(context);
-            View v = inflater.inflate(R.layout.main_screen_row, parent, false);
-            bindView(v, context, cursor);
-            return v;
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
+            if (!mDataValid) {
+                throw new IllegalStateException("this should only be called when the cursor is valid");
+            }
+            if (!getCursor().moveToPosition(position)) {
+                throw new IllegalStateException("couldn't move cursor to position " + position);
+            }
+
+            View rowView = convertView;
+
+            if (rowView == null) {
+                LayoutInflater inflater = LayoutInflater.from(mContext);
+                rowView = inflater.inflate(R.layout.main_screen_row, parent, false);
+                ViewHolder viewHolder = new ViewHolder();
+                viewHolder.taskDesc = (TextView)rowView.findViewById(id.task_desc_textview);
+                viewHolder.taskDueDate = (TextView)rowView.findViewById((id.task_due_date_textview));
+                rowView.setTag(viewHolder);
+            }
+
+            ViewHolder holder = (ViewHolder) rowView.getTag();
+            holder.taskDesc.setText(getCursor().getString(getCursor().getColumnIndex(TaskCol.TASK_DESC.toString())));
+            holder.taskDueDate.setText(getDueDate(getCursor()));
+            return rowView;
         }
 
     }
