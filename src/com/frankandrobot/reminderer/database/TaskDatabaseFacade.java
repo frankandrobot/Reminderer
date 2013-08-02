@@ -3,8 +3,13 @@ package com.frankandrobot.reminderer.database;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.alarm.AlarmManager;
@@ -15,21 +20,87 @@ import com.frankandrobot.reminderer.helpers.Logger;
 import java.util.LinkedList;
 
 /**
- * The app-specific interface to the database
+ * The app-specific interface to the database.
+ *
+ * Abstracts away the init loader functionality.
+ * Implement the TaskLoaderListener in your FragmentActivity.
  *
  */
 public class TaskDatabaseFacade
 {
-    static private String TAG = "R:TaskFacade";
+    final static private String TAG = "R:TaskFacade";
 
-    static public int ADD_TASK_LOADER_ID = 0;
-    static public int LOAD_ALL_TASKS_LOADER_ID = 1;
-    static public int LOAD_TASKS_LOADER_ID = 2;
-    static public int CURSOR_LOAD_ALL_TASKS_LOADER_ID = 3;
+    final static public int ADD_TASK_LOADER_ID = 0;
+    final static public int LOAD_ALL_TASKS_LOADER_ID = 1;
+    final static public int LOAD_TASKS_LOADER_ID = 2;
+    final static public int CURSOR_LOAD_ALL_TASKS_LOADER_ID = 3;
 
     private Context context;
+    private TaskLoaderListener<Cursor> activity;
 
-    public TaskDatabaseFacade(Context context) { this.context = context; }
+    public interface TaskLoaderListener<T>
+    {
+        public void onLoadFinished(Loader<T> loader, T data);
+        public void onLoaderReset(Loader<T> loader);
+    }
+
+    public TaskDatabaseFacade(Context context)
+    {
+        this.context = context;
+    }
+
+    public TaskDatabaseFacade(TaskLoaderListener<Cursor> activity,
+                              final int loaderId)
+    {
+        if (!(activity instanceof FragmentActivity)
+                && !(activity instanceof Fragment))
+            throw new IllegalArgumentException(activity.getClass().getSimpleName()
+                                                       + " must be a Fragment or FragmentActivity");
+
+        this.activity = activity;
+
+        if (activity instanceof FragmentActivity)
+        {
+            this.context = ((FragmentActivity) activity);
+            ((FragmentActivity) activity).getSupportLoaderManager()
+                    .initLoader(loaderId, null, new LoaderCallback())
+                    .forceLoad();
+        }
+        else
+        {
+            this.context = ((Fragment) activity).getActivity();
+            ((Fragment) activity).getLoaderManager()
+                    .initLoader(loaderId, null, new LoaderCallback())
+                    .forceLoad();
+        }
+    }
+
+    private class LoaderCallback implements LoaderCallbacks<Cursor>
+    {
+
+        @Override
+        public Loader<Cursor> onCreateLoader(int loaderId, Bundle bundle)
+        {
+            switch(loaderId)
+            {
+                case CURSOR_LOAD_ALL_TASKS_LOADER_ID :
+                    return new CursorLoadAllTasks(context);
+            }
+            return null;
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor)
+        {
+            activity.onLoadFinished(cursorLoader, cursor);
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> cursorLoader)
+        {
+            activity.onLoaderReset(cursorLoader);
+        }
+    }
 
     public AddTask getAddTaskLoader(Task task)
     {
@@ -44,11 +115,6 @@ public class TaskDatabaseFacade
     public LoadTasks getLoadTasksLoader(long dueTime)
     {
         return new LoadTasks(context, dueTime);
-    }
-
-    public CursorLoadAllTasks getCursorLoadAllTasksLoader()
-    {
-        return new CursorLoadAllTasks(context);
     }
 
     static protected class AddTask extends AsyncTaskLoader<Void>

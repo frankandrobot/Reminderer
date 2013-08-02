@@ -4,16 +4,18 @@ import android.app.Activity;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
-import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 
 import com.frankandrobot.reminderer.database.TaskDatabaseFacade;
+import com.frankandrobot.reminderer.database.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 
-public class MainTaskListFragment extends ListFragment implements LoaderCallbacks<Cursor>
+public class MainTaskListFragment extends ListFragment implements
+                                                       TaskLoaderListener<Cursor>
 {
     private SimpleCursorAdapter adapter;
+    private TaskDatabaseFacade taskDatabaseFacade;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState)
@@ -28,9 +30,8 @@ public class MainTaskListFragment extends ListFragment implements LoaderCallback
         setListAdapter(adapter);
         setListShown(false);
 
-        getLoaderManager().initLoader(TaskDatabaseFacade.CURSOR_LOAD_ALL_TASKS_LOADER_ID,
-                                      null,
-                                      this).forceLoad();
+        taskDatabaseFacade = new TaskDatabaseFacade(this,
+                                                    TaskDatabaseFacade.CURSOR_LOAD_ALL_TASKS_LOADER_ID);
     }
 
     /**
@@ -58,12 +59,6 @@ public class MainTaskListFragment extends ListFragment implements LoaderCallback
     {
         super.onDetach();
   //      listener = null;
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle)
-    {
-        return new TaskDatabaseFacade(getActivity()).getCursorLoadAllTasksLoader();
     }
 
     @Override
