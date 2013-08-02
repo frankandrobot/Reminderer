@@ -79,7 +79,7 @@ public class AlarmAlertActivity extends FragmentActivity
 
         // setup due tasks list view
         mAdapter = new SimpleCursorAdapter(this,
-                                           R.layout.alarm_alert_row,
+                                           R.layout.main_screen_row,
                                            null,
                                            TaskTable.TASK_ALERT_LISTVIEW_NO_CP,
                                            new int[]{R.id.task_text, R.id.task_due_date});
