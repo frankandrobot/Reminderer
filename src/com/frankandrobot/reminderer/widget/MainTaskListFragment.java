@@ -16,6 +16,8 @@ import com.frankandrobot.reminderer.R.id;
 import com.frankandrobot.reminderer.database.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
+import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener;
+import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener.FlingThreshold;
 
 import java.util.Calendar;
 
@@ -24,6 +26,7 @@ public class MainTaskListFragment extends ListFragment implements
 {
     private SimpleCursorAdapter adapter;
     private TaskDatabaseFacade taskDatabaseFacade;
+    private FlingThreshold flingThreshold;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState)
@@ -40,6 +43,8 @@ public class MainTaskListFragment extends ListFragment implements
 
         taskDatabaseFacade = new TaskDatabaseFacade(this,
                                                     TaskDatabaseFacade.CURSOR_LOAD_ALL_TASKS_LOADER_ID);
+
+        flingThreshold = new FlingThreshold(getActivity());
     }
 
     @Override
@@ -59,11 +64,12 @@ public class MainTaskListFragment extends ListFragment implements
     {
         public TextView taskDesc;
         public TextView taskDueDate;
+        public LeftFlingListener touchListener;
     }
 
     private class TaskCursorAdapter extends SimpleCursorAdapter
     {
-         private Calendar now = Calendar.getInstance();
+        private Calendar now = Calendar.getInstance();
         private Calendar dueCal = Calendar.getInstance();
 
         public TaskCursorAdapter(Context context,
@@ -121,7 +127,7 @@ public class MainTaskListFragment extends ListFragment implements
          * @return
          */
         @Override
-        public View getView(int position, View convertView, ViewGroup parent)
+        public View getView(final int position, View convertView, ViewGroup parent)
         {
             if (!mDataValid) {
                 throw new IllegalStateException("this should only be called when the cursor is valid");
@@ -138,14 +144,16 @@ public class MainTaskListFragment extends ListFragment implements
                 ViewHolder viewHolder = new ViewHolder();
                 viewHolder.taskDesc = (TextView)rowView.findViewById(id.task_desc_textview);
                 viewHolder.taskDueDate = (TextView)rowView.findViewById((id.task_due_date_textview));
+                viewHolder.touchListener = new LeftFlingListener(flingThreshold);
                 rowView.setTag(viewHolder);
+                rowView.setOnTouchListener(viewHolder.touchListener);
             }
 
             ViewHolder holder = (ViewHolder) rowView.getTag();
             holder.taskDesc.setText(getCursor().getString(getCursor().getColumnIndex(TaskCol.TASK_DESC.toString())));
             holder.taskDueDate.setText(getDueDate(getCursor()));
+            holder.touchListener.setCursorPosition(position);
             return rowView;
         }
-
     }
 }
