@@ -13,6 +13,8 @@ import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.TranslateAnimation;
 
+import com.frankandrobot.reminderer.helpers.Logger;
+
 /**
  * Implements a left fling on a {@link android.view.View}.
  *
@@ -72,6 +74,14 @@ public class LeftFlingListener implements OnTouchListener
         this.flingListener = flingListener;
     }
 
+    /**
+     * Gets the default translate animation.
+     *
+     * It moves the view to the left (hence the {@link LeftFlingListener}).
+     *
+     * @param distanceToTranslate
+     * @return
+     */
     static public Animation getDefaultAnimation(int distanceToTranslate)
     {
         TranslateAnimation translateAnim = new TranslateAnimation(0,
@@ -79,22 +89,8 @@ public class LeftFlingListener implements OnTouchListener
                                                                   0,
                                                                   0);
         translateAnim.setDuration(500);
-        translateAnim.setAnimationListener(new Animation.AnimationListener() {
-
-            @Override
-            public void onAnimationStart(Animation animation) {
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                //yourListViewAdapter.yourListItems.remove(position);
-                //yourListViewAdapter.notifyDataSetChanged();
-            }
-        });
+        translateAnim.setFillAfter(true);
+        translateAnim.setFillEnabled(true);
         return translateAnim;
     }
 
@@ -124,33 +120,26 @@ public class LeftFlingListener implements OnTouchListener
                 //get velocity in pixels per second
                 mVelocityTracker.computeCurrentVelocity(1000);
                 final float velocity = VelocityTrackerCompat.getXVelocity(mVelocityTracker,
-                                                                  pointerId);
+                                                                          pointerId);
                 if (!isFlinging && velocity < -flingThreshold.value() )
                 {
+                    if (Logger.LOGD) Log.d("", "Fling!: " + velocity);
                     isFlinging = true;
-                    Log.d("",
-                          "Fling!: " + velocity);
-                        view.clearAnimation();
-                    animation.setFillAfter(true);
-                    animation.setFillEnabled(true);
+
+                    view.clearAnimation();
                     animation.setAnimationListener(new AnimationListener() {
                         @Override
-                        public void onAnimationStart(Animation animation)
-                        {
-
-                        }
+                        public void onAnimationStart(Animation animation) {}
 
                         @Override
                         public void onAnimationEnd(Animation animation)
                         {
+                            view.setVisibility(View.INVISIBLE);
                             flingListener.onFling(cursorPosition, view, velocity);
                         }
 
                         @Override
-                        public void onAnimationRepeat(Animation animation)
-                        {
-
-                        }
+                        public void onAnimationRepeat(Animation animation) {}
                     });
                     view.startAnimation(animation);
                 }

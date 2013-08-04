@@ -66,7 +66,7 @@ public class MainTaskListFragment extends ListFragment implements
         adapter.swapCursor(null);
     }
 
-    static private class ViewHolder
+    static public class MainTaskViewHolder
     {
         public TextView taskDesc;
         public TextView taskDueDate;
@@ -136,6 +136,8 @@ public class MainTaskListFragment extends ListFragment implements
         @Override
         public View getView(final int position, View convertView, ViewGroup parent)
         {
+            //being paranoid here. Cursor should probably never be closed
+            //even after completing task but just in case
             if (!getCursor().isClosed())
             {
                /* if (!mDataValid) {
@@ -145,12 +147,14 @@ public class MainTaskListFragment extends ListFragment implements
                     throw new IllegalStateException("couldn't move cursor to position " + position);
                 }
             }
+
             View rowView = convertView;
 
-            if (rowView == null) {
+            if (rowView == null)
+            {
                 LayoutInflater inflater = LayoutInflater.from(mContext);
                 rowView = inflater.inflate(R.layout.main_screen_row, parent, false);
-                ViewHolder viewHolder = new ViewHolder();
+                MainTaskViewHolder viewHolder = new MainTaskViewHolder();
                 viewHolder.taskDesc = (TextView)rowView.findViewById(id.task_desc_textview);
                 viewHolder.taskDueDate = (TextView)rowView.findViewById((id.task_due_date_textview));
                 viewHolder.touchListener = new LeftFlingListener(flingThreshold,
@@ -162,23 +166,24 @@ public class MainTaskListFragment extends ListFragment implements
 
             if (!getCursor().isClosed())
             {
-                ViewHolder holder = (ViewHolder) rowView.getTag();
-                holder.taskDesc.setText(getCursor().getString(getCursor().getColumnIndex(TaskCol.TASK_DESC.toString())));
-                holder.taskDueDate.setText(getDueDate(getCursor()));
-                holder.touchListener.setCursorPosition(position);
-                rowView.clearAnimation();
+                MainTaskViewHolder viewHolder = (MainTaskViewHolder) rowView.getTag();
+                viewHolder.taskDesc.setText(getCursor().getString(getCursor().getColumnIndex(TaskCol.TASK_DESC.toString())));
+                viewHolder.taskDueDate.setText(getDueDate(getCursor()));
+                viewHolder.touchListener.setCursorPosition(position);
             }
 
             return rowView;
         }
 
         @Override
-        public void onFling(int position, View view, float velocity)
+        public void onFling(int position, final View view, float velocity)
         {
             if (!getCursor().moveToPosition(position)) {
                 throw new IllegalStateException("couldn't move cursor to position " + position);
             }
             taskDatabaseFacade.setTaskToComplete(getCursor().getInt(getCursor().getColumnIndex(TaskCol.TASK_ID.toString())));
+
+            //Complete the task
             taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_COMPLETE_TASK_ID,
                                     MainTaskListFragment.this,
                                     new TaskLoaderListener<Cursor>() {
@@ -186,18 +191,38 @@ public class MainTaskListFragment extends ListFragment implements
                 public void onLoadFinished(Loader<Cursor> loader,
                                            Cursor data)
                 {
+                    view.clearAnimation();
                     TaskCursorAdapter.this.notifyDataSetChanged();
                     TaskCursorAdapter.this.swapCursor(null);
                     taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_OPEN_TASKS_ID,
                                             MainTaskListFragment.this,
-                                            MainTaskListFragment.this);
+                                            new TaskLoaderListener<Cursor>() {
+                        @Override
+                        public void onLoadFinished(Loader<Cursor> loader,
+                                                   Cursor data)
+                        {
+                            adapter.swapCursor(data);
+                            MainTaskViewHolder viewHolder = (MainTaskViewHolder) view.getTag();
+                            view.postDelayed(new Runnable() {
+                                @Override
+                                public void run()
+                                {
+                                    view.setVisibility(View.VISIBLE);
+                                }
+                            }, 300);
+                        }
+
+                        @Override
+                        public void onLoaderReset(Loader<Cursor> loader)
+                        {
+                            adapter.swapCursor(null);
+                        }
+                    });
 
                 }
 
                 @Override
-                public void onLoaderReset(Loader<Cursor> loader)
-                {
-                }
+                public void onLoaderReset(Loader<Cursor> loader) {}
             });
         }
     }
