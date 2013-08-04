@@ -25,6 +25,8 @@ import java.util.Calendar;
 public class MainTaskListFragment extends ListFragment implements
                                                        TaskLoaderListener<Cursor>
 {
+    final static private String TAG = "R:MainTaskList";
+
     private SimpleCursorAdapter adapter;
     private TaskDatabaseFacade taskDatabaseFacade;
     private FlingThreshold flingThreshold;
@@ -44,7 +46,7 @@ public class MainTaskListFragment extends ListFragment implements
 
         taskDatabaseFacade = new TaskDatabaseFacade(this.getActivity());
 
-        taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_TASKS_LOADER_ID,
+        taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_OPEN_TASKS_ID,
                                 this,
                                 this);
 
@@ -134,13 +136,15 @@ public class MainTaskListFragment extends ListFragment implements
         @Override
         public View getView(final int position, View convertView, ViewGroup parent)
         {
-            if (!mDataValid) {
-                throw new IllegalStateException("this should only be called when the cursor is valid");
+            if (!getCursor().isClosed())
+            {
+               /* if (!mDataValid) {
+                    throw new IllegalStateException("this should only be called when the cursor is valid");
+                }*/
+                if (!getCursor().moveToPosition(position)) {
+                    throw new IllegalStateException("couldn't move cursor to position " + position);
+                }
             }
-            if (!getCursor().moveToPosition(position)) {
-                throw new IllegalStateException("couldn't move cursor to position " + position);
-            }
-
             View rowView = convertView;
 
             if (rowView == null) {
@@ -156,10 +160,15 @@ public class MainTaskListFragment extends ListFragment implements
                 rowView.setOnTouchListener(viewHolder.touchListener);
             }
 
-            ViewHolder holder = (ViewHolder) rowView.getTag();
-            holder.taskDesc.setText(getCursor().getString(getCursor().getColumnIndex(TaskCol.TASK_DESC.toString())));
-            holder.taskDueDate.setText(getDueDate(getCursor()));
-            holder.touchListener.setCursorPosition(position);
+            if (!getCursor().isClosed())
+            {
+                ViewHolder holder = (ViewHolder) rowView.getTag();
+                holder.taskDesc.setText(getCursor().getString(getCursor().getColumnIndex(TaskCol.TASK_DESC.toString())));
+                holder.taskDueDate.setText(getDueDate(getCursor()));
+                holder.touchListener.setCursorPosition(position);
+                rowView.clearAnimation();
+            }
+
             return rowView;
         }
 
@@ -178,12 +187,16 @@ public class MainTaskListFragment extends ListFragment implements
                                            Cursor data)
                 {
                     TaskCursorAdapter.this.notifyDataSetChanged();
+                    TaskCursorAdapter.this.swapCursor(null);
+                    taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_OPEN_TASKS_ID,
+                                            MainTaskListFragment.this,
+                                            MainTaskListFragment.this);
+
                 }
 
                 @Override
                 public void onLoaderReset(Loader<Cursor> loader)
                 {
-
                 }
             });
         }

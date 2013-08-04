@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
 import android.view.animation.TranslateAnimation;
 
 /**
@@ -27,6 +28,7 @@ public class LeftFlingListener implements OnTouchListener
     private FlingThreshold flingThreshold;
     private IFlingListener flingListener;
     private Animation animation;
+    private boolean isFlinging;
 
     /**
      * Instantiate this class to get a fling threshold.
@@ -97,7 +99,7 @@ public class LeftFlingListener implements OnTouchListener
     }
 
     @Override
-    public boolean onTouch(View view, MotionEvent event)
+    public boolean onTouch(final View view, MotionEvent event)
     {
         int index = event.getActionIndex();
         int action = event.getActionMasked();
@@ -115,24 +117,47 @@ public class LeftFlingListener implements OnTouchListener
                 }
                 // Add a user's movement to the tracker.
                 mVelocityTracker.addMovement(event);
+                isFlinging = false;
                 break;
             case MotionEvent.ACTION_MOVE:
                 mVelocityTracker.addMovement(event);
                 //get velocity in pixels per second
                 mVelocityTracker.computeCurrentVelocity(1000);
-                float velocity = VelocityTrackerCompat.getXVelocity(mVelocityTracker,
+                final float velocity = VelocityTrackerCompat.getXVelocity(mVelocityTracker,
                                                                   pointerId);
-                if (velocity < -flingThreshold.value() )
+                if (!isFlinging && velocity < -flingThreshold.value() )
                 {
-                Log.d("",
-                      "Fling!: " + velocity);
-                    view.clearAnimation();
+                    isFlinging = true;
+                    Log.d("",
+                          "Fling!: " + velocity);
+                        view.clearAnimation();
+                    animation.setFillAfter(true);
+                    animation.setFillEnabled(true);
+                    animation.setAnimationListener(new AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation)
+                        {
+
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animation animation)
+                        {
+                            flingListener.onFling(cursorPosition, view, velocity);
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animation animation)
+                        {
+
+                        }
+                    });
                     view.startAnimation(animation);
-                    flingListener.onFling(cursorPosition, view, velocity);
                 }
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                isFlinging = false;
                 // Return a VelocityTracker object back to be re-used by others.
                 mVelocityTracker.recycle();
                 break;

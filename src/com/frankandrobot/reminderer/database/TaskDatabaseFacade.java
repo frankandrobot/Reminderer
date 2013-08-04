@@ -34,7 +34,7 @@ public class TaskDatabaseFacade
     final static public int ADD_TASK_LOADER_ID = 0;
     final static public int LOAD_ALL_TASKS_LOADER_ID = 1;
     final static public int LOAD_TASKS_LOADER_ID = 2;
-    final static public int CURSOR_LOAD_ALL_TASKS_LOADER_ID = 3;
+    final static public int CURSOR_LOAD_ALL_OPEN_TASKS_ID = 3;
     final static public int CURSOR_COMPLETE_TASK_ID = 4;
 
     private Context context;
@@ -90,8 +90,8 @@ public class TaskDatabaseFacade
         {
             switch(loaderId)
             {
-                case CURSOR_LOAD_ALL_TASKS_LOADER_ID :
-                    return new CursorLoadAllTasks(context);
+                case CURSOR_LOAD_ALL_OPEN_TASKS_ID:
+                    return new CursorLoadAllOpenTasks(context);
                 case CURSOR_COMPLETE_TASK_ID :
                     return new CursorCompleteTask(context,
                                                   TaskDatabaseFacade.this);
@@ -236,16 +236,16 @@ public class TaskDatabaseFacade
         }
     }
 
-    static private class CursorLoadAllTasks extends CursorLoader
+    static private class CursorLoadAllOpenTasks extends CursorLoader
     {
-        public CursorLoadAllTasks(Context context)
+        public CursorLoadAllOpenTasks(Context context)
         {
             super(context);
             this.setUri(TaskProvider.CONTENT_URI);
             this.setProjection(TaskCol.getColumns(TaskCol.TASK_ID,
                                                   TaskCol.TASK_DESC,
                                                   TaskCol.TASK_DUE_DATE));
-            this.setSelection(null);
+            this.setSelection(TaskCol.TASK_IS_COMPLETE+"=0");
             this.setSelectionArgs(null);
             this.setSortOrder(null);
         }
@@ -272,6 +272,10 @@ public class TaskDatabaseFacade
         public Cursor loadInBackground()
         {
             {
+                if (Logger.LOGV)
+                {
+                    Log.v(TAG, "Completing task Id: "+facade.getTaskToCompleteId());
+                }
                 ContentResolver resolver = getContext().getContentResolver();
                 Cursor cursor = resolver.query(TaskProvider.CONTENT_URI,
                                                TaskCol.getAllColumns(),
@@ -281,15 +285,30 @@ public class TaskDatabaseFacade
                 if (cursor != null)
                 {
                     cursor.moveToFirst();
+                    if (Logger.LOGD) dumpCursor(cursor);
                     Task task = new Task(cursor);
                     task.set(Task_Boolean.isComplete, true);
+                    if (Logger.LOGD) Log.d(TAG, task.toString());
+
                     resolver.update(TaskProvider.CONTENT_URI,
                                     task.toContentValues(),
-                                    TaskCol.TASK_ID+"=?",
+                                    "_id=?",
                                     new String[]{facade.getTaskToCompleteId()});
                 }
             }
+
             return null;
+        }
+    }
+
+    static private void dumpCursor(Cursor cursor)
+    {
+        if (cursor != null)
+        {
+            for(int i=0; i<cursor.getColumnCount(); i++)
+            {
+                Log.d(TAG, cursor.getColumnName(i)+"="+cursor.getString(i));
+            }
         }
     }
 }

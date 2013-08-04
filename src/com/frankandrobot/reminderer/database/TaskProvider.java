@@ -30,7 +30,9 @@ import android.util.Log;
 
 import com.frankandrobot.reminderer.helpers.Logger;
 
-import static com.frankandrobot.reminderer.database.TaskTable.*;
+import static com.frankandrobot.reminderer.database.TaskTable.TASK_TABLE;
+import static com.frankandrobot.reminderer.database.TaskTable.TaskCol;
+import static com.frankandrobot.reminderer.database.TaskTable.TaskTableHelper;
 
 /**
  * <p>The DAO without the DAO..</p>
@@ -165,15 +167,20 @@ public class TaskProvider extends ContentProvider
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 
         int count;
-        long rowId;
+        long rowId = 0;
 
         switch (uriMatcher.match(url))
         {
+            case TASKS_URI:
+            {
+                count = db.update(TaskTable.TASK_TABLE, values, where, whereArgs);
+                break;
+            }
             case TASK_ID_URI:
             {
                 // "com..frankandrobot.reminderer.dbprovider/tasks/#"
                 rowId = Long.parseLong(url.getPathSegments().get(1));
-                count = db.update("tasks", values, "_id=" + rowId, null);
+                count = db.update(TaskTable.TASK_TABLE, values, "_id=" + rowId, null);
                 break;
             }
 
@@ -184,7 +191,7 @@ public class TaskProvider extends ContentProvider
         }
 
         if (Logger.LOGV)
-            Log.v(TAG, "*** notifyChange() rowId: " + rowId + " url " + url);
+            Log.v(TAG, "*** notifyChange() rowId: " + rowId + " url " + url + "count");
 
         getContext().getContentResolver().notifyChange(url, null);
 

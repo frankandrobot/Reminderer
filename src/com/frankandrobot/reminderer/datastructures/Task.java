@@ -61,14 +61,20 @@ public class Task extends DataStructure implements Parcelable
         isComplete
     }
 
-    public Task()
+    private void init()
     {
         set(Task_Calendar.class, new TaskCalendar());
+        set(Task_Boolean.isComplete, false);
+    }
+
+    public Task()
+    {
+        init();
     }
 
     public Task(Cursor cursor)
     {
-        super();
+        init();
         set(Task_Long.id, cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_ID.toString())));
         get(Task_Calendar.class).setTimeInMillis(cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_DUE_DATE.toString())));
         set(Task_String.desc, cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.toString())));
@@ -206,7 +212,7 @@ public class Task extends DataStructure implements Parcelable
     {
         ContentValues values = new ContentValues();
 
-        if (get(Task_Long.id) != null) values.put("id", get(Task_Long.id));
+        //if (get(Task_Long.id) != null) values.put("id", get(Task_Long.id));
 
         values.put(TaskCol.TASK_DESC.toString(), get(Task_String.desc));
 
@@ -216,6 +222,9 @@ public class Task extends DataStructure implements Parcelable
 
         values.put(TaskCol.TASK_DUE_DATE.toString(),
                    get(Task_Calendar.class).getDate().getTime());
+
+        values.put(TaskCol.TASK_IS_COMPLETE.toString(),
+                   get(Task_Boolean.isComplete) ? 1 : 0);
 
         return values;
     }

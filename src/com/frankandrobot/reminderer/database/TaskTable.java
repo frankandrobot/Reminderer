@@ -69,7 +69,7 @@ public class TaskTable
     static class TaskTableHelper extends SQLiteOpenHelper
     {
         private static final String DATABASE_NAME = "reminderer.db";
-        private static final int DATABASE_VERSION = 3;
+        private static final int DATABASE_VERSION = 7;
         private static final String TAG = "R:TaskHelper";
 
         public TaskTableHelper(Context context)
@@ -88,8 +88,8 @@ public class TaskTable
             dbCreateString += TaskCol.TASK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,";
             dbCreateString += TaskCol.TASK_DESC + " TEXT NOT NULL, ";
             dbCreateString += TaskCol.TASK_REPEATS_TYPE + " TEXT, ";
-            dbCreateString += TaskCol.TASK_DUE_DATE + " INTEGER";
-            dbCreateString += TaskCol.TASK_IS_COMPLETE + " INTEGER(1)";
+            dbCreateString += TaskCol.TASK_DUE_DATE + " INTEGER, ";
+            dbCreateString += TaskCol.TASK_IS_COMPLETE + " INTEGER";
             dbCreateString += ");";
             db.execSQL(dbCreateString);
 
