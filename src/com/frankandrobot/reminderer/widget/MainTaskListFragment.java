@@ -45,6 +45,7 @@ public class MainTaskListFragment extends ListFragment implements
         taskDatabaseFacade = new TaskDatabaseFacade(this.getActivity());
 
         taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_TASKS_LOADER_ID,
+                                this,
                                 this);
 
         flingThreshold = new FlingThreshold(getActivity());
@@ -170,6 +171,7 @@ public class MainTaskListFragment extends ListFragment implements
             }
             taskDatabaseFacade.setTaskToComplete(getCursor().getInt(getCursor().getColumnIndex(TaskCol.TASK_ID.toString())));
             taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_COMPLETE_TASK_ID,
+                                    MainTaskListFragment.this,
                                     new TaskLoaderListener<Cursor>() {
                 @Override
                 public void onLoadFinished(Loader<Cursor> loader,

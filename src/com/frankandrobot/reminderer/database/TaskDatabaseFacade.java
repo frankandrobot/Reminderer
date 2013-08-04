@@ -38,7 +38,7 @@ public class TaskDatabaseFacade
     final static public int CURSOR_COMPLETE_TASK_ID = 4;
 
     private Context context;
-    private TaskLoaderListener<Cursor> activity;
+    private TaskLoaderListener<Cursor> loaderListener;
 
     private String taskToCompleteId;
 
@@ -54,14 +54,15 @@ public class TaskDatabaseFacade
     }
 
     public TaskDatabaseFacade load(final int loaderId,
-                                   TaskLoaderListener<Cursor> activity)
+                                   Object activity,
+                                   TaskLoaderListener<Cursor> loaderListener)
     {
         if (!(activity instanceof FragmentActivity)
                 && !(activity instanceof Fragment))
             throw new IllegalArgumentException(activity.getClass().getSimpleName()
                                                        + " must be a Fragment or FragmentActivity");
 
-        this.activity = activity;
+        this.loaderListener = loaderListener;
 
         if (activity instanceof FragmentActivity)
         {
@@ -101,13 +102,13 @@ public class TaskDatabaseFacade
         @Override
         public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor)
         {
-            activity.onLoadFinished(cursorLoader, cursor);
+            loaderListener.onLoadFinished(cursorLoader, cursor);
         }
 
         @Override
         public void onLoaderReset(Loader<Cursor> cursorLoader)
         {
-            activity.onLoaderReset(cursorLoader);
+            loaderListener.onLoaderReset(cursorLoader);
         }
     }
 

@@ -28,6 +28,12 @@ public class LeftFlingListener implements OnTouchListener
     private IFlingListener flingListener;
     private Animation animation;
 
+    /**
+     * Instantiate this class to get a fling threshold.
+     *
+     * When using in a ListView, it doesn't make sense to instantiate
+     * this class for each row. Instantiate it once then use it for each row.
+     */
     static public class FlingThreshold
     {
         private int flingThreshold;
@@ -47,6 +53,9 @@ public class LeftFlingListener implements OnTouchListener
         public int fullWidth() { return fullWidth; }
     }
 
+    /**
+     * #onFling is called when the fling animation finishes
+     */
     public interface IFlingListener
     {
         public void onFling(int position, View view, float velocity);
