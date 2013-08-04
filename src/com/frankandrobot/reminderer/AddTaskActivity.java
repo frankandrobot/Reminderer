@@ -45,10 +45,13 @@ public class AddTaskActivity extends FragmentActivity
                 ContextFreeGrammar parser = new ContextFreeGrammar(AddTaskActivity.this);
                 EditText text = (EditText) findViewById(R.id.add_task);
                 String input = text.getText().toString();
-                mTask = parser.parse(input);
-                String output = mTask.toString();
-                TextView log = (TextView) findViewById(R.id.log_cat);
-                log.setText(output);
+                if (input != null)
+                {
+                    mTask = parser.parse(input);
+                    String output = mTask.toString();
+                    TextView log = (TextView) findViewById(R.id.log_cat);
+                    log.setText(output);
+                }
             }
 
         });
