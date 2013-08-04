@@ -92,7 +92,8 @@ public class TaskDatabaseFacade
                 case CURSOR_LOAD_ALL_TASKS_LOADER_ID :
                     return new CursorLoadAllTasks(context);
                 case CURSOR_COMPLETE_TASK_ID :
-                    return new CursorCompleteTask(context);
+                    return new CursorCompleteTask(context,
+                                                  TaskDatabaseFacade.this);
             }
             return null;
         }
@@ -234,7 +235,7 @@ public class TaskDatabaseFacade
         }
     }
 
-    private class CursorLoadAllTasks extends CursorLoader
+    static private class CursorLoadAllTasks extends CursorLoader
     {
         public CursorLoadAllTasks(Context context)
         {
@@ -254,11 +255,16 @@ public class TaskDatabaseFacade
         taskToCompleteId = String.valueOf(id);
     }
 
-    private class CursorCompleteTask extends AsyncTaskLoader<Cursor>
+    public String getTaskToCompleteId() { return taskToCompleteId; }
+
+    static private class CursorCompleteTask extends AsyncTaskLoader<Cursor>
     {
-        public CursorCompleteTask(Context context)
+        private TaskDatabaseFacade facade;
+
+        public CursorCompleteTask(Context context, TaskDatabaseFacade facade)
         {
             super(context);
+            this.facade = facade;
         }
 
         @Override
@@ -269,7 +275,7 @@ public class TaskDatabaseFacade
                 Cursor cursor = resolver.query(TaskProvider.CONTENT_URI,
                                                TaskCol.getAllColumns(),
                                                TaskCol.TASK_ID+"=?",
-                                               new String[]{taskToCompleteId},
+                                               new String[]{facade.getTaskToCompleteId()},
                                                null);
                 if (cursor != null)
                 {
@@ -279,7 +285,7 @@ public class TaskDatabaseFacade
                     resolver.update(TaskProvider.CONTENT_URI,
                                     task.toContentValues(),
                                     TaskCol.TASK_ID+"=?",
-                                    new String[]{taskToCompleteId});
+                                    new String[]{facade.getTaskToCompleteId()});
                 }
             }
             return null;
