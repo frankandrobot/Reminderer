@@ -30,7 +30,8 @@ public class TaskTable
         TASK_ID("_id")
         , TASK_DESC
         , TASK_DUE_DATE
-        , TASK_REPEATS_TYPE;
+        , TASK_REPEATS_TYPE
+        , TASK_IS_COMPLETE;
 
         private String value;
 
@@ -68,7 +69,7 @@ public class TaskTable
     static class TaskTableHelper extends SQLiteOpenHelper
     {
         private static final String DATABASE_NAME = "reminderer.db";
-        private static final int DATABASE_VERSION = 2;
+        private static final int DATABASE_VERSION = 3;
         private static final String TAG = "R:TaskHelper";
 
         public TaskTableHelper(Context context)
@@ -88,6 +89,7 @@ public class TaskTable
             dbCreateString += TaskCol.TASK_DESC + " TEXT NOT NULL, ";
             dbCreateString += TaskCol.TASK_REPEATS_TYPE + " TEXT, ";
             dbCreateString += TaskCol.TASK_DUE_DATE + " INTEGER";
+            dbCreateString += TaskCol.TASK_IS_COMPLETE + " INTEGER(1)";
             dbCreateString += ");";
             db.execSQL(dbCreateString);
 

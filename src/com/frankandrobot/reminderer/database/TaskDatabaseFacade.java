@@ -15,6 +15,7 @@ import android.util.Log;
 import com.frankandrobot.reminderer.alarm.AlarmManager;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.datastructures.Task;
+import com.frankandrobot.reminderer.datastructures.Task.Task_Boolean;
 import com.frankandrobot.reminderer.helpers.Logger;
 
 import java.util.LinkedList;
@@ -34,9 +35,12 @@ public class TaskDatabaseFacade
     final static public int LOAD_ALL_TASKS_LOADER_ID = 1;
     final static public int LOAD_TASKS_LOADER_ID = 2;
     final static public int CURSOR_LOAD_ALL_TASKS_LOADER_ID = 3;
+    final static public int CURSOR_COMPLETE_TASK_ID = 4;
 
     private Context context;
     private TaskLoaderListener<Cursor> activity;
+
+    private String taskToCompleteId;
 
     public interface TaskLoaderListener<T>
     {
@@ -49,8 +53,8 @@ public class TaskDatabaseFacade
         this.context = context;
     }
 
-    public TaskDatabaseFacade(TaskLoaderListener<Cursor> activity,
-                              final int loaderId)
+    public TaskDatabaseFacade load(final int loaderId,
+                                   TaskLoaderListener<Cursor> activity)
     {
         if (!(activity instanceof FragmentActivity)
                 && !(activity instanceof Fragment))
@@ -73,6 +77,8 @@ public class TaskDatabaseFacade
                     .initLoader(loaderId, null, new LoaderCallback())
                     .forceLoad();
         }
+
+        return this;
     }
 
     private class LoaderCallback implements LoaderCallbacks<Cursor>
@@ -85,6 +91,8 @@ public class TaskDatabaseFacade
             {
                 case CURSOR_LOAD_ALL_TASKS_LOADER_ID :
                     return new CursorLoadAllTasks(context);
+                case CURSOR_COMPLETE_TASK_ID :
+                    return new CursorCompleteTask(context);
             }
             return null;
         }
@@ -226,7 +234,7 @@ public class TaskDatabaseFacade
         }
     }
 
-    static private class CursorLoadAllTasks extends CursorLoader
+    private class CursorLoadAllTasks extends CursorLoader
     {
         public CursorLoadAllTasks(Context context)
         {
@@ -238,6 +246,43 @@ public class TaskDatabaseFacade
             this.setSelection(null);
             this.setSelectionArgs(null);
             this.setSortOrder(null);
+        }
+    }
+
+    public void setTaskToComplete(final int id)
+    {
+        taskToCompleteId = String.valueOf(id);
+    }
+
+    private class CursorCompleteTask extends AsyncTaskLoader<Cursor>
+    {
+        public CursorCompleteTask(Context context)
+        {
+            super(context);
+        }
+
+        @Override
+        public Cursor loadInBackground()
+        {
+            {
+                ContentResolver resolver = getContext().getContentResolver();
+                Cursor cursor = resolver.query(TaskProvider.CONTENT_URI,
+                                               TaskCol.getAllColumns(),
+                                               TaskCol.TASK_ID+"=?",
+                                               new String[]{taskToCompleteId},
+                                               null);
+                if (cursor != null)
+                {
+                    cursor.moveToFirst();
+                    Task task = new Task(cursor);
+                    task.set(Task_Boolean.isComplete, true);
+                    resolver.update(TaskProvider.CONTENT_URI,
+                                    task.toContentValues(),
+                                    TaskCol.TASK_ID+"=?",
+                                    new String[]{taskToCompleteId});
+                }
+            }
+            return null;
         }
     }
 }

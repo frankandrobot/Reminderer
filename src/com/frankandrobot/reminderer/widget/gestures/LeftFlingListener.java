@@ -12,8 +12,6 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 
-import com.frankandrobot.reminderer.widget.MainTaskListFragment;
-
 /**
  * Implements a left fling on a {@link android.view.View}.
  *
@@ -23,11 +21,12 @@ import com.frankandrobot.reminderer.widget.MainTaskListFragment;
  */
 public class LeftFlingListener implements OnTouchListener
 {
-    private MainTaskListFragment mainTaskListFragment;
     private VelocityTracker mVelocityTracker = null;
 
     private int cursorPosition;
     private FlingThreshold flingThreshold;
+    private IFlingListener flingListener;
+    private Animation animation;
 
     static public class FlingThreshold
     {
@@ -48,11 +47,45 @@ public class LeftFlingListener implements OnTouchListener
         public int fullWidth() { return fullWidth; }
     }
 
-    public LeftFlingListener(FlingThreshold flingThreshold)
+    public interface IFlingListener
     {
-        this.flingThreshold = flingThreshold;
+        public void onFling(int position, View view, float velocity);
     }
 
+    public LeftFlingListener(FlingThreshold flingThreshold,
+                             Animation animation,
+                             IFlingListener flingListener)
+    {
+        this.flingThreshold = flingThreshold;
+        this.animation = animation;
+        this.flingListener = flingListener;
+    }
+
+    static public Animation getDefaultAnimation(int distanceToTranslate)
+    {
+        TranslateAnimation translateAnim = new TranslateAnimation(0,
+                                                                  distanceToTranslate,
+                                                                  0,
+                                                                  0);
+        translateAnim.setDuration(500);
+        translateAnim.setAnimationListener(new Animation.AnimationListener() {
+
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                //yourListViewAdapter.yourListItems.remove(position);
+                //yourListViewAdapter.notifyDataSetChanged();
+            }
+        });
+        return translateAnim;
+    }
 
     @Override
     public boolean onTouch(View view, MotionEvent event)
@@ -78,37 +111,15 @@ public class LeftFlingListener implements OnTouchListener
                 mVelocityTracker.addMovement(event);
                 //get velocity in pixels per second
                 mVelocityTracker.computeCurrentVelocity(1000);
-                // Best practice to use VelocityTrackerCompat where possible.
-                if (VelocityTrackerCompat.getXVelocity(mVelocityTracker,
-                                                       pointerId) < -flingThreshold.value() )
+                float velocity = VelocityTrackerCompat.getXVelocity(mVelocityTracker,
+                                                                  pointerId);
+                if (velocity < -flingThreshold.value() )
                 {
                 Log.d("",
-                      "Fling!: " + VelocityTrackerCompat.getXVelocity(mVelocityTracker,
-                                                                      pointerId));
-                //Log.d("", "Y velocity: " + String.valueOf(viewPosition));
+                      "Fling!: " + velocity);
                     view.clearAnimation();
-                    TranslateAnimation translateAnim = new TranslateAnimation(0,
-                                                                              -flingThreshold.fullWidth(),
-                                                                              0,
-                                                                              0);
-                    translateAnim.setDuration(250);
-                    translateAnim.setAnimationListener(new Animation.AnimationListener() {
-
-                        @Override
-                        public void onAnimationStart(Animation animation) {
-                        }
-
-                        @Override
-                        public void onAnimationRepeat(Animation animation) {
-                        }
-
-                        @Override
-                        public void onAnimationEnd(Animation animation) {
-                            //yourListViewAdapter.yourListItems.remove(position);
-                            //yourListViewAdapter.notifyDataSetChanged();
-                        }
-                    });
-                    view.startAnimation(translateAnim);
+                    view.startAnimation(animation);
+                    flingListener.onFling(cursorPosition, view, velocity);
                 }
                 break;
             case MotionEvent.ACTION_UP:

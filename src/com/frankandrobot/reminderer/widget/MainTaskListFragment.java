@@ -18,6 +18,7 @@ import com.frankandrobot.reminderer.database.TaskDatabaseFacade.TaskLoaderListen
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener;
 import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener.FlingThreshold;
+import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener.IFlingListener;
 
 import java.util.Calendar;
 
@@ -41,8 +42,10 @@ public class MainTaskListFragment extends ListFragment implements
         setListAdapter(adapter);
         setListShown(false);
 
-        taskDatabaseFacade = new TaskDatabaseFacade(this,
-                                                    TaskDatabaseFacade.CURSOR_LOAD_ALL_TASKS_LOADER_ID);
+        taskDatabaseFacade = new TaskDatabaseFacade(this.getActivity());
+
+        taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_TASKS_LOADER_ID,
+                                this);
 
         flingThreshold = new FlingThreshold(getActivity());
     }
@@ -67,7 +70,8 @@ public class MainTaskListFragment extends ListFragment implements
         public LeftFlingListener touchListener;
     }
 
-    private class TaskCursorAdapter extends SimpleCursorAdapter
+    private class TaskCursorAdapter extends SimpleCursorAdapter implements
+                                                                IFlingListener
     {
         private Calendar now = Calendar.getInstance();
         private Calendar dueCal = Calendar.getInstance();
@@ -144,7 +148,9 @@ public class MainTaskListFragment extends ListFragment implements
                 ViewHolder viewHolder = new ViewHolder();
                 viewHolder.taskDesc = (TextView)rowView.findViewById(id.task_desc_textview);
                 viewHolder.taskDueDate = (TextView)rowView.findViewById((id.task_due_date_textview));
-                viewHolder.touchListener = new LeftFlingListener(flingThreshold);
+                viewHolder.touchListener = new LeftFlingListener(flingThreshold,
+                                                                 LeftFlingListener.getDefaultAnimation(-flingThreshold.fullWidth()),
+                                                                 this);
                 rowView.setTag(viewHolder);
                 rowView.setOnTouchListener(viewHolder.touchListener);
             }
@@ -154,6 +160,30 @@ public class MainTaskListFragment extends ListFragment implements
             holder.taskDueDate.setText(getDueDate(getCursor()));
             holder.touchListener.setCursorPosition(position);
             return rowView;
+        }
+
+        @Override
+        public void onFling(int position, View view, float velocity)
+        {
+            if (!getCursor().moveToPosition(position)) {
+                throw new IllegalStateException("couldn't move cursor to position " + position);
+            }
+            taskDatabaseFacade.setTaskToComplete(getCursor().getInt(getCursor().getColumnIndex(TaskCol.TASK_ID.toString())));
+            taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_COMPLETE_TASK_ID,
+                                    new TaskLoaderListener<Cursor>() {
+                @Override
+                public void onLoadFinished(Loader<Cursor> loader,
+                                           Cursor data)
+                {
+                    TaskCursorAdapter.this.notifyDataSetChanged();
+                }
+
+                @Override
+                public void onLoaderReset(Loader<Cursor> loader)
+                {
+
+                }
+            });
         }
     }
 }

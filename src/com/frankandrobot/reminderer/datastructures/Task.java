@@ -56,6 +56,11 @@ public class Task extends DataStructure implements Parcelable
         id
     }
 
+    public enum Task_Boolean implements Field<Boolean>
+    {
+        isComplete
+    }
+
     public Task()
     {
         set(Task_Calendar.class, new TaskCalendar());
@@ -68,6 +73,9 @@ public class Task extends DataStructure implements Parcelable
         get(Task_Calendar.class).setTimeInMillis(cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_DUE_DATE.toString())));
         set(Task_String.desc, cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.toString())));
         set(Task_String.repeatsType, cursor.getString(cursor.getColumnIndex(TaskCol.TASK_REPEATS_TYPE.toString())));
+        boolean isComplete = cursor.getInt(cursor.getColumnIndex(TaskCol.TASK_IS_COMPLETE.toString())) == 1
+                ? true : false;
+        set(Task_Boolean.isComplete, isComplete);
     }
 
     public Task(Parcel p)
