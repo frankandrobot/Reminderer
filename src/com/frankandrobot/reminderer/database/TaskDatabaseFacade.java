@@ -53,9 +53,9 @@ public class TaskDatabaseFacade
         this.context = context;
     }
 
-    public TaskDatabaseFacade load(final int loaderId,
-                                   Object activity,
-                                   TaskLoaderListener<Cursor> loaderListener)
+    public TaskDatabaseFacade forceLoad(final int loaderId,
+                                        Object activity,
+                                        TaskLoaderListener<Cursor> loaderListener)
     {
         if (!(activity instanceof FragmentActivity)
                 && !(activity instanceof Fragment))
@@ -77,6 +77,33 @@ public class TaskDatabaseFacade
             ((Fragment) activity).getLoaderManager()
                     .initLoader(loaderId, null, new LoaderCallback())
                     .forceLoad();
+        }
+
+        return this;
+    }
+
+    public TaskDatabaseFacade load(final int loaderId,
+                                   Object activity,
+                                   TaskLoaderListener<Cursor> loaderListener)
+    {
+        if (!(activity instanceof FragmentActivity)
+                    && !(activity instanceof Fragment))
+            throw new IllegalArgumentException(activity.getClass().getSimpleName()
+                                                       + " must be a Fragment or FragmentActivity");
+
+        this.loaderListener = loaderListener;
+
+        if (activity instanceof FragmentActivity)
+        {
+            this.context = ((FragmentActivity) activity);
+            ((FragmentActivity) activity).getSupportLoaderManager()
+                    .initLoader(loaderId, null, new LoaderCallback());
+        }
+        else
+        {
+            this.context = ((Fragment) activity).getActivity();
+            ((Fragment) activity).getLoaderManager()
+                    .initLoader(loaderId, null, new LoaderCallback());
         }
 
         return this;

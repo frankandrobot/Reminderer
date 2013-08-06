@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ import com.frankandrobot.reminderer.R.id;
 import com.frankandrobot.reminderer.database.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
+import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener;
 import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener.FlingThreshold;
 import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener.IFlingListener;
@@ -58,6 +60,7 @@ public class MainTaskListFragment extends ListFragment implements
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor)
     {
+        if (Logger.LOGD) Log.d(TAG, "onLoadFinished");
         adapter.swapCursor(cursor);
         setListShown(true);
     }
@@ -65,6 +68,7 @@ public class MainTaskListFragment extends ListFragment implements
     @Override
     public void onLoaderReset(Loader<Cursor> cursorLoader)
     {
+        if (Logger.LOGD) Log.d(TAG, "onLoaderReset");
         adapter.swapCursor(null);
     }
 
@@ -197,51 +201,53 @@ public class MainTaskListFragment extends ListFragment implements
                     taskDatabaseFacade.setTaskToComplete(getCursor().getInt(getCursor().getColumnIndex(TaskCol.TASK_ID.toString())));
 
                     //Complete the task
-                    taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_COMPLETE_TASK_ID,
-                                            MainTaskListFragment.this,
-                                            new TaskLoaderListener<Cursor>()
-                                            {
-                                                @Override
-                                                public void onLoadFinished(Loader<Cursor> loader,
-                                                                           Cursor data)
-                                                {
-                                                    //TaskCursorAdapter.this.notifyDataSetChanged();
-                                                    //TaskCursorAdapter.this.swapCursor(null);
-                                                    taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_OPEN_TASKS_ID,
-                                                                            MainTaskListFragment.this,
-                                                                            new TaskLoaderListener<Cursor>()
-                                                    {
-                                                        @Override
-                                                        public void onLoadFinished(Loader<Cursor> loader,
-                                                                                   Cursor data)
+                    taskDatabaseFacade.forceLoad(TaskDatabaseFacade.CURSOR_COMPLETE_TASK_ID,
+                                                 MainTaskListFragment.this,
+                                                 new TaskLoaderListener<Cursor>()
+                                                 {
+                                                     @Override
+                                                     public void onLoadFinished(Loader<Cursor> loader,
+                                                                                Cursor data)
+                                                     {
+                                                         if (Logger.LOGD) Log.d(TAG, "afterAnim:onCompleteFinish");
+                                                         //TaskCursorAdapter.this.notifyDataSetChanged();
+                                                         //TaskCursorAdapter.this.swapCursor(null);
+                                                         taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_OPEN_TASKS_ID,
+                                                                                  MainTaskListFragment.this,
+                                                                                  new TaskLoaderListener<Cursor>()
+                                                                                  {
+                                                                                      @Override
+                                                                                      public void onLoadFinished(Loader<Cursor> loader,
+                                                                                                                 Cursor data)
+                                                                                      {
+                                                                                          if (Logger.LOGD) Log.d(TAG, "afterAnim:onLoadFinished");
+                                                                                          adapter.swapCursor(data);
+                                                                                          view.setVisibility(View.VISIBLE);
+                                                                                          listView.setEnabled(true);
+                                                       /*                             view.postDelayed(new Runnable()
                                                         {
-
-                                                            adapter.swapCursor(data);
-                                                            view.setVisibility(View.VISIBLE);
-                                                            listView.setEnabled(true);
-                                                           /*                             view.postDelayed(new Runnable()
+                                                            @Override
+                                                            public void run()
                                                             {
-                                                                @Override
-                                                                public void run()
-                                                                {
-                                                                    view.setVisibility(View.VISIBLE);
-                                                                }
-                                                            },
-                                                                             300);*/
-                                                        }
+                                                                view.setVisibility(View.VISIBLE);
+                                                            }
+                                                        },
+                                                                         300);*/
+                                                                                      }
 
-                                                        @Override
-                                                        public void onLoaderReset(Loader<Cursor> loader)
-                                                        {
-                                                            //adapter.swapCursor(null);
-                                                        }
-                                                    });
+                                                                                      @Override
+                                                                                      public void onLoaderReset(Loader<Cursor> loader)
+                                                                                      {
+                                                                                          if (Logger.LOGD) Log.d(TAG, "afterAnim:onLoaderReset");
+                                                                                          //adapter.swapCursor(null);
+                                                                                      }
+                                                                                  });
 
-                                                }
+                                                     }
 
-                                                @Override
-                                                public void onLoaderReset(Loader<Cursor> loader) {}
-                                            });
+                                                     @Override
+                                                     public void onLoaderReset(Loader<Cursor> loader) {}
+                                                 });
 
                     return true;
                 }
