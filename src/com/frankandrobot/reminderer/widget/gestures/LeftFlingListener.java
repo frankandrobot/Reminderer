@@ -9,9 +9,12 @@ import android.view.VelocityTracker;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationSet;
 import android.view.animation.TranslateAnimation;
+import android.widget.ListView;
 
 import com.frankandrobot.reminderer.helpers.Logger;
 
@@ -31,6 +34,7 @@ public class LeftFlingListener implements OnTouchListener
     private IFlingListener flingListener;
     private Animation animation;
     private boolean isFlinging;
+    private ListView listView;
 
     /**
      * Instantiate this class to get a fling threshold.
@@ -62,16 +66,18 @@ public class LeftFlingListener implements OnTouchListener
      */
     public interface IFlingListener
     {
-        public void onFling(int position, View view, float velocity);
+        public void onFling(int position, View view);
     }
 
     public LeftFlingListener(FlingThreshold flingThreshold,
-                             Animation animation,
+                             AnimationSet animation,
+                             ListView listView,
                              IFlingListener flingListener)
     {
         this.flingThreshold = flingThreshold;
         this.animation = animation;
         this.flingListener = flingListener;
+        this.listView = listView;
     }
 
     /**
@@ -79,19 +85,19 @@ public class LeftFlingListener implements OnTouchListener
      *
      * It moves the view to the left (hence the {@link LeftFlingListener}).
      *
-     * @param distanceToTranslate
-     * @return
+     *
+     * @param distanceToTranslate distance to translate row
+     * @return this
      */
-    static public Animation getDefaultAnimation(int distanceToTranslate)
+    static public AnimationSet getDefaultAnimation(int distanceToTranslate)
     {
-        TranslateAnimation translateAnim = new TranslateAnimation(0,
-                                                                  distanceToTranslate,
-                                                                  0,
-                                                                  0);
-        translateAnim.setDuration(500);
-        translateAnim.setFillAfter(true);
-        translateAnim.setFillEnabled(true);
-        return translateAnim;
+        TranslateAnimation swipeAnim = new TranslateAnimation(0, distanceToTranslate, 0, 0);
+        AlphaAnimation alphaAnim = new AlphaAnimation(1, 0);
+        AnimationSet set = new AnimationSet(true);
+        set.addAnimation(swipeAnim);
+        set.addAnimation(alphaAnim);
+        set.setDuration(500);
+        return set;
     }
 
     @Override
@@ -125,28 +131,33 @@ public class LeftFlingListener implements OnTouchListener
                 {
                     if (Logger.LOGD) Log.d("", "Fling!: " + velocity);
                     isFlinging = true;
-
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                if (isFlinging)
+                {
+                    isFlinging = false;
+                    listView.setEnabled(false);
                     view.clearAnimation();
-                    animation.setAnimationListener(new AnimationListener() {
+                    view.startAnimation(animation);
+                    view.getAnimation().setAnimationListener(new AnimationListener()
+                    {
                         @Override
                         public void onAnimationStart(Animation animation) {}
 
                         @Override
                         public void onAnimationEnd(Animation animation)
                         {
-                            view.setVisibility(View.INVISIBLE);
-                            flingListener.onFling(cursorPosition, view, velocity);
+                            //view.setVisibility(View.INVISIBLE);
+                            flingListener.onFling(cursorPosition,
+                                                  view);
                         }
 
                         @Override
                         public void onAnimationRepeat(Animation animation) {}
                     });
-                    view.startAnimation(animation);
                 }
-                break;
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                isFlinging = false;
                 // Return a VelocityTracker object back to be re-used by others.
                 mVelocityTracker.recycle();
                 break;

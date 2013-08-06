@@ -9,6 +9,8 @@ import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.frankandrobot.reminderer.R;
@@ -131,7 +133,7 @@ public class MainTaskListFragment extends ListFragment implements
          * @param position the position
          * @param convertView the convertView
          * @param parent the parent
-         * @return
+         * @return View to show
          */
         @Override
         public View getView(final int position, View convertView, ViewGroup parent)
@@ -159,6 +161,7 @@ public class MainTaskListFragment extends ListFragment implements
                 viewHolder.taskDueDate = (TextView)rowView.findViewById((id.task_due_date_textview));
                 viewHolder.touchListener = new LeftFlingListener(flingThreshold,
                                                                  LeftFlingListener.getDefaultAnimation(-flingThreshold.fullWidth()),
+                                                                 MainTaskListFragment.this.getListView(),
                                                                  this);
                 rowView.setTag(viewHolder);
                 rowView.setOnTouchListener(viewHolder.touchListener);
@@ -176,53 +179,72 @@ public class MainTaskListFragment extends ListFragment implements
         }
 
         @Override
-        public void onFling(int position, final View view, float velocity)
+        public void onFling(final int position, final View view)
         {
             if (!getCursor().moveToPosition(position)) {
                 throw new IllegalStateException("couldn't move cursor to position " + position);
             }
-            taskDatabaseFacade.setTaskToComplete(getCursor().getInt(getCursor().getColumnIndex(TaskCol.TASK_ID.toString())));
-
-            //Complete the task
-            taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_COMPLETE_TASK_ID,
-                                    MainTaskListFragment.this,
-                                    new TaskLoaderListener<Cursor>() {
-                @Override
-                public void onLoadFinished(Loader<Cursor> loader,
-                                           Cursor data)
+            final ListView listView = MainTaskListFragment.this.getListView();
+            final ViewTreeObserver observer = listView.getViewTreeObserver();
+            observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener()
+            {
+                public boolean onPreDraw()
                 {
-                    view.clearAnimation();
-                    TaskCursorAdapter.this.notifyDataSetChanged();
-                    TaskCursorAdapter.this.swapCursor(null);
-                    taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_OPEN_TASKS_ID,
+                    observer.removeOnPreDrawListener(this);
+                    listView.removeViews(position, 1);
+                    view.setVisibility(View.INVISIBLE);
+                    //listView.removeView(view);
+                    taskDatabaseFacade.setTaskToComplete(getCursor().getInt(getCursor().getColumnIndex(TaskCol.TASK_ID.toString())));
+
+                    //Complete the task
+                    taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_COMPLETE_TASK_ID,
                                             MainTaskListFragment.this,
-                                            new TaskLoaderListener<Cursor>() {
-                        @Override
-                        public void onLoadFinished(Loader<Cursor> loader,
-                                                   Cursor data)
-                        {
-                            adapter.swapCursor(data);
-                            MainTaskViewHolder viewHolder = (MainTaskViewHolder) view.getTag();
-                            view.postDelayed(new Runnable() {
-                                @Override
-                                public void run()
-                                {
-                                    view.setVisibility(View.VISIBLE);
-                                }
-                            }, 300);
-                        }
+                                            new TaskLoaderListener<Cursor>()
+                                            {
+                                                @Override
+                                                public void onLoadFinished(Loader<Cursor> loader,
+                                                                           Cursor data)
+                                                {
+                                                    //TaskCursorAdapter.this.notifyDataSetChanged();
+                                                    //TaskCursorAdapter.this.swapCursor(null);
+                                                    taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_OPEN_TASKS_ID,
+                                                                            MainTaskListFragment.this,
+                                                                            new TaskLoaderListener<Cursor>()
+                                                    {
+                                                        @Override
+                                                        public void onLoadFinished(Loader<Cursor> loader,
+                                                                                   Cursor data)
+                                                        {
 
-                        @Override
-                        public void onLoaderReset(Loader<Cursor> loader)
-                        {
-                            adapter.swapCursor(null);
-                        }
-                    });
+                                                            adapter.swapCursor(data);
+                                                            view.setVisibility(View.VISIBLE);
+                                                            listView.setEnabled(true);
+                                                           /*                             view.postDelayed(new Runnable()
+                                                            {
+                                                                @Override
+                                                                public void run()
+                                                                {
+                                                                    view.setVisibility(View.VISIBLE);
+                                                                }
+                                                            },
+                                                                             300);*/
+                                                        }
 
+                                                        @Override
+                                                        public void onLoaderReset(Loader<Cursor> loader)
+                                                        {
+                                                            //adapter.swapCursor(null);
+                                                        }
+                                                    });
+
+                                                }
+
+                                                @Override
+                                                public void onLoaderReset(Loader<Cursor> loader) {}
+                                            });
+
+                    return true;
                 }
-
-                @Override
-                public void onLoaderReset(Loader<Cursor> loader) {}
             });
         }
     }
