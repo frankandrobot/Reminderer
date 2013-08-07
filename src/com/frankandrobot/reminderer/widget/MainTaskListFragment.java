@@ -84,6 +84,8 @@ public class MainTaskListFragment extends ListFragment implements
     {
         private Calendar now = Calendar.getInstance();
         private Calendar dueCal = Calendar.getInstance();
+        private int rowBeingDeleted=-1;
+        private int rowBeingDeleted2;
 
         public TaskCursorAdapter(Context context,
                                  int layout,
@@ -179,6 +181,21 @@ public class MainTaskListFragment extends ListFragment implements
                 viewHolder.touchListener.setCursorPosition(position);
             }
 
+            if (Logger.LOGD && position == 0) Log.d(TAG, "getView() "+String.valueOf(rowBeingDeleted));
+            if (position == rowBeingDeleted || position == rowBeingDeleted2)
+            {
+                if (rowBeingDeleted2 != -1)
+                {
+                    rowBeingDeleted2 = -1;
+                    rowView.setVisibility(View.VISIBLE);
+                }
+                else if (rowBeingDeleted != -1) //ignore first call
+                {
+                    rowBeingDeleted2 = rowBeingDeleted;
+                    rowBeingDeleted = -1;
+                }
+            }
+
             return rowView;
         }
 
@@ -197,6 +214,8 @@ public class MainTaskListFragment extends ListFragment implements
                     observer.removeOnPreDrawListener(this);
                     listView.removeViews(position, 1);
                     view.setVisibility(View.INVISIBLE);
+                    rowBeingDeleted = position;
+                    rowBeingDeleted2 = -1;
                     //listView.removeView(view);
                     taskDatabaseFacade.setTaskToComplete(getCursor().getInt(getCursor().getColumnIndex(TaskCol.TASK_ID.toString())));
 
@@ -222,7 +241,6 @@ public class MainTaskListFragment extends ListFragment implements
                                                                                       {
                                                                                           if (Logger.LOGD) Log.d(TAG, "afterAnim:onLoadFinished");
                                                                                           adapter.swapCursor(data);
-                                                                                          view.setVisibility(View.VISIBLE);
                                                                                           listView.setEnabled(true);
                                                        /*                             view.postDelayed(new Runnable()
                                                         {
