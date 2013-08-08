@@ -2,6 +2,7 @@ package com.frankandrobot.reminderer.widget;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.Loader;
@@ -198,12 +199,11 @@ public class MainTaskListFragment extends ListFragment implements
 
             return rowView;
         }
-
         @Override
-        public void onFling(final int position, final View view)
+        public void onFling(final int positionToRemove, final View view)
         {
-            if (!getCursor().moveToPosition(position)) {
-                throw new IllegalStateException("couldn't move cursor to position " + position);
+            if (!getCursor().moveToPosition(positionToRemove)) {
+                throw new IllegalStateException("couldn't move cursor to position " + positionToRemove);
             }
             final ListView listView = MainTaskListFragment.this.getListView();
             final ViewTreeObserver observer = listView.getViewTreeObserver();
@@ -212,64 +212,72 @@ public class MainTaskListFragment extends ListFragment implements
                 public boolean onPreDraw()
                 {
                     observer.removeOnPreDrawListener(this);
-                    listView.removeViews(position, 1);
-                    view.setVisibility(View.INVISIBLE);
-                    rowBeingDeleted = position;
-                    rowBeingDeleted2 = -1;
-                    //listView.removeView(view);
-                    taskDatabaseFacade.setTaskToComplete(getCursor().getInt(getCursor().getColumnIndex(TaskCol.TASK_ID.toString())));
+
+                    //remove the row from the matrix cursor
+                    MatrixCursor matrixCursor = removeFromCursor(getCursor(), positionToRemove);
+                    swapCursor(matrixCursor);
 
                     //Complete the task
+                    taskDatabaseFacade.setTaskToComplete(getCursor().getInt(getCursor().getColumnIndex(TaskCol.TASK_ID.toString())));
                     taskDatabaseFacade.forceLoad(TaskDatabaseFacade.CURSOR_COMPLETE_TASK_ID,
                                                  MainTaskListFragment.this,
-                                                 new TaskLoaderListener<Cursor>()
+                                                 new TaskLoadListenerAdapter()
                                                  {
                                                      @Override
                                                      public void onLoadFinished(Loader<Cursor> loader,
                                                                                 Cursor data)
                                                      {
                                                          if (Logger.LOGD) Log.d(TAG, "afterAnim:onCompleteFinish");
-                                                         //TaskCursorAdapter.this.notifyDataSetChanged();
-                                                         //TaskCursorAdapter.this.swapCursor(null);
                                                          taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_OPEN_TASKS_ID,
-                                                                                  MainTaskListFragment.this,
-                                                                                  new TaskLoaderListener<Cursor>()
-                                                                                  {
-                                                                                      @Override
-                                                                                      public void onLoadFinished(Loader<Cursor> loader,
-                                                                                                                 Cursor data)
-                                                                                      {
-                                                                                          if (Logger.LOGD) Log.d(TAG, "afterAnim:onLoadFinished");
-                                                                                          adapter.swapCursor(data);
-                                                                                          listView.setEnabled(true);
-                                                       /*                             view.postDelayed(new Runnable()
-                                                        {
-                                                            @Override
-                                                            public void run()
-                                                            {
-                                                                view.setVisibility(View.VISIBLE);
-                                                            }
-                                                        },
-                                                                         300);*/
-                                                                                      }
-
-                                                                                      @Override
-                                                                                      public void onLoaderReset(Loader<Cursor> loader)
-                                                                                      {
-                                                                                          if (Logger.LOGD) Log.d(TAG, "afterAnim:onLoaderReset");
-                                                                                          //adapter.swapCursor(null);
-                                                                                      }
-                                                                                  });
-
+                                                                                 MainTaskListFragment.this,
+                                                                                 MainTaskListFragment.this);
                                                      }
-
-                                                     @Override
-                                                     public void onLoaderReset(Loader<Cursor> loader) {}
                                                  });
 
                     return true;
                 }
             });
         }
+
+        private MatrixCursor removeFromCursor(Cursor cursor, int positionToRemove)
+        {
+            String[] aVals = new String[cursor.getColumnCount()];
+            String[] aCols = new String[cursor.getColumnCount()];
+
+            //generate columns
+            for(int i=0; i<cursor.getColumnCount(); i++)
+            {
+                aCols[i] = cursor.getColumnName(i);
+            }
+
+            //setup new cursor
+            MatrixCursor newCursor = new MatrixCursor(aCols, cursor.getCount()-1);
+
+            cursor.moveToFirst();
+            int len = 0;
+
+            while(!cursor.isAfterLast())
+            {
+                if (len++ != positionToRemove)
+                {
+                    //add values to matrix cursor row
+                    for(int i=0; i<cursor.getColumnCount(); i++)
+                        aVals[i] = cursor.getString(i);
+                    newCursor.addRow(aVals);
+                }
+                cursor.moveToNext();
+            }
+            return newCursor;
+        }
     }
+
+    private class TaskLoadListenerAdapter implements TaskLoaderListener<Cursor>
+    {
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {}
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {}
+    }
+
 }
