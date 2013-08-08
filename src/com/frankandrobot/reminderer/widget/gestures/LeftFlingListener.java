@@ -156,10 +156,10 @@ public class LeftFlingListener implements OnTouchListener
 
                 if (!cancelFlinging)
                 {
-                    final float velocity= VelocityTrackerCompat.getYVelocity(mVelocityTracker,
+                    final float velocityX = VelocityTrackerCompat.getYVelocity(mVelocityTracker,
                                                                              pointerId);
 
-                    if (!isFlinging && velocity < -flingThreshold.value() )
+                    if (!isFlinging && velocityX < -flingThreshold.value() )
                     {
                         if (Logger.LOGD) Log.d(TAG, "Fling!: " + cursorPosition);
                         isFlinging = true;
@@ -197,7 +197,7 @@ public class LeftFlingListener implements OnTouchListener
                 mVelocityTracker.recycle();
                 break;
         }
-        return true;
+        return !cancelFlinging && !isFlinging;
     }
 
     public void setCursorPosition(int pos) { this.cursorPosition = pos; }
