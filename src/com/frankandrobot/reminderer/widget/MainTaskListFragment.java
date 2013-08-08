@@ -194,12 +194,13 @@ public class MainTaskListFragment extends ListFragment implements
                     observer.removeOnPreDrawListener(this);
 
                     //remove the row from the matrix cursor
-                    MatrixCursor matrixCursor = removeFromCursor(getCursor(),
-                                                                 positionToRemove);
-                    swapCursor(matrixCursor);
+//                    MatrixCursor matrixCursor = removeFromCursor(getCursor(),
+//                                                                 positionToRemove);
+//                    swapCursor(matrixCursor);
 
                     //Complete the task
                     taskDatabaseFacade.setTaskToComplete(getCursor().getInt(getCursor().getColumnIndex(TaskCol.TASK_ID.toString())));
+/*
                     taskDatabaseFacade.forceLoad(TaskDatabaseFacade.CURSOR_COMPLETE_TASK_ID,
                                                  MainTaskListFragment.this,
                                                  new TaskLoadListenerAdapter()
@@ -214,6 +215,7 @@ public class MainTaskListFragment extends ListFragment implements
                                                                                  MainTaskListFragment.this);
                                                      }
                                                  });
+*/
 
                     return true;
                 }

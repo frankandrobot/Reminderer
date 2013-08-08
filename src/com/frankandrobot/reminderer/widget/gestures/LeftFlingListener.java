@@ -28,17 +28,19 @@ import com.frankandrobot.reminderer.helpers.Logger;
  */
 public class LeftFlingListener implements OnTouchListener
 {
+    final static private String TAG = "R:"+LeftFlingListener.class.getSimpleName();
+
     private VelocityTracker mVelocityTracker = null;
 
     private int cursorPosition;
     private FlingThreshold flingThreshold;
     private IFlingListener flingListener;
     private Animation animation;
-    private boolean isFlinging;
+    private boolean isFlinging, cancelFlinging, tentativeCancel;
     private ListView listView;
 
-    private float startX, startY;
     private int activePointerId;
+    private float startY;
 
     /**
      * Instantiate this class to get a fling threshold.
@@ -113,7 +115,11 @@ public class LeftFlingListener implements OnTouchListener
 
         switch(action) {
             case MotionEvent.ACTION_DOWN:
+                if (Logger.LOGD) Log.d(TAG, "touchdown for "+cursorPosition);
+
                 isFlinging = false;
+                cancelFlinging = false;
+                tentativeCancel = false;
 
                 if(mVelocityTracker == null) {
                     // Retrieve a new VelocityTracker object to watch the velocity of a motion.
@@ -126,38 +132,44 @@ public class LeftFlingListener implements OnTouchListener
                 // Add a user's movement to the tracker.
                 mVelocityTracker.addMovement(event);
 
-                //remember where we started
-                startX = (float) view.getTop() + (float) view.getHeight() * 0.5f;
-
-                //save pointer ID
-                activePointerId = MotionEventCompat.getPointerId(event,
-                                                                 MotionEventCompat.getActionIndex(event));
-
                 break;
             case MotionEvent.ACTION_MOVE:
-                //if we move outside the view, the cancel the fling
-                final int pointerIndex =
-                        MotionEventCompat.findPointerIndex(event, activePointerId);
-                final float y = MotionEventCompat.getY(event, pointerIndex);
-
-                if (Math.abs(y - startY) > view.getHeight())
-                {
-                    isFlinging = false;
-                }
-
                 mVelocityTracker.addMovement(event);
                 //get velocity in pixels per second
                 mVelocityTracker.computeCurrentVelocity(1000);
-                final float velocity = VelocityTrackerCompat.getXVelocity(mVelocityTracker,
-                                                                          pointerId);
-                if (!isFlinging && velocity < -flingThreshold.value() )
+
+                //if we move too fast in y direction then cancel fling
+                final float velocityY = VelocityTrackerCompat.getYVelocity(mVelocityTracker,
+                                                                           pointerId);
+
+                //Log.d(TAG, velocityY + " " + flingThreshold.value());
+
+                if (velocityY > view.getHeight()
+                        || -velocityY > view.getHeight())
                 {
-                    if (Logger.LOGD) Log.d("", "Fling!: " + velocity);
-                    isFlinging = true;
+                    cancelFlinging = tentativeCancel;
+                    tentativeCancel = true;
+
+                    if (Logger.LOGD) Log.d(TAG, "cancel status: "+tentativeCancel+cancelFlinging+" for "+cursorPosition);
+
+                }
+
+                if (!cancelFlinging)
+                {
+                    final float velocity= VelocityTrackerCompat.getYVelocity(mVelocityTracker,
+                                                                             pointerId);
+
+                    if (!isFlinging && velocity < -flingThreshold.value() )
+                    {
+                        if (Logger.LOGD) Log.d(TAG, "Fling!: " + cursorPosition);
+                        isFlinging = true;
+                    }
                 }
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                if (Logger.LOGD) Log.d(TAG, "up");
+
                 if (isFlinging)
                 {
                     isFlinging = false;
@@ -172,15 +184,15 @@ public class LeftFlingListener implements OnTouchListener
                         @Override
                         public void onAnimationEnd(Animation animation)
                         {
-                            //view.setVisibility(View.INVISIBLE);
-                            flingListener.onFling(cursorPosition,
-                                                  view);
+//                            flingListener.onFling(cursorPosition,
+//                                                  view);
                         }
 
                         @Override
                         public void onAnimationRepeat(Animation animation) {}
                     });
                 }
+
                 // Return a VelocityTracker object back to be re-used by others.
                 mVelocityTracker.recycle();
                 break;
