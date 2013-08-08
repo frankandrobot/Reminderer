@@ -1,6 +1,7 @@
 package com.frankandrobot.reminderer.widget.gestures;
 
 import android.content.Context;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.VelocityTrackerCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -35,6 +36,9 @@ public class LeftFlingListener implements OnTouchListener
     private Animation animation;
     private boolean isFlinging;
     private ListView listView;
+
+    private float startX, startY;
+    private int activePointerId;
 
     /**
      * Instantiate this class to get a fling threshold.
@@ -103,12 +107,14 @@ public class LeftFlingListener implements OnTouchListener
     @Override
     public boolean onTouch(final View view, MotionEvent event)
     {
-        int index = event.getActionIndex();
-        int action = event.getActionMasked();
-        int pointerId = event.getPointerId(index);
+        final int index = event.getActionIndex();
+        final int action = event.getActionMasked();
+        final int pointerId = event.getPointerId(index);
 
         switch(action) {
             case MotionEvent.ACTION_DOWN:
+                isFlinging = false;
+
                 if(mVelocityTracker == null) {
                     // Retrieve a new VelocityTracker object to watch the velocity of a motion.
                     mVelocityTracker = VelocityTracker.obtain();
@@ -119,9 +125,26 @@ public class LeftFlingListener implements OnTouchListener
                 }
                 // Add a user's movement to the tracker.
                 mVelocityTracker.addMovement(event);
-                isFlinging = false;
+
+                //remember where we started
+                startX = (float) view.getTop() + (float) view.getHeight() * 0.5f;
+
+                //save pointer ID
+                activePointerId = MotionEventCompat.getPointerId(event,
+                                                                 MotionEventCompat.getActionIndex(event));
+
                 break;
             case MotionEvent.ACTION_MOVE:
+                //if we move outside the view, the cancel the fling
+                final int pointerIndex =
+                        MotionEventCompat.findPointerIndex(event, activePointerId);
+                final float y = MotionEventCompat.getY(event, pointerIndex);
+
+                if (Math.abs(y - startY) > view.getHeight())
+                {
+                    isFlinging = false;
+                }
+
                 mVelocityTracker.addMovement(event);
                 //get velocity in pixels per second
                 mVelocityTracker.computeCurrentVelocity(1000);
