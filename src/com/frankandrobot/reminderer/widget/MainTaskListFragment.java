@@ -185,9 +185,6 @@ public class MainTaskListFragment extends ListFragment implements
         @Override
         public void onFling(final int positionToRemove, final View view)
         {
-            if (!getCursor().moveToPosition(positionToRemove)) {
-                throw new IllegalStateException("couldn't move cursor to position " + positionToRemove);
-            }
             final ListView listView = MainTaskListFragment.this.getListView();
             final ViewTreeObserver observer = listView.getViewTreeObserver();
             observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener()
@@ -197,7 +194,8 @@ public class MainTaskListFragment extends ListFragment implements
                     observer.removeOnPreDrawListener(this);
 
                     //remove the row from the matrix cursor
-                    MatrixCursor matrixCursor = removeFromCursor(getCursor(), positionToRemove);
+                    MatrixCursor matrixCursor = removeFromCursor(getCursor(),
+                                                                 positionToRemove);
                     swapCursor(matrixCursor);
 
                     //Complete the task
@@ -210,7 +208,7 @@ public class MainTaskListFragment extends ListFragment implements
                                                      public void onLoadFinished(Loader<Cursor> loader,
                                                                                 Cursor data)
                                                      {
-                                                         if (Logger.LOGD) Log.d(TAG, "afterAnim:onCompleteFinish");
+                                                         if (Logger.LOGD) Log.d(TAG, "task completed");
                                                          taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_OPEN_TASKS_ID,
                                                                                  MainTaskListFragment.this,
                                                                                  MainTaskListFragment.this);
