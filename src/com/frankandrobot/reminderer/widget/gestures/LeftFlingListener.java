@@ -230,7 +230,7 @@ public class LeftFlingListener implements OnTouchListener
     private void animateSwipe(final View view, float endX, long duration, final boolean remove)
     {
         isAnimating = true;
-        //listFragment.getListView().setEnabled(false);
+        listFragment.getListView().setEnabled(false);
         TranslateAnimation swipeAnim = new TranslateAnimation(currentX, endX, 0, 0);
         AlphaAnimation alphaAnim = new AlphaAnimation(currentAlpha, remove ? 0 : 1);
         AnimationSet set = new AnimationSet(true);
@@ -247,6 +247,9 @@ public class LeftFlingListener implements OnTouchListener
             public void onAnimationEnd(Animation animation)
             {
                 flingListener.onFling(cursorPosition, view);
+                isFlinging = false;
+                isAnimating = false;
+                listFragment.getListView().setEnabled(true);
             }
 
             @Override
