@@ -166,7 +166,7 @@ public class MainTaskListFragment extends ListFragment implements
                 viewHolder.taskDueDate = (TextView)rowView.findViewById((id.task_due_date_textview));
                 viewHolder.touchListener = new LeftFlingListener(flingThreshold,
                                                                  LeftFlingListener.getDefaultAnimation(-flingThreshold.fullWidth()),
-                                                                 MainTaskListFragment.this.getListView(),
+                                                                 MainTaskListFragment.this,
                                                                  this);
                 rowView.setTag(viewHolder);
                 rowView.setOnTouchListener(viewHolder.touchListener);
@@ -194,9 +194,9 @@ public class MainTaskListFragment extends ListFragment implements
                     observer.removeOnPreDrawListener(this);
 
                     //remove the row from the matrix cursor
-//                    MatrixCursor matrixCursor = removeFromCursor(getCursor(),
-//                                                                 positionToRemove);
-//                    swapCursor(matrixCursor);
+                    MatrixCursor matrixCursor = removeFromCursor(getCursor(),
+                                                                 positionToRemove);
+                    swapCursor(matrixCursor);
 
                     //Complete the task
                     taskDatabaseFacade.setTaskToComplete(getCursor().getInt(getCursor().getColumnIndex(TaskCol.TASK_ID.toString())));

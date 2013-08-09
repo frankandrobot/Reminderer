@@ -1,23 +1,18 @@
 package com.frankandrobot.reminderer.widget.gestures;
 
 import android.content.Context;
-import android.support.v4.view.MotionEventCompat;
-import android.support.v4.view.VelocityTrackerCompat;
+import android.support.v4.app.ListFragment;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
-import android.view.VelocityTracker;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.view.ViewConfiguration;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationSet;
 import android.view.animation.TranslateAnimation;
-import android.widget.ListView;
-
-import com.frankandrobot.reminderer.helpers.Logger;
 
 /**
  * Implements a left fling on a {@link android.view.View}.
@@ -30,17 +25,15 @@ public class LeftFlingListener implements OnTouchListener
 {
     final static private String TAG = "R:"+LeftFlingListener.class.getSimpleName();
 
-    private VelocityTracker mVelocityTracker = null;
-
     private int cursorPosition;
     private FlingThreshold flingThreshold;
     private IFlingListener flingListener;
     private Animation animation;
-    private boolean isFlinging, cancelFlinging, tentativeCancel;
-    private ListView listView;
+    private boolean isFlinging;
+    private ListFragment listFragment;
 
-    private int activePointerId;
-    private float startY;
+    private float currentX;
+    private float currentAlpha;
 
     /**
      * Instantiate this class to get a fling threshold.
@@ -77,13 +70,13 @@ public class LeftFlingListener implements OnTouchListener
 
     public LeftFlingListener(FlingThreshold flingThreshold,
                              AnimationSet animation,
-                             ListView listView,
+                             ListFragment listFragment,
                              IFlingListener flingListener)
     {
         this.flingThreshold = flingThreshold;
         this.animation = animation;
         this.flingListener = flingListener;
-        this.listView = listView;
+        this.listFragment = listFragment;
     }
 
     /**
@@ -106,74 +99,79 @@ public class LeftFlingListener implements OnTouchListener
         return set;
     }
 
+    private float mDownX;
+    private int mSwipeSlop = -1;
+    private boolean mItemPressed;
+    private boolean isAnimating;
+
     @Override
-    public boolean onTouch(final View view, MotionEvent event)
-    {
-        final int index = event.getActionIndex();
-        final int action = event.getActionMasked();
-        final int pointerId = event.getPointerId(index);
-
-        switch(action) {
+    public boolean onTouch(final View view, MotionEvent event) {
+        if (mSwipeSlop < 0) {
+            mSwipeSlop = ViewConfiguration.get(listFragment.getActivity())
+                                 .getScaledTouchSlop();
+        }
+        switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if (Logger.LOGD) Log.d(TAG, "touchdown for "+cursorPosition);
+                // Multi-item swipes not handled
+                if (isAnimating) return true;
 
-                isFlinging = false;
-                cancelFlinging = false;
-                tentativeCancel = false;
-
-                if(mVelocityTracker == null) {
-                    // Retrieve a new VelocityTracker object to watch the velocity of a motion.
-                    mVelocityTracker = VelocityTracker.obtain();
-                }
-                else {
-                    // Reset the velocity tracker back to its initial state.
-                    mVelocityTracker.clear();
-                }
-                // Add a user's movement to the tracker.
-                mVelocityTracker.addMovement(event);
-
+                mItemPressed = true;
+                mDownX = event.getX();
+                break;
+            case MotionEvent.ACTION_CANCEL:
+                setSwipePosition(view, 0);
+                mItemPressed = false;
                 break;
             case MotionEvent.ACTION_MOVE:
-                mVelocityTracker.addMovement(event);
-                //get velocity in pixels per second
-                mVelocityTracker.computeCurrentVelocity(1000);
+            {
+                if (isAnimating) return true;
 
-                //if we move too fast in y direction then cancel fling
-                final float velocityY = VelocityTrackerCompat.getYVelocity(mVelocityTracker,
-                                                                           pointerId);
+                final float x = event.getX();
 
-                //Log.d(TAG, velocityY + " " + flingThreshold.value());
-
-                if (velocityY > view.getHeight()
-                        || -velocityY > view.getHeight())
+                final float deltaX = x - mDownX;
+                final float deltaXAbs = Math.abs(deltaX);
+                if (!isFlinging)
                 {
-                    cancelFlinging = tentativeCancel;
-                    tentativeCancel = true;
-
-                    if (Logger.LOGD) Log.d(TAG, "cancel status: "+tentativeCancel+cancelFlinging+" for "+cursorPosition);
-
-                }
-
-                if (!cancelFlinging)
-                {
-                    final float velocityX = VelocityTrackerCompat.getYVelocity(mVelocityTracker,
-                                                                             pointerId);
-
-                    if (!isFlinging && velocityX < -flingThreshold.value() )
+                    if (deltaXAbs > mSwipeSlop)
                     {
-                        if (Logger.LOGD) Log.d(TAG, "Fling!: " + cursorPosition);
                         isFlinging = true;
+                        listFragment.getListView().requestDisallowInterceptTouchEvent(true);
+                        //mBackgroundContainer.showBackground(v.getTop(), v.getHeight());
                     }
                 }
-                break;
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                if (Logger.LOGD) Log.d(TAG, "up");
-
                 if (isFlinging)
                 {
-                    isFlinging = false;
-                    listView.setEnabled(false);
+                   setSwipePosition(view, deltaX);
+                }
+            }
+            break;
+            case MotionEvent.ACTION_UP:
+            {
+                if (isAnimating) return true;
+
+                // User let go - figure out whether to animate the view out, or back into place
+                if (isFlinging) {
+                    final float x = event.getX();
+                    final float deltaX = x - mDownX;
+                    final float deltaXAbs = Math.abs(deltaX);
+                    final float fractionCovered;
+                    float endX;
+                    final boolean remove;
+                    if (deltaXAbs > view.getWidth() / 4)
+                    {
+                        // Greater than a quarter of the width - animate it out
+                        fractionCovered = deltaXAbs / view.getWidth();
+                        endX = deltaX < 0 ? -view.getWidth() : view.getWidth();
+                        remove = true;
+                    } else
+                    {
+                        // Not far enough - animate it back
+                        fractionCovered = 1 - (deltaXAbs / view.getWidth());
+                        endX = 0;
+                        remove = false;
+                    }
+                    // Animate position and alpha
+                    long duration = (int) ((1 - fractionCovered) * 500);
                     view.clearAnimation();
                     view.startAnimation(animation);
                     view.getAnimation().setAnimationListener(new AnimationListener()
@@ -184,20 +182,76 @@ public class LeftFlingListener implements OnTouchListener
                         @Override
                         public void onAnimationEnd(Animation animation)
                         {
-//                            flingListener.onFling(cursorPosition,
-//                                                  view);
+                            flingListener.onFling(cursorPosition,
+                                                  view);
                         }
 
                         @Override
                         public void onAnimationRepeat(Animation animation) {}
                     });
+                    animateSwipe(view, endX, duration, remove);
+                } else {
+                    mItemPressed = false;
                 }
-
-                // Return a VelocityTracker object back to be re-used by others.
-                mVelocityTracker.recycle();
-                break;
+            }
+            break;
+            default:
+                return false;
         }
-        return !cancelFlinging && !isFlinging;
+        return true;
+    }
+
+    /**
+     * Sets the horizontal position and translucency of the view being swiped.
+     */
+    private void setSwipePosition(View view, float deltaX)
+    {
+        final float fraction = Math.abs(deltaX) / view.getWidth();
+
+        TranslateAnimation swipeAnim = new TranslateAnimation(deltaX, deltaX, 0, 0);
+        currentX = deltaX;
+        currentAlpha = (1 - fraction);
+        AlphaAnimation alphaAnim = new AlphaAnimation(currentAlpha,
+                                                      currentAlpha);
+        AnimationSet set = new AnimationSet(true);
+        set.addAnimation(swipeAnim);
+        set.addAnimation(alphaAnim);
+        set.setFillAfter(true);
+        set.setFillEnabled(true);
+            view.startAnimation(set);
+    }
+
+    /**
+     * Animates a swipe of the item either back into place or out of the listview container.
+     * NOTE: This is a simplified version of swipe behavior, for the purposes of this demo
+     * about animation. A real version should use velocity (via the VelocityTracker class)
+     * to send the item off or back at an appropriate speed.
+     */
+    private void animateSwipe(final View view, float endX, long duration, final boolean remove)
+    {
+        isAnimating = true;
+        //listFragment.getListView().setEnabled(false);
+        TranslateAnimation swipeAnim = new TranslateAnimation(currentX, endX, 0, 0);
+        AlphaAnimation alphaAnim = new AlphaAnimation(currentAlpha, remove ? 0 : 1);
+        AnimationSet set = new AnimationSet(true);
+        set.addAnimation(swipeAnim);
+        set.addAnimation(alphaAnim);
+        set.setDuration(duration);
+        view.startAnimation(set);
+        view.getAnimation().setAnimationListener(new AnimationListener()
+        {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(Animation animation)
+            {
+                flingListener.onFling(cursorPosition, view);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+        });
     }
 
     public void setCursorPosition(int pos) { this.cursorPosition = pos; }
