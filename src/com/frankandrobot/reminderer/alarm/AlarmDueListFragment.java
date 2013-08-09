@@ -12,7 +12,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.Loader;
 import android.widget.ArrayAdapter;
 
-import com.frankandrobot.reminderer.database.TaskDatabaseFacade;
+import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 
 public class AlarmDueListFragment extends ListFragment implements LoaderCallbacks<String[]>
 {
@@ -36,7 +36,7 @@ public class AlarmDueListFragment extends ListFragment implements LoaderCallback
     /**
      * Called when the activity gets attached
      *
-     * @param activity
+     * @param activity the activity
      */
     @Override
     public void onAttach(Activity activity) {

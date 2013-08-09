@@ -13,7 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.frankandrobot.reminderer.database.TaskDAOService;
-import com.frankandrobot.reminderer.database.TaskDatabaseFacade;
+import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.parser.ContextFreeGrammar;

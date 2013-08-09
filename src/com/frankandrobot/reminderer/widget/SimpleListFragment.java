@@ -7,7 +7,7 @@ import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.Loader;
 import android.widget.ArrayAdapter;
 
-import com.frankandrobot.reminderer.database.TaskDatabaseFacade;
+import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 
 public class SimpleListFragment extends ListFragment implements LoaderCallbacks<String[]>
 {

@@ -7,8 +7,8 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.util.Log;
 
-import com.frankandrobot.reminderer.database.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.TaskProvider;
+import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.helpers.Logger;
 
 import static com.frankandrobot.reminderer.database.TaskTable.DEFAULT_SORT;

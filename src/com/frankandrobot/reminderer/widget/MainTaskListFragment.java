@@ -2,7 +2,6 @@ package com.frankandrobot.reminderer.widget;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.database.MatrixCursor;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.Loader;
@@ -17,9 +16,10 @@ import android.widget.TextView;
 
 import com.frankandrobot.reminderer.R;
 import com.frankandrobot.reminderer.R.id;
-import com.frankandrobot.reminderer.database.TaskDatabaseFacade;
-import com.frankandrobot.reminderer.database.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
+import com.frankandrobot.reminderer.database.databasefacade.CursorDeleteProxy;
+import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
+import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener;
 import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener.FlingThreshold;
@@ -193,11 +193,9 @@ public class MainTaskListFragment extends ListFragment implements
                 {
                     observer.removeOnPreDrawListener(this);
 
-                    //remove the row from the matrix cursor
-                    MatrixCursor matrixCursor = removeFromCursor(getCursor(),
-                                                                 positionToRemove);
-                    swapCursor(matrixCursor);
-
+                    CursorDeleteProxy newCursor = new CursorDeleteProxy(getCursor(),
+                                                                      positionToRemove);
+                    swapCursor(newCursor);
                     //Complete the task
                     taskDatabaseFacade.setTaskToComplete(getCursor().getInt(getCursor().getColumnIndex(TaskCol.TASK_ID.toString())));
 /*
@@ -220,37 +218,6 @@ public class MainTaskListFragment extends ListFragment implements
                     return true;
                 }
             });
-        }
-
-        private MatrixCursor removeFromCursor(Cursor cursor, int positionToRemove)
-        {
-            String[] aVals = new String[cursor.getColumnCount()];
-            String[] aCols = new String[cursor.getColumnCount()];
-
-            //generate columns
-            for(int i=0; i<cursor.getColumnCount(); i++)
-            {
-                aCols[i] = cursor.getColumnName(i);
-            }
-
-            //setup new cursor
-            MatrixCursor newCursor = new MatrixCursor(aCols, cursor.getCount()-1);
-
-            cursor.moveToFirst();
-            int len = 0;
-
-            while(!cursor.isAfterLast())
-            {
-                if (len++ != positionToRemove)
-                {
-                    //add values to matrix cursor row
-                    for(int i=0; i<cursor.getColumnCount(); i++)
-                        aVals[i] = cursor.getString(i);
-                    newCursor.addRow(aVals);
-                }
-                cursor.moveToNext();
-            }
-            return newCursor;
         }
     }
 
