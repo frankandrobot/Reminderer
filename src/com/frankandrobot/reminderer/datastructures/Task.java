@@ -6,6 +6,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
+import com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken;
 
 import java.util.Calendar;
 
@@ -46,7 +47,11 @@ public class Task extends DataStructure implements Parcelable
     {
         desc
         ,location
-        ,repeatsType
+    }
+
+    public enum Task_Int implements Field<Integer>
+    {
+        repeatsType
     }
 
     public class Task_Calendar implements Field<TaskCalendar> {}
@@ -78,7 +83,7 @@ public class Task extends DataStructure implements Parcelable
         set(Task_Long.id, cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_ID.toString())));
         get(Task_Calendar.class).setTimeInMillis(cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_DUE_DATE.toString())));
         set(Task_String.desc, cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.toString())));
-        set(Task_String.repeatsType, cursor.getString(cursor.getColumnIndex(TaskCol.TASK_REPEATS_TYPE.toString())));
+        set(Task_Int.repeatsType, cursor.getInt(cursor.getColumnIndex(TaskCol.TASK_REPEATS_TYPE.toString())));
         boolean isComplete = cursor.getInt(cursor.getColumnIndex(TaskCol.TASK_IS_COMPLETE.toString())) == 1
                 ? true : false;
         set(Task_Boolean.isComplete, isComplete);
@@ -139,31 +144,11 @@ public class Task extends DataStructure implements Parcelable
         return get(Task_Long.id);
     }
 
-    /*
-     * Parcelable API
-     */
-
-/*
-    public String toString()
+    public Task set(Task_Int repeatsType, RepeatsToken.Type type)
     {
-        String out = "";
-
-        out += "Task: " + (get(Task_Desc.class) == null ? "n/a" : get(Task_Desc.class)) + "\n";
-        out += "Date: " + getLocaleDate() + "\n";
-        out += "Time: " + getLocaleTime() + "\n";
-        out += "Day: " + getLocaleDay() + "\n";
-
-        out += "Repeats: " + ((get(Task_GrammarRule.repeats) == null)
-                ? "n/a" : get(Task_GrammarRule.repeats).value()) + "\n";
-        */
-/*out += "RepeatsEveryRule: "
-		+ ((repeatsEvery == null) ? "n/a" : repeatsEvery.name()) + "\n";
-*//*
-
-        out += "Location: " + ((location == null) ? "n/a" : location) + "\n";
-        return out;
+        set(repeatsType, type.getType());
+        return this;
     }
-*/
 
     public int describeContents()
     {
@@ -208,6 +193,11 @@ public class Task extends DataStructure implements Parcelable
         return (T) this;
     }
 
+    /**
+     * @deprecated use a builder instead
+     *
+     * @return content values
+     */
     public ContentValues toContentValues()
     {
         ContentValues values = new ContentValues();
@@ -216,9 +206,9 @@ public class Task extends DataStructure implements Parcelable
 
         values.put(TaskCol.TASK_DESC.toString(), get(Task_String.desc));
 
-        if (get(Task_String.repeatsType) != null)
+        if (get(Task_Int.repeatsType) != null)
             values.put(TaskCol.TASK_REPEATS_TYPE.toString(),
-                       get(Task_String.repeatsType));
+                       get(Task_Int.repeatsType));
 
         values.put(TaskCol.TASK_DUE_DATE.toString(),
                    get(Task_Calendar.class).getDate().getTime());

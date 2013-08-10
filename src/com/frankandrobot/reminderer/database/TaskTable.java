@@ -14,16 +14,6 @@ import com.frankandrobot.reminderer.helpers.Logger;
 public class TaskTable
 {
     public final static String TASK_TABLE = "task";
-    // projection used to display in alert listview
-    //
-    // you use two pairs. One used inside the contentprovider and another
-    // outside of the content provider
-    public final static String[] TASK_ALERT_LISTVIEW_CP = {TaskCol.TASK_ID.toString(), TaskCol.TASK_DESC.toString(), TaskCol.TASK_DUE_DATE.toString()};
-    public final static String[] TASK_ALERT_LISTVIEW_NO_CP = {TaskCol.TASK_DESC.toString(), TaskCol.TASK_DUE_DATE.toString()};
-    public final static String DEFAULT_SORT = TaskCol.TASK_DUE_DATE + " ASC";
-    public final static String LTE = "<=";
-    public final static String EQ = "=";
-    public final static String GTE = ">=";
 
     public enum TaskCol
     {
@@ -69,7 +59,7 @@ public class TaskTable
     static class TaskTableHelper extends SQLiteOpenHelper
     {
         private static final String DATABASE_NAME = "reminderer.db";
-        private static final int DATABASE_VERSION = 7;
+        private static final int DATABASE_VERSION = 8;
         private static final String TAG = "R:TaskHelper";
 
         public TaskTableHelper(Context context)
@@ -87,7 +77,7 @@ public class TaskTable
             dbCreateString += "(";
             dbCreateString += TaskCol.TASK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,";
             dbCreateString += TaskCol.TASK_DESC + " TEXT NOT NULL, ";
-            dbCreateString += TaskCol.TASK_REPEATS_TYPE + " TEXT, ";
+            dbCreateString += TaskCol.TASK_REPEATS_TYPE + " INTEGER, ";
             dbCreateString += TaskCol.TASK_DUE_DATE + " INTEGER, ";
             dbCreateString += TaskCol.TASK_IS_COMPLETE + " INTEGER";
             dbCreateString += ");";

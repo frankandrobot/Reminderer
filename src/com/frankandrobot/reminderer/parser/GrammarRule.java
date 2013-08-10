@@ -7,8 +7,8 @@ import com.frankandrobot.reminderer.datastructures.Task;
 
 import java.util.LinkedList;
 
-import static com.frankandrobot.reminderer.datastructures.Task.*;
-import static com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.*;
+import static com.frankandrobot.reminderer.datastructures.Task.Task_Int;
+import static com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.Type;
 
 abstract public class GrammarRule implements IGrammarRule<Task>
 {
@@ -310,7 +310,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
                     if (match != null) // one of hourly, daily, etc found
                     {
                         Task task = new Task();
-                        task.set(Task_String.repeatsType, match.toString());
+                        task.set(Task_Int.repeatsType, match.getType());
                         return task;
                     }
                 }
@@ -333,7 +333,6 @@ abstract public class GrammarRule implements IGrammarRule<Task>
         public RepeatsEveryRule(Context context)
         {
             super(context);
-            //TODO replace with XML
             llTokens.add(new RepeatsToken(Type.HOUR, "hour"));
             llTokens.add(new RepeatsToken(Type.DAY, "day"));
             llTokens.add(new RepeatsToken(Type.WEEK, "week"));
@@ -365,7 +364,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
                         if (match != null) // one of hourly, daily, etc found
                         {
                             Task task = new Task();
-                            task.set(Task_String.repeatsType, match.toString());
+                            task.set(Task_Int.repeatsType, match.getType());
                             return task;
                         }
                     }
@@ -389,11 +388,15 @@ abstract public class GrammarRule implements IGrammarRule<Task>
     {
         public enum Type
         {
-            HOUR
-            ,DAY
-            ,WEEK
-            ,MONTH
-            ,YEAR
+            HOUR(0)
+            ,DAY(1)
+            ,WEEK(2)
+            ,MONTH(3)
+            ,YEAR(4);
+
+            Type(int type) { this.type = type; }
+            int type;
+            public int getType() { return type; }
         }
 
         private Type type;
@@ -420,5 +423,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
         {
             return type.toString();
         }
+
+        public Type getType() { return type; }
     }
 }
