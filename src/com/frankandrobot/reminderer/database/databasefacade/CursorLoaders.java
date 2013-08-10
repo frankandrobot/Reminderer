@@ -28,7 +28,7 @@ abstract public class CursorLoaders
                                                   TaskCol.TASK_DUE_DATE));
             this.setSelection(TaskCol.TASK_IS_COMPLETE+"=0");
             this.setSelectionArgs(null);
-            this.setSortOrder(null);
+            this.setSortOrder(TaskCol.TASK_DUE_DATE.toString());
         }
     }
 
@@ -44,7 +44,7 @@ abstract public class CursorLoaders
             this.setSelection(TaskCol.TASK_IS_COMPLETE+"=0 AND "
                               + TaskCol.TASK_DUE_DATE+"=?");
             this.setSelectionArgs(new String[]{String.valueOf(dueTime)});
-            this.setSortOrder(null);
+            this.setSortOrder(TaskCol.TASK_DUE_DATE.toString());
         }
     }
 

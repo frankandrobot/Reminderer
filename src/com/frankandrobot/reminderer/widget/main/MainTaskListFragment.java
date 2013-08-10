@@ -12,6 +12,7 @@ import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener;
+import com.frankandrobot.reminderer.widget.main.TaskCursorAdapter.MainTaskCursorAdapter;
 
 public class MainTaskListFragment extends ListFragment implements
                                                        TaskLoaderListener<Cursor>
@@ -28,9 +29,9 @@ public class MainTaskListFragment extends ListFragment implements
 
         taskDatabaseFacade = new TaskDatabaseFacade(this.getActivity());
 
-        adapter = new TaskCursorAdapter(getActivity(),
-                                        this,
-                                        taskDatabaseFacade);
+        adapter = new MainTaskCursorAdapter(getActivity(),
+                                            this,
+                                            taskDatabaseFacade);
 
         setListAdapter(adapter);
         setListShown(false);

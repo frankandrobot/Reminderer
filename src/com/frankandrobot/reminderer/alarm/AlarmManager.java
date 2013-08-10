@@ -11,7 +11,6 @@ import com.frankandrobot.reminderer.database.TaskProvider;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.helpers.Logger;
 
-import static com.frankandrobot.reminderer.database.TaskTable.DEFAULT_SORT;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 
 /**
@@ -125,7 +124,7 @@ public class AlarmManager
                 TaskCol.getColumns(TaskCol.TASK_ID, TaskCol.TASK_DUE_DATE),
                 TaskCol.TASK_DUE_DATE + compareOp.toString() + "?",
                 new String[]{Long.toString(dueTime)},
-                DEFAULT_SORT);
+                TaskCol.TASK_DUE_DATE.toString());
     }
 
     /**

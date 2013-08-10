@@ -2,6 +2,7 @@ package com.frankandrobot.reminderer.widget.main;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Typeface;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
@@ -41,12 +42,12 @@ import java.util.Calendar;
 public class TaskCursorAdapter extends SimpleCursorAdapter
         implements IFlingListener
 {
-    final static private String TAG = "R:"+TaskCursorAdapter.class.getSimpleName();
+    final static protected String TAG = "R:"+TaskCursorAdapter.class.getSimpleName();
 
-    private Calendar now = Calendar.getInstance();
-    private Calendar dueCal = Calendar.getInstance();
-    private ListFragment listFragment;
-    private TaskDatabaseFacade taskDatabaseFacade;
+    protected Calendar now = Calendar.getInstance();
+    protected Calendar dueCal = Calendar.getInstance();
+    protected ListFragment listFragment;
+    protected TaskDatabaseFacade taskDatabaseFacade;
 
     public TaskCursorAdapter(Context context,
                              ListFragment listFragment,
@@ -204,4 +205,33 @@ public class TaskCursorAdapter extends SimpleCursorAdapter
         @Override
         public void onLoaderReset(Loader<Cursor> loader) {}
     }
+
+    static public class MainTaskCursorAdapter extends TaskCursorAdapter
+    {
+
+        public MainTaskCursorAdapter(Context context,
+                                     ListFragment listFragment,
+                                     TaskDatabaseFacade taskDatabaseFacade)
+        {
+            super(context, listFragment, taskDatabaseFacade);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
+            View row = super.getView(position, convertView, parent);
+
+            long dueDate = getCursor().getLong(getCursor().getColumnIndex(TaskCol.TASK_DUE_DATE.toString()));
+            if (dueDate < now.getTimeInMillis())
+            {
+                MainTaskViewHolder holder = (MainTaskViewHolder) row.getTag();
+                holder.taskDesc.setTypeface(holder.taskDesc.getTypeface(),
+                                            Typeface.ITALIC);
+                holder.taskDueDate.setTypeface(holder.taskDueDate.getTypeface(),
+                                               Typeface.ITALIC);
+            }
+            return row;
+        }
+    }
+
 }
