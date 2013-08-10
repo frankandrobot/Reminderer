@@ -144,3 +144,7 @@ conjunction with DateFormat.
    + this is related to mike's idea --- for birthday,
      recommend restaurants or movies, etc.
 
+* Code Cleanup
+** TODO Refactor PhoneBoot to use a service
+ + Receivers cannot perform long running operations!
+** TODO No receiver can call the database directly

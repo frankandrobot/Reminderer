@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
 
@@ -16,8 +15,10 @@ import com.frankandrobot.reminderer.alarm.AlarmManager;
 import com.frankandrobot.reminderer.alarm.AlarmManager.CompareOp;
 import com.frankandrobot.reminderer.database.TaskProvider;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
+import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.AllDueOpenTasksLoader;
+import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.AllOpenTasksLoader;
+import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.CompleteTaskLoader;
 import com.frankandrobot.reminderer.datastructures.Task;
-import com.frankandrobot.reminderer.datastructures.Task.Task_Boolean;
 import com.frankandrobot.reminderer.helpers.Logger;
 
 import java.util.LinkedList;
@@ -35,9 +36,9 @@ public class TaskDatabaseFacade
 
     final static public int ADD_TASK_LOADER_ID = 0;
     final static public int LOAD_ALL_TASKS_LOADER_ID = 1;
-    final static public int LOAD_TASKS_LOADER_ID = 2;
     final static public int CURSOR_LOAD_ALL_OPEN_TASKS_ID = 3;
     final static public int CURSOR_COMPLETE_TASK_ID = 4;
+    final static public int CURSOR_LOAD_ALL_DUE_TASKS_ID = 5;
 
     private Context context;
     private TaskLoaderListener<Cursor> loaderListener;
@@ -50,34 +51,89 @@ public class TaskDatabaseFacade
         public void onLoaderReset(Loader<T> loader);
     }
 
+    public static class LoaderBuilder
+    {
+        private int loaderId;
+        private long dueTime;
+        private long taskId;
+
+        public LoaderBuilder setLoaderId(int loaderId)
+        {
+            this.loaderId = loaderId;
+            return this;
+        }
+
+        public LoaderBuilder setDueTime(long dueTime)
+        {
+            this.dueTime = dueTime;
+            return this;
+        }
+
+        public LoaderBuilder setTaskId(long taskId)
+        {
+            this.taskId = taskId;
+            return this;
+        }
+    }
+
     public TaskDatabaseFacade(Context context)
     {
         this.context = context;
     }
 
+    /**
+     * @deprecated use {@link #load}
+     *
+     * @param loaderId
+     * @param activity
+     * @param loaderListener
+     * @return
+     */
     public TaskDatabaseFacade forceLoad(final int loaderId,
                                         Object activity,
                                         TaskLoaderListener<Cursor> loaderListener)
     {
+        LoaderBuilder builder = new LoaderBuilder();
+        builder.loaderId = loaderId;
+
+        return forceLoad(builder, activity, loaderListener);
+    }
+
+    /**
+     * @deprecated  use {@link #load}
+     *
+     * @param builder
+     * @param activity
+     * @param loaderListener
+     * @return
+     */
+    public TaskDatabaseFacade forceLoad(LoaderBuilder builder,
+                                        Object activity,
+                                        TaskLoaderListener<Cursor> loaderListener)
+    {
         if (!(activity instanceof FragmentActivity)
-                && !(activity instanceof Fragment))
+                    && !(activity instanceof Fragment))
             throw new IllegalArgumentException(activity.getClass().getSimpleName()
                                                        + " must be a Fragment or FragmentActivity");
 
         this.loaderListener = loaderListener;
 
+        Bundle args = new Bundle();
+        args.putLong("dueTime", builder.dueTime);
+        args.putLong("taskId", builder.taskId);
+
         if (activity instanceof FragmentActivity)
         {
             this.context = ((FragmentActivity) activity);
             ((FragmentActivity) activity).getSupportLoaderManager()
-                    .initLoader(loaderId, null, new LoaderCallback())
+                    .initLoader(builder.loaderId, args, new LoaderCallback())
                     .forceLoad();
         }
         else
         {
             this.context = ((Fragment) activity).getActivity();
             ((Fragment) activity).getLoaderManager()
-                    .initLoader(loaderId, null, new LoaderCallback())
+                    .initLoader(builder.loaderId, args, new LoaderCallback())
                     .forceLoad();
         }
 
@@ -88,6 +144,16 @@ public class TaskDatabaseFacade
                                    Object activity,
                                    TaskLoaderListener<Cursor> loaderListener)
     {
+        LoaderBuilder builder = new LoaderBuilder();
+        builder.loaderId = loaderId;
+
+        return load(builder, activity, loaderListener);
+    }
+
+    public TaskDatabaseFacade load(LoaderBuilder builder,
+                                   Object activity,
+                                   TaskLoaderListener<Cursor> loaderListener)
+    {
         if (!(activity instanceof FragmentActivity)
                     && !(activity instanceof Fragment))
             throw new IllegalArgumentException(activity.getClass().getSimpleName()
@@ -95,17 +161,21 @@ public class TaskDatabaseFacade
 
         this.loaderListener = loaderListener;
 
+        Bundle args = new Bundle();
+        args.putLong("dueTime", builder.dueTime);
+        args.putLong("taskId", builder.taskId);
+
         if (activity instanceof FragmentActivity)
         {
             this.context = ((FragmentActivity) activity);
             ((FragmentActivity) activity).getSupportLoaderManager()
-                    .initLoader(loaderId, null, new LoaderCallback());
+                    .initLoader(builder.loaderId, args, new LoaderCallback());
         }
         else
         {
             this.context = ((Fragment) activity).getActivity();
             ((Fragment) activity).getLoaderManager()
-                    .initLoader(loaderId, null, new LoaderCallback());
+                    .initLoader(builder.loaderId, args, new LoaderCallback());
         }
 
         return this;
@@ -115,15 +185,18 @@ public class TaskDatabaseFacade
     {
 
         @Override
-        public Loader<Cursor> onCreateLoader(int loaderId, Bundle bundle)
+        public Loader<Cursor> onCreateLoader(int loaderId, Bundle args)
         {
             switch(loaderId)
             {
                 case CURSOR_LOAD_ALL_OPEN_TASKS_ID:
-                    return new CursorLoadAllOpenTasks(context);
+                    return new AllOpenTasksLoader(context);
                 case CURSOR_COMPLETE_TASK_ID :
-                    return new CursorCompleteTask(context,
-                                                  TaskDatabaseFacade.this);
+                    long taskId = args.getLong("taskId");
+                    return new CompleteTaskLoader(context, taskId);
+                case CURSOR_LOAD_ALL_DUE_TASKS_ID:
+                    long dueTime = args.getLong("dueTime", 0);
+                    return new AllDueOpenTasksLoader(context, dueTime);
             }
             return null;
         }
@@ -149,11 +222,6 @@ public class TaskDatabaseFacade
     public LoadAllTasks getLoadAllTasksLoader()
     {
         return new LoadAllTasks(context);
-    }
-
-    public LoadTasks getLoadTasksLoader(long dueTime)
-    {
-        return new LoadTasks(context, dueTime);
     }
 
     public static class AddTask extends AsyncTaskLoader<Void>
@@ -227,111 +295,7 @@ public class TaskDatabaseFacade
         }
     }
 
-    static private class LoadTasks extends AsyncTaskLoader<String[]>
-    {
-        private long dueTime;
-
-        public LoadTasks(Context context, long dueTime)
-        {
-            super(context);
-            this.dueTime = dueTime;
-        }
-
-        @Override
-        public String[] loadInBackground()
-        {
-            if (Logger.LOGV)
-            {
-                Log.v(TAG, "Loading tasks");
-            }
-
-            Cursor cursor = getContext().getContentResolver().query(TaskProvider.CONTENT_URI,
-                                                                    new String[]{TaskCol.TASK_DESC.toString()},
-                                                                    TaskCol.TASK_DUE_DATE+"=?",
-                                                                    new String[]{String.valueOf(dueTime)},
-                                                                    null);
-
-            if (cursor != null)
-            {
-                LinkedList<String> llTasks = new LinkedList<String>();
-
-                cursor.moveToFirst();
-                while (!cursor.isAfterLast())
-                {
-                    llTasks.add(cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.toString())));
-                    cursor.moveToNext();
-                }
-                return llTasks.toArray(new String[llTasks.size()]);
-            }
-
-            return new String[0];
-        }
-    }
-
-    static private class CursorLoadAllOpenTasks extends CursorLoader
-    {
-        public CursorLoadAllOpenTasks(Context context)
-        {
-            super(context);
-            this.setUri(TaskProvider.CONTENT_URI);
-            this.setProjection(TaskCol.getColumns(TaskCol.TASK_ID,
-                                                  TaskCol.TASK_DESC,
-                                                  TaskCol.TASK_DUE_DATE));
-            this.setSelection(TaskCol.TASK_IS_COMPLETE+"=0");
-            this.setSelectionArgs(null);
-            this.setSortOrder(null);
-        }
-    }
-
-    public void setTaskToComplete(final int id)
-    {
-        taskToCompleteId = String.valueOf(id);
-    }
-
-    public String getTaskToCompleteId() { return taskToCompleteId; }
-
-    static private class CursorCompleteTask extends AsyncTaskLoader<Cursor>
-    {
-        private TaskDatabaseFacade facade;
-
-        public CursorCompleteTask(Context context, TaskDatabaseFacade facade)
-        {
-            super(context);
-            this.facade = facade;
-        }
-
-        @Override
-        public Cursor loadInBackground()
-        {
-            {
-                if (Logger.LOGD) Log.d(TAG, "Completing task Id: "+facade.getTaskToCompleteId());
-
-                ContentResolver resolver = getContext().getContentResolver();
-                Cursor cursor = resolver.query(TaskProvider.CONTENT_URI,
-                                               TaskCol.getAllColumns(),
-                                               TaskCol.TASK_ID+"=?",
-                                               new String[]{facade.getTaskToCompleteId()},
-                                               null);
-                if (cursor != null)
-                {
-                    cursor.moveToFirst();
-                    if (Logger.LOGD) dumpCursor(cursor);
-                    Task task = new Task(cursor);
-                    task.set(Task_Boolean.isComplete, true);
-                    if (Logger.LOGD) Log.d(TAG, task.toString());
-
-                    resolver.update(TaskProvider.CONTENT_URI,
-                                    task.toContentValues(),
-                                    "_id=?",
-                                    new String[]{facade.getTaskToCompleteId()});
-                }
-            }
-
-            return null;
-        }
-    }
-
-    static private void dumpCursor(Cursor cursor)
+    static protected void dumpCursor(Cursor cursor)
     {
         if (cursor != null)
         {

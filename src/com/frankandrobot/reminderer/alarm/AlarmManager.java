@@ -42,7 +42,7 @@ public class AlarmManager
      * due at the same time. So you get the task in the first row of the
      * Cursor. The time this task is due is the next task due time.
      *
-     * __Do NOT call this method directly__
+     * __Do NOT call this method directly.__
      *
      * @param context the context
      * @param dueTime find tasks after dueTime

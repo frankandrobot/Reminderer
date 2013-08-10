@@ -51,8 +51,6 @@ public class AlarmActivity extends FragmentActivity
     {
         super.onCreate(icicle);
 
-
-
         requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
 
         final Window win = getWindow();

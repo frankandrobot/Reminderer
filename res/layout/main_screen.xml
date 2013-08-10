@@ -16,7 +16,7 @@
     <fragment
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:name="com.frankandrobot.reminderer.widget.MainTaskListFragment"
+            android:name="com.frankandrobot.reminderer.widget.main.MainTaskListFragment"
             android:id="@+id/fragment"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
