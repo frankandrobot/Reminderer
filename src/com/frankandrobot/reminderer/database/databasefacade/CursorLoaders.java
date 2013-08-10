@@ -41,7 +41,7 @@ abstract public class CursorLoaders
             this.setProjection(TaskCol.getColumns(TaskCol.TASK_ID,
                                                   TaskCol.TASK_DESC,
                                                   TaskCol.TASK_DUE_DATE));
-            this.setSelection(TaskCol.TASK_IS_COMPLETE+"=0"
+            this.setSelection(TaskCol.TASK_IS_COMPLETE+"=0 AND "
                               + TaskCol.TASK_DUE_DATE+"=?");
             this.setSelectionArgs(new String[]{String.valueOf(dueTime)});
             this.setSortOrder(null);

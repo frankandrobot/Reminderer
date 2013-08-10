@@ -9,6 +9,9 @@ import android.support.v4.app.ListFragment;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
@@ -23,9 +26,11 @@ public class AlarmDueListFragment extends ListFragment implements
     private TaskDatabaseFacade taskDatabaseFacade;
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState)
+    public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container,
+                             Bundle savedInstanceState)
     {
-        super.onActivityCreated(savedInstanceState);
+        View view = super.onCreateView(inflater, container, savedInstanceState);
 
         taskDatabaseFacade = new TaskDatabaseFacade(this.getActivity());
 
@@ -34,8 +39,18 @@ public class AlarmDueListFragment extends ListFragment implements
                                         taskDatabaseFacade);
 
         setListAdapter(adapter);
-        setListShown(false);
+
+        return view;
     }
+
+/*
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState)
+    {
+        super.onActivityCreated(savedInstanceState);
+
+    }
+*/
 
     public void setDueTime(long dueTime)
     {
