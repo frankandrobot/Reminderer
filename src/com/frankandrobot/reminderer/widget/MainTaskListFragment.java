@@ -22,7 +22,6 @@ import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener;
-import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener.FlingThreshold;
 import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener.IFlingListener;
 
 import java.util.Calendar;
@@ -34,7 +33,6 @@ public class MainTaskListFragment extends ListFragment implements
 
     private SimpleCursorAdapter adapter;
     private TaskDatabaseFacade taskDatabaseFacade;
-    private FlingThreshold flingThreshold;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState)
@@ -54,8 +52,6 @@ public class MainTaskListFragment extends ListFragment implements
         taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_OPEN_TASKS_ID,
                                 this,
                                 this);
-
-        flingThreshold = new FlingThreshold(getActivity());
     }
 
     @Override
@@ -164,9 +160,7 @@ public class MainTaskListFragment extends ListFragment implements
                 MainTaskViewHolder viewHolder = new MainTaskViewHolder();
                 viewHolder.taskDesc = (TextView)rowView.findViewById(id.task_desc_textview);
                 viewHolder.taskDueDate = (TextView)rowView.findViewById((id.task_due_date_textview));
-                viewHolder.touchListener = new LeftFlingListener(flingThreshold,
-                                                                 LeftFlingListener.getDefaultAnimation(-flingThreshold.fullWidth()),
-                                                                 MainTaskListFragment.this,
+                viewHolder.touchListener = new LeftFlingListener(MainTaskListFragment.this,
                                                                  this);
                 rowView.setTag(viewHolder);
                 rowView.setOnTouchListener(viewHolder.touchListener);

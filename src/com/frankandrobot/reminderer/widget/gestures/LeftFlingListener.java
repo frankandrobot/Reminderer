@@ -1,13 +1,10 @@
 package com.frankandrobot.reminderer.widget.gestures;
 
-import android.content.Context;
 import android.support.v4.app.ListFragment;
-import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewConfiguration;
-import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
@@ -26,39 +23,16 @@ public class LeftFlingListener implements OnTouchListener
     final static private String TAG = "R:"+LeftFlingListener.class.getSimpleName();
 
     private int cursorPosition;
-    private FlingThreshold flingThreshold;
     private IFlingListener flingListener;
-    private Animation animation;
     private boolean isFlinging;
     private ListFragment listFragment;
 
     private float currentX;
     private float currentAlpha;
 
-    /**
-     * Instantiate this class to get a fling threshold.
-     *
-     * When using in a ListView, it doesn't make sense to instantiate
-     * this class for each row. Instantiate it once then use it for each row.
-     */
-    static public class FlingThreshold
-    {
-        private int flingThreshold;
-        private int fullWidth;
-
-        public FlingThreshold(Context context)
-        {
-            DisplayMetrics dm = new DisplayMetrics();
-            ((WindowManager)context.getSystemService(Context.WINDOW_SERVICE))
-                    .getDefaultDisplay().getMetrics(dm);
-            fullWidth = (int) (Math.ceil(dm.widthPixels * (dm.densityDpi / 160.0)));
-            flingThreshold = (int) (Math.ceil(dm.widthPixels * (dm.densityDpi / 160.0)) * 0.5f);
-        }
-
-        public int value() { return flingThreshold; }
-
-        public int fullWidth() { return fullWidth; }
-    }
+    private float mDownX;
+    private int mSwipeSlop = -1;
+    private boolean isAnimating;
 
     /**
      * #onFling is called when the fling animation finishes
@@ -68,41 +42,12 @@ public class LeftFlingListener implements OnTouchListener
         public void onFling(int position, View view);
     }
 
-    public LeftFlingListener(FlingThreshold flingThreshold,
-                             AnimationSet animation,
-                             ListFragment listFragment,
+    public LeftFlingListener(ListFragment listFragment,
                              IFlingListener flingListener)
     {
-        this.flingThreshold = flingThreshold;
-        this.animation = animation;
         this.flingListener = flingListener;
         this.listFragment = listFragment;
     }
-
-    /**
-     * Gets the default translate animation.
-     *
-     * It moves the view to the left (hence the {@link LeftFlingListener}).
-     *
-     *
-     * @param distanceToTranslate distance to translate row
-     * @return this
-     */
-    static public AnimationSet getDefaultAnimation(int distanceToTranslate)
-    {
-        TranslateAnimation swipeAnim = new TranslateAnimation(0, distanceToTranslate, 0, 0);
-        AlphaAnimation alphaAnim = new AlphaAnimation(1, 0);
-        AnimationSet set = new AnimationSet(true);
-        set.addAnimation(swipeAnim);
-        set.addAnimation(alphaAnim);
-        set.setDuration(500);
-        return set;
-    }
-
-    private float mDownX;
-    private int mSwipeSlop = -1;
-    private boolean mItemPressed;
-    private boolean isAnimating;
 
     @Override
     public boolean onTouch(final View view, MotionEvent event) {
@@ -115,12 +60,12 @@ public class LeftFlingListener implements OnTouchListener
                 // Multi-item swipes not handled
                 if (isAnimating) return true;
 
-                mItemPressed = true;
+                //mItemPressed = true;
                 mDownX = event.getX();
                 break;
             case MotionEvent.ACTION_CANCEL:
                 setSwipePosition(view, 0);
-                mItemPressed = false;
+                //mItemPressed = false;
                 break;
             case MotionEvent.ACTION_MOVE:
             {
@@ -172,26 +117,9 @@ public class LeftFlingListener implements OnTouchListener
                     }
                     // Animate position and alpha
                     long duration = (int) ((1 - fractionCovered) * 500);
-                    view.clearAnimation();
-                    view.startAnimation(animation);
-                    view.getAnimation().setAnimationListener(new AnimationListener()
-                    {
-                        @Override
-                        public void onAnimationStart(Animation animation) {}
-
-                        @Override
-                        public void onAnimationEnd(Animation animation)
-                        {
-                            flingListener.onFling(cursorPosition,
-                                                  view);
-                        }
-
-                        @Override
-                        public void onAnimationRepeat(Animation animation) {}
-                    });
                     animateSwipe(view, endX, duration, remove);
                 } else {
-                    mItemPressed = false;
+                    //mItemPressed = false;
                 }
             }
             break;
