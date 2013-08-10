@@ -27,12 +27,7 @@
 
         <activity
             android:name=".AddTaskActivity"
-            android:label="@string/app_name" >
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />-->
-
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
+            android:label="Add Task Activity">
         </activity>
         <activity
             android:name=".RemindererActivity"
@@ -44,25 +39,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".alarm.AlarmAlertActivity"
-            android:excludeFromRecents="true"
-            android:label="@string/app_name"
-            android:launchMode="singleInstance"
-            android:taskAffinity="" >
-
-        </activity>
-        <activity
                 android:name=".alarm.AlarmActivity"
                 android:label="@string/app_name"
                 android:excludeFromRecents="true"
                 android:launchMode="singleInstance"
                 android:taskAffinity="">
-
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
 
         <receiver android:name=".alarm.AlarmReceiver" >
