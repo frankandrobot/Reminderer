@@ -300,10 +300,8 @@ public class TaskDatabaseFacade
         public Cursor loadInBackground()
         {
             {
-                if (Logger.LOGV)
-                {
-                    Log.v(TAG, "Completing task Id: "+facade.getTaskToCompleteId());
-                }
+                if (Logger.LOGD) Log.d(TAG, "Completing task Id: "+facade.getTaskToCompleteId());
+
                 ContentResolver resolver = getContext().getContentResolver();
                 Cursor cursor = resolver.query(TaskProvider.CONTENT_URI,
                                                TaskCol.getAllColumns(),

@@ -170,7 +170,7 @@ public class MainTaskListFragment extends ListFragment implements
             {
                 MainTaskViewHolder viewHolder = (MainTaskViewHolder) rowView.getTag();
                 viewHolder.taskDesc.setText(getCursor().getString(getCursor().getColumnIndex(TaskCol.TASK_DESC.toString())));
-                viewHolder.taskDueDate.setText(getDueDate(getCursor()));
+                viewHolder.taskDueDate.setText(getCursor().getString(getCursor().getColumnIndex("_id")));//getDueDate(getCursor()));
                 viewHolder.touchListener.setCursorPosition(position);
             }
 
@@ -186,13 +186,18 @@ public class MainTaskListFragment extends ListFragment implements
                 public boolean onPreDraw()
                 {
                     observer.removeOnPreDrawListener(this);
+                    getCursor().moveToPosition(positionToRemove);
 
-                    CursorDeleteProxy newCursor = new CursorDeleteProxy(getCursor(),
-                                                                      positionToRemove);
-                    swapCursor(newCursor);
-                    //Complete the task
+                    if (Logger.LOGD) Log.d(TAG, "onFling removing "+positionToRemove+" "+getCursor().getInt(getCursor().getColumnIndex(TaskCol.TASK_ID.toString())));
+
+                    //save the task to delete before "deleting" from cursor
                     taskDatabaseFacade.setTaskToComplete(getCursor().getInt(getCursor().getColumnIndex(TaskCol.TASK_ID.toString())));
-/*
+                    //"delete" row from cursor
+                    CursorDeleteProxy newCursor = new CursorDeleteProxy(getCursor(),
+                                                                        positionToRemove);
+                    swapCursor(newCursor);
+
+                    //Complete the task
                     taskDatabaseFacade.forceLoad(TaskDatabaseFacade.CURSOR_COMPLETE_TASK_ID,
                                                  MainTaskListFragment.this,
                                                  new TaskLoadListenerAdapter()
@@ -201,13 +206,10 @@ public class MainTaskListFragment extends ListFragment implements
                                                      public void onLoadFinished(Loader<Cursor> loader,
                                                                                 Cursor data)
                                                      {
-                                                         if (Logger.LOGD) Log.d(TAG, "task completed");
-                                                         taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_OPEN_TASKS_ID,
-                                                                                 MainTaskListFragment.this,
-                                                                                 MainTaskListFragment.this);
+                                                         adapter.swapCursor(data);
                                                      }
                                                  });
-*/
+
 
                     return true;
                 }
