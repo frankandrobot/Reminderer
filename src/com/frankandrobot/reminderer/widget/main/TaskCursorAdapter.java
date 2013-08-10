@@ -52,7 +52,13 @@ public class TaskCursorAdapter extends SimpleCursorAdapter
                              ListFragment listFragment,
                              TaskDatabaseFacade taskDatabaseFacade)
     {
-        super(context, android.R.layout.simple_list_item_1, null, null, null, 0);
+        super(context,
+              android.R.layout.simple_list_item_1,
+              null,
+              TaskCol.getColumns(TaskCol.TASK_ID,
+                                 TaskCol.TASK_DESC,
+                                 TaskCol.TASK_DUE_DATE),
+              null, 0);
 
         this.listFragment = listFragment;
         this.taskDatabaseFacade = taskDatabaseFacade;

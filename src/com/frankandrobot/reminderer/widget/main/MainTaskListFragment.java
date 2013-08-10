@@ -35,8 +35,6 @@ public class MainTaskListFragment extends ListFragment implements
         setListAdapter(adapter);
         setListShown(false);
 
-
-
         taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_OPEN_TASKS_ID,
                                 this,
                                 this);
