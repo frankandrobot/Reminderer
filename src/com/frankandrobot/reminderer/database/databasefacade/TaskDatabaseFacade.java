@@ -13,6 +13,7 @@ import android.support.v4.content.Loader;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.alarm.AlarmManager;
+import com.frankandrobot.reminderer.alarm.AlarmManager.CompareOp;
 import com.frankandrobot.reminderer.database.TaskProvider;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.datastructures.Task;
@@ -177,9 +178,12 @@ public class TaskDatabaseFacade
 
             if (task != null)
             {
+                long now = System.currentTimeMillis();
                 ContentResolver resolver = getContext().getContentResolver();
                 resolver.insert(TaskProvider.CONTENT_URI, task.toContentValues());
-                alarmHelper.findAndEnableNextTasksDue(getContext(), System.currentTimeMillis());
+                alarmHelper.findAndEnableNextTasksDue(getContext(),
+                                                      now,
+                                                      CompareOp.ON_OR_AFTER);
             }
             return null;
         }

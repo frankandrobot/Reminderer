@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.frankandrobot.reminderer.alarm.AlarmManager.CompareOp;
 import com.frankandrobot.reminderer.helpers.Logger;
 
 import java.text.SimpleDateFormat;
@@ -63,7 +64,8 @@ public class AlarmReceiver extends BroadcastReceiver
             AlarmAlertWakeLock.getInstance().acquireCpuWakeLock(context);
 
             //get the next alarm
-            new AlarmManager().findAndEnableNextTasksDue(context, dueTime + (long) 1);
+            new AlarmManager().findAndEnableNextTasksDue(context, dueTime + (long) 1,
+                                                         CompareOp.ON_OR_AFTER);
         }
     }
 

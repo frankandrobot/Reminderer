@@ -5,6 +5,7 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 
 import com.frankandrobot.reminderer.alarm.AlarmManager;
+import com.frankandrobot.reminderer.alarm.AlarmManager.CompareOp;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.AddTask;
@@ -89,7 +90,8 @@ public class TaskDatabaseFacadeTest
         addTask1.loadInBackground();
 
         assertThat(new AlarmManager().findAndEnableNextTasksDue(activity,
-                                                               task1.get(Task_Calendar.class).getDate().getTime())
+                                                               task1.get(Task_Calendar.class).getDate().getTime(),
+                                                               CompareOp.ON_OR_AFTER)
                           ,is(task2.get(Task_Calendar.class).getDate().getTime()));
     }
 

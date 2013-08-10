@@ -21,6 +21,19 @@ public class AlarmManager
 {
     final private static String TAG = "R:AlarmManager";
 
+    public enum CompareOp
+    {
+        EQ("=")
+        ,AFTER(">")
+        ,ON_OR_AFTER(">=");
+
+        CompareOp(String val) { this.val = val; }
+        private String val;
+
+        @Override
+        public String toString() { return val; }
+    }
+
     /**
      * Finds the next task(s) due after the given task and enables them.
      *
@@ -29,16 +42,21 @@ public class AlarmManager
      * due at the same time. So you get the task in the first row of the
      * Cursor. The time this task is due is the next task due time.
      *
+     * __Do NOT call this method directly__
+     *
      * @param context the context
      * @param dueTime find tasks after dueTime
+     * @param compareOp one of =, >, or >=
      */
-    public long findAndEnableNextTasksDue(Context context, long dueTime)
+    public long findAndEnableNextTasksDue(Context context,
+                                          long dueTime,
+                                          CompareOp compareOp)
     {
         // disable the old alarm if any
         disableAlert(context);
 
         // get all tasks due after curTime
-        Cursor nextAlarms = getDueAlarmIds(context, dueTime, ">=");
+        Cursor nextAlarms = getDueAlarmIds(context, dueTime, compareOp);
 
         if (nextAlarms == null)
         {
@@ -97,15 +115,15 @@ public class AlarmManager
      *
      * @param context da contex
      * @param dueTime the time to compare
-     * @param op is one of =, <=, >=
-     * @return
+     * @param compareOp is one of =, >, >=
+     * @return the cursor containing the due alarms
      */
-    private Cursor getDueAlarmIds(Context context, long dueTime, String op)
+    private Cursor getDueAlarmIds(Context context, long dueTime, CompareOp compareOp)
     {
         return context.getContentResolver().query(
                 TaskProvider.CONTENT_URI,
-                new String[]{TaskCol.TASK_ID.toString(), TaskCol.TASK_DUE_DATE.toString()},
-                TaskCol.TASK_DUE_DATE + op + "?",
+                TaskCol.getColumns(TaskCol.TASK_ID, TaskCol.TASK_DUE_DATE),
+                TaskCol.TASK_DUE_DATE + compareOp.toString() + "?",
                 new String[]{Long.toString(dueTime)},
                 DEFAULT_SORT);
     }
@@ -142,7 +160,8 @@ public class AlarmManager
         public void onReceive(Context context, Intent intent)
         {
             new AlarmManager().findAndEnableNextTasksDue(context,
-                                                         System.currentTimeMillis());
+                                                         System.currentTimeMillis(),
+                                                         CompareOp.ON_OR_AFTER);
         }
     }
 }
