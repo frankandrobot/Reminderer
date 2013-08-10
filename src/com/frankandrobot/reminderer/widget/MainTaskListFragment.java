@@ -170,7 +170,7 @@ public class MainTaskListFragment extends ListFragment implements
             {
                 MainTaskViewHolder viewHolder = (MainTaskViewHolder) rowView.getTag();
                 viewHolder.taskDesc.setText(getCursor().getString(getCursor().getColumnIndex(TaskCol.TASK_DESC.toString())));
-                viewHolder.taskDueDate.setText(getCursor().getString(getCursor().getColumnIndex("_id")));//getDueDate(getCursor()));
+                viewHolder.taskDueDate.setText(getDueDate(getCursor()));
                 viewHolder.touchListener.setCursorPosition(position);
             }
 
