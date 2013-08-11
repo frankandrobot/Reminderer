@@ -2,11 +2,10 @@ package com.frankandrobot.reminderer.datastructures;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.os.Parcel;
-import android.os.Parcelable;
 
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken;
+import com.frankandrobot.reminderer.datastructures.DataStructure.*;
 
 import java.util.Calendar;
 
@@ -26,21 +25,8 @@ import java.util.Calendar;
  * task will use the date.
  *
  */
-public class Task extends DataStructure implements Parcelable
+public class Task extends DataStructure
 {
-    public static final Parcelable.Creator<Task> CREATOR = new Parcelable.Creator<Task>()
-    {
-        public Task createFromParcel(Parcel p)
-        {
-            return new Task(p);
-        }
-
-        public Task[] newArray(int size)
-        {
-            return new Task[size];
-        }
-    };
-
     // variables
 
     public enum Task_String implements Field<String>
@@ -56,9 +42,10 @@ public class Task extends DataStructure implements Parcelable
 
     public class Task_Calendar implements Field<TaskCalendar> {}
 
-    public enum Task_Long implements Field<Long>
+    public enum Task_Ids implements Field<Long>
     {
         id
+        ,repeatsId
     }
 
     public enum Task_Boolean implements Field<Boolean>
@@ -80,28 +67,14 @@ public class Task extends DataStructure implements Parcelable
     public Task(Cursor cursor)
     {
         init();
-        set(Task_Long.id, cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_ID.toString())));
+        set(Task_Ids.id, cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_ID.toString())));
         get(Task_Calendar.class).setTimeInMillis(cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_DUE_DATE.toString())));
         set(Task_String.desc, cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.toString())));
-        set(Task_Int.repeatsType, cursor.getInt(cursor.getColumnIndex(TaskCol.TASK_REPEATS_TYPE.toString())));
+        set(Task_Int.repeatsType, cursor.getInt(cursor.getColumnIndex(TaskCol.TASK_REPEATS_ID_FK.toString())));
         boolean isComplete = cursor.getInt(cursor.getColumnIndex(TaskCol.TASK_IS_COMPLETE.toString())) == 1
                 ? true : false;
         set(Task_Boolean.isComplete, isComplete);
     }
-
-    public Task(Parcel p)
-    {
-        set(Task_Calendar.class, new TaskCalendar());
-        get(Task_Calendar.class).setTimeInMillis(p.readLong());
-        set(Task_String.desc, p.readString());
-        set(Task_Long.id, (long)p.readInt());
-    }
-
-    // ////////////////////////////////////////////////////////////////////////////
-    // ////////////////////////////////////////////////////////////////////////////
-    /*
-     * Start of database methods - convenience functions
-     */
 
     /**
      * Gets task
@@ -141,7 +114,7 @@ public class Task extends DataStructure implements Parcelable
 
     public long getId()
     {
-        return get(Task_Long.id);
+        return get(Task_Ids.id);
     }
 
     public Task set(Task_Int repeatsType, RepeatsToken.Type type)
@@ -155,21 +128,7 @@ public class Task extends DataStructure implements Parcelable
         return 0;
     }
 
-    public void writeToParcel(Parcel p, int flags)
-    {
-        // TODO finish writing Task Parcelable - add every enum
-        /*set(Task_Calendar.class, new TaskCalendar());
-        get(Task_Calendar.class).setTimeInMillis(p.readLong());
-        set(Task_Desc.class, p.readString());
-        id = p.readInt();*/
-
-        p.writeLong(getTimeInMillis());
-        p.writeLong(System.currentTimeMillis());
-        p.writeString(get(Task_String.desc));
-        p.writeLong(get(Task_Long.id));
-    }
-
-    @Override
+   @Override
     public <T extends DataStructure> T combine(T ds)
     {
         TaskCalendar taskCalendar = get(Task_Calendar.class);
@@ -202,12 +161,12 @@ public class Task extends DataStructure implements Parcelable
     {
         ContentValues values = new ContentValues();
 
-        //if (get(Task_Long.id) != null) values.put("id", get(Task_Long.id));
+        //if (get(Task_Ids.id) != null) values.put("id", get(Task_Ids.id));
 
         values.put(TaskCol.TASK_DESC.toString(), get(Task_String.desc));
 
         if (get(Task_Int.repeatsType) != null)
-            values.put(TaskCol.TASK_REPEATS_TYPE.toString(),
+            values.put(TaskCol.TASK_REPEATS_ID_FK.toString(),
                        get(Task_Int.repeatsType));
 
         values.put(TaskCol.TASK_DUE_DATE.toString(),
