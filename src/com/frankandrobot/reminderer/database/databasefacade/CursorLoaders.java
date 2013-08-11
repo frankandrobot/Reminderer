@@ -8,6 +8,7 @@ import android.support.v4.content.CursorLoader;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.database.TaskProvider;
+import com.frankandrobot.reminderer.database.TaskTable;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Boolean;
@@ -16,6 +17,7 @@ import com.frankandrobot.reminderer.helpers.Logger;
 abstract public class CursorLoaders
 {
     final static private String TAG = "R:"+CursorLoaders.class.getSimpleName();
+    final static private TaskTable table = new TaskTable();
 
     static class AllOpenTasksLoader extends CursorLoader
     {
@@ -23,12 +25,12 @@ abstract public class CursorLoaders
         {
             super(context);
             this.setUri(TaskProvider.CONTENT_URI);
-            this.setProjection(TaskCol.getColumns(TaskCol.TASK_ID,
-                                                  TaskCol.TASK_DESC,
-                                                  TaskCol.TASK_DUE_DATE));
+            this.setProjection(table.getColumns(TaskCol.TASK_ID,
+                                                TaskCol.TASK_DESC,
+                                                TaskCol.TASK_DUE_DATE));
             this.setSelection(TaskCol.TASK_IS_COMPLETE+"=0");
             this.setSelectionArgs(null);
-            this.setSortOrder(TaskCol.TASK_DUE_DATE.toString());
+            this.setSortOrder(TaskCol.TASK_DUE_DATE.colname());
         }
     }
 
@@ -38,13 +40,13 @@ abstract public class CursorLoaders
         {
             super(context);
             this.setUri(TaskProvider.CONTENT_URI);
-            this.setProjection(TaskCol.getColumns(TaskCol.TASK_ID,
-                                                  TaskCol.TASK_DESC,
-                                                  TaskCol.TASK_DUE_DATE));
+            this.setProjection(table.getColumns(TaskCol.TASK_ID,
+                                                TaskCol.TASK_DESC,
+                                                TaskCol.TASK_DUE_DATE));
             this.setSelection(TaskCol.TASK_IS_COMPLETE+"=0 AND "
                               + TaskCol.TASK_DUE_DATE+"=?");
             this.setSelectionArgs(new String[]{String.valueOf(dueTime)});
-            this.setSortOrder(TaskCol.TASK_DUE_DATE.toString());
+            this.setSortOrder(TaskCol.TASK_DUE_DATE.colname());
         }
     }
 
@@ -66,7 +68,7 @@ abstract public class CursorLoaders
 
                 ContentResolver resolver = getContext().getContentResolver();
                 Cursor cursor = resolver.query(TaskProvider.CONTENT_URI,
-                                               TaskCol.getAllColumns(),
+                                               table.getAllColumns(TaskCol.class),
                                                TaskCol.TASK_ID+"=?",
                                                new String[]{taskId},
                                                null);

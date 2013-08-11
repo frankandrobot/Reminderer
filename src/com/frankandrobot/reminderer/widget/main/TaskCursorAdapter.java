@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.frankandrobot.reminderer.R;
 import com.frankandrobot.reminderer.R.id;
+import com.frankandrobot.reminderer.database.TaskTable;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.database.databasefacade.CursorDeleteProxy;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
@@ -56,9 +57,9 @@ public class TaskCursorAdapter extends SimpleCursorAdapter
         super(context,
               android.R.layout.simple_list_item_1,
               null,
-              TaskCol.getColumns(TaskCol.TASK_ID,
-                                 TaskCol.TASK_DESC,
-                                 TaskCol.TASK_DUE_DATE),
+              new TaskTable().getColumns(TaskCol.TASK_ID,
+                                         TaskCol.TASK_DESC,
+                                         TaskCol.TASK_DUE_DATE),
               null, 0);
 
         this.listFragment = listFragment;
@@ -85,7 +86,7 @@ public class TaskCursorAdapter extends SimpleCursorAdapter
     public String getDueDate(Cursor cursor)
     {
         //this method is slow because it uses a Calendar obj, which is expensive
-        long dueDate = cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_DUE_DATE.toString()));
+        long dueDate = cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_DUE_DATE.colname()));
         dueCal.setTimeInMillis(dueDate);
 
         // if same day and and same year
@@ -143,7 +144,7 @@ public class TaskCursorAdapter extends SimpleCursorAdapter
         if (!getCursor().isClosed())
         {
             MainTaskViewHolder viewHolder = (MainTaskViewHolder) rowView.getTag();
-            viewHolder.taskDesc.setText(getCursor().getString(getCursor().getColumnIndex(TaskCol.TASK_DESC.toString())));
+            viewHolder.taskDesc.setText(getCursor().getString(getCursor().getColumnIndex(TaskCol.TASK_DESC.colname())));
             viewHolder.taskDueDate.setText(getDueDate(getCursor()));
             viewHolder.touchListener.setCursorPosition(position);
         }
@@ -163,7 +164,7 @@ public class TaskCursorAdapter extends SimpleCursorAdapter
                 observer.removeOnPreDrawListener(this);
                 //save the task to delete before "deleting" from cursor
                 getCursor().moveToPosition(positionToRemove);
-                long taskToCompleteId = getCursor().getLong(getCursor().getColumnIndex(TaskCol.TASK_ID.toString()));
+                long taskToCompleteId = getCursor().getLong(getCursor().getColumnIndex(TaskCol.TASK_ID.colname()));
 
                 if (Logger.LOGD) Log.d(TAG,
                                        "onFling removing " + positionToRemove + " " + taskToCompleteId);
@@ -221,7 +222,7 @@ public class TaskCursorAdapter extends SimpleCursorAdapter
         {
             View row = super.getView(position, convertView, parent);
 
-            long dueDate = getCursor().getLong(getCursor().getColumnIndex(TaskCol.TASK_DUE_DATE.toString()));
+            long dueDate = getCursor().getLong(getCursor().getColumnIndex(TaskCol.TASK_DUE_DATE.colname()));
             if (dueDate < now.getTimeInMillis())
             {
                 MainTaskViewHolder holder = (MainTaskViewHolder) row.getTag();

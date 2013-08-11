@@ -8,20 +8,72 @@ import android.util.Log;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
 
+import java.util.EnumSet;
+import java.util.HashMap;
+
 /**
  * Columns for the {@link Task} model
  */
-public class TaskTable
+final public class TaskTable
 {
     public final static String TASK_TABLE = "task";
     public final static String REPEATABLE_TABLE = "repeatable";
+
+    private HashMap<Class<? extends Enum>, EnumSet> hmColumns = new HashMap<Class<? extends Enum>, EnumSet>();
 
     public interface Column
     {
         public String colname();
     }
 
-    public enum TaskCol
+    /**
+     * Gets the columns in the enum class.
+     *
+     * @param aTables array of enum class names (ex: TaskCol)
+     * @return string of column names
+     */
+    public String[] getAllColumns(Class<? extends Enum>... aTables)
+    {
+        //create enum sets first
+        for(Class<? extends Enum> table:aTables)
+        {
+            if (hmColumns.get(table) == null)
+            {
+                hmColumns.put(table, EnumSet.allOf(table));
+            }
+        }
+
+        //create column array
+        int length = 0;
+        for(Class<? extends Enum> table:aTables)
+        {
+            length += hmColumns.get(table).size();
+        }
+        String[] aCols = new String[length];
+
+        //populate array
+        int len = 0;
+        for(Class<? extends Enum> table:aTables)
+        {
+            for(Object column:hmColumns.get(table))
+            {
+                aCols[len++] = ((Column) column).colname();
+            }
+        }
+
+        return aCols;
+    }
+
+    public String[] getColumns(Column... aCols)
+    {
+        String[] aStrCols = new String[aCols.length];
+        int len = 0;
+        for(Column col:aCols)
+            aStrCols[len++] = col.colname();
+        return aStrCols;
+    }
+
+    public enum TaskCol implements Column
     {
         TASK_ID("_id")
         , TASK_DESC
@@ -29,58 +81,29 @@ public class TaskTable
         , TASK_REPEATS_ID_FK
         , TASK_IS_COMPLETE;
 
-        private String value;
-
+        private String colname;
         TaskCol() {}
+        TaskCol(String value) { this.colname = value; }
 
-        TaskCol(String value) { this.value = value; }
+        /**
+         * @deprecated use {@link #colname}
+         * @return string
+         */
+        @Override
+        public String toString() { return colname == null ? super.toString() : colname; }
 
         @Override
-        public String toString()
-        {
-            return value == null ? super.toString() : value;
-        }
-
-        public static String[] getAllColumns()
-        {
-            String[] aCols = new String[values().length];
-            int len = 0;
-            for(TaskCol col:values())
-                aCols[len++] = col.toString();
-            return aCols;
-        }
-        public static String[] getColumns(TaskCol... aCols)
-        {
-            String[] aStrCols = new String[aCols.length];
-            int len = 0;
-            for(TaskCol col:aCols)
-                aStrCols[len++] = col.toString();
-            return aStrCols;
-        }
+        public String colname() { return colname == null ? name() : colname; }
     }
 
-    public enum RepeatsCol
+    public enum RepeatsCol implements Column
     {
         REPEAT_ID
         ,REPEAT_TYPE
         ,NEXT_DUE_DATE;
 
-        public static String[] getAllColumns()
-        {
-            String[] aCols = new String[values().length];
-            int len = 0;
-            for(RepeatsCol col:values())
-                aCols[len++] = col.toString();
-            return aCols;
-        }
-        public static String[] getColumns(TaskCol... aCols)
-        {
-            String[] aStrCols = new String[aCols.length];
-            int len = 0;
-            for(TaskCol col:aCols)
-                aStrCols[len++] = col.toString();
-            return aStrCols;
-        }
+        @Override
+        public String colname() { return name(); }
     }
 
     /**

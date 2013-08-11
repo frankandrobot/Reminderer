@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.database.TaskProvider;
+import com.frankandrobot.reminderer.database.TaskTable;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.helpers.Logger;
 
@@ -69,7 +70,7 @@ public class AlarmManager
         {
             // get the task in the first row (row pointer starts at -1)
             nextAlarms.moveToNext();
-            int index = nextAlarms.getColumnIndex(TaskCol.TASK_DUE_DATE.toString());
+            int index = nextAlarms.getColumnIndex(TaskCol.TASK_DUE_DATE.colname());
             long nextDueTime = nextAlarms.getLong(index);
 
             if (Logger.LOGV)
@@ -119,12 +120,13 @@ public class AlarmManager
      */
     private Cursor getDueAlarmIds(Context context, long dueTime, CompareOp compareOp)
     {
+        final TaskTable table = new TaskTable();
         return context.getContentResolver().query(
                 TaskProvider.CONTENT_URI,
-                TaskCol.getColumns(TaskCol.TASK_ID, TaskCol.TASK_DUE_DATE),
+                table.getColumns(TaskCol.TASK_ID, TaskCol.TASK_DUE_DATE),
                 TaskCol.TASK_DUE_DATE + compareOp.toString() + "?",
                 new String[]{Long.toString(dueTime)},
-                TaskCol.TASK_DUE_DATE.toString());
+                TaskCol.TASK_DUE_DATE.colname());
     }
 
     /**
@@ -138,7 +140,7 @@ public class AlarmManager
         {
             // save row position
             int origPos = cursor.getPosition();
-            int index = cursor.getColumnIndex(TaskCol.TASK_DUE_DATE.toString());
+            int index = cursor.getColumnIndex(TaskCol.TASK_DUE_DATE.colname());
             cursor.moveToFirst();
             String row = "*****Cursor*****\n";
             while (cursor.moveToNext())
