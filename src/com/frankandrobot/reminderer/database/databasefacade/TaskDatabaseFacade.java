@@ -43,8 +43,6 @@ public class TaskDatabaseFacade
     private Context context;
     private TaskLoaderListener<Cursor> loaderListener;
 
-    private String taskToCompleteId;
-
     public interface TaskLoaderListener<T>
     {
         public void onLoadFinished(Loader<T> loader, T data);
@@ -246,9 +244,13 @@ public class TaskDatabaseFacade
 
             if (task != null)
             {
-                long now = System.currentTimeMillis();
                 ContentResolver resolver = getContext().getContentResolver();
-                resolver.insert(TaskProvider.CONTENT_URI, task.toContentValues());
+                long now = System.currentTimeMillis();
+
+                task.calculateNextDueDate();
+
+                resolver.insert(TaskProvider.CONTENT_URI,
+                                task.getContentValuesForInsert());
                 alarmHelper.findAndEnableNextTasksDue(getContext(),
                                                       now,
                                                       CompareOp.ON_OR_AFTER);

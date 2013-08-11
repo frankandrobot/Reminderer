@@ -13,7 +13,8 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 
 /**
- * Holds a tasks calendar.
+ * Holds a tasks calendar. It's a partial proxy object for a {@link Calendar}
+ * because only some of the Calendar methods are implemented.
  *
  * The task calendar is **always** a date in the future. Ex:
  *

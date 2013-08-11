@@ -7,9 +7,13 @@ import com.frankandrobot.reminderer.database.TaskTable.Column;
 import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken;
-import com.frankandrobot.reminderer.datastructures.DataStructure.*;
+import com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.Type;
 
-import java.util.Calendar;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
+import org.joda.time.Hours;
+import org.joda.time.LocalDate;
+import org.joda.time.Weeks;
 
 /**
  * Represents a task.
@@ -58,16 +62,20 @@ public class Task extends DataStructure
         public String colname() { return colname; }
     }
 
-    /**
-     * dueDate is used by the grammar parser.
-     * nextDueDate is used by the alarm system.
-     */
-    public enum Task_Calendar implements Field<TaskCalendar>, Column
+    public enum Task_Parser_Calendar implements Field<TaskCalendar>, Column
     {
-        dueDate(TaskCol.TASK_DUE_DATE)
-        ,nextDueDate(RepeatsCol.NEXT_DUE_DATE);
+        dueDate(TaskCol.TASK_DUE_DATE);
 
-        Task_Calendar(Enum colname) { this.colname = colname.toString(); }
+        Task_Parser_Calendar(Enum colname) { this.colname = colname.toString(); }
+        public String colname;
+        public String colname() { return colname; }
+    }
+
+    private enum Task_Alarm_Calendar implements Field<DateTime>, Column
+    {
+        nextDueDate(RepeatsCol.NEXT_DUE_DATE);
+
+        Task_Alarm_Calendar(Enum colname) { this.colname = colname.toString(); }
         public String colname;
         public String colname() { return colname; }
     }
@@ -83,7 +91,7 @@ public class Task extends DataStructure
 
     private void init()
     {
-        set(Task_Calendar.dueDate, new TaskCalendar());
+        set(Task_Parser_Calendar.dueDate, new TaskCalendar());
         set(Task_Boolean.isComplete, false);
     }
 
@@ -108,13 +116,15 @@ public class Task extends DataStructure
         if (checkColumn(Task_Int.repeatsType, cursor))
         set(Task_Int.repeatsType, cursor.getInt(cursor.getColumnIndex(Task_Int.repeatsType.colname)));
 
-        if (checkColumn(Task_Calendar.dueDate, cursor))
-        get(Task_Calendar.dueDate)
-                .setTimeInMillis(cursor.getLong(cursor.getColumnIndex(Task_Calendar.dueDate.colname)));
+        if (checkColumn(Task_Parser_Calendar.dueDate, cursor))
+        get(Task_Parser_Calendar.dueDate)
+                .setTimeInMillis(cursor.getLong(cursor.getColumnIndex(Task_Parser_Calendar.dueDate.colname)));
 
-        if (checkColumn(Task_Calendar.nextDueDate, cursor))
-            get(Task_Calendar.nextDueDate)
-                    .setTimeInMillis(cursor.getLong(cursor.getColumnIndex(Task_Calendar.nextDueDate.colname)));
+        if (checkColumn(Task_Alarm_Calendar.nextDueDate, cursor))
+        {
+            set(Task_Alarm_Calendar.nextDueDate,
+                new DateTime(cursor.getLong(cursor.getColumnIndex(Task_Alarm_Calendar.nextDueDate.colname))));
+        }
 
         if (checkColumn(Task_Boolean.isComplete, cursor))
         {
@@ -124,25 +134,61 @@ public class Task extends DataStructure
     }
 
     /**
-     * Gets task
+     * Calculates the next due date.
+     * It's somewhat expensive so much sure to store the result.
      *
-     * @return task description
+     * @return next due date
      */
-    public String getTaskDesc()
+    public long calculateNextDueDate()
     {
-        return get(Task_String.desc);
-    }
+        if (get(Task_Int.repeatsType) == null)
+        {
+            return get(Task_Parser_Calendar.dueDate).getDate().getTime();
+        }
+        else
+        {
+            //due date is in future so return that
+            if (get(Task_Parser_Calendar.dueDate).getDate().getTime() > System.currentTimeMillis())
+            {
+                return get(Task_Parser_Calendar.dueDate).getDate().getTime();
+            }
+            else
+            {
+                DateTime nextDueDate = new DateTime(get(Task_Parser_Calendar.dueDate));
 
-    /**
-     * Gets date/time task is due in epoch time
-     *
-     * @return dueDate in epoch time
-     */
-    public long getTimeInMillis()
-    {
-        return get(Task_Calendar.nextDueDate) != null
-               ? get(Task_Calendar.nextDueDate).getDate().getTime()
-                : get(Task_Calendar.dueDate).getDate().getTime();
+                LocalDate dueDate = new LocalDate(get(Task_Parser_Calendar.dueDate).getDate().getTime());
+                LocalDate today = LocalDate.now();
+
+                switch (Type.toType(get(Task_Int.repeatsType)))
+                {
+                    case HOUR:
+                        int hours = Hours.hoursBetween(dueDate, today).getHours();
+                        nextDueDate = nextDueDate.plusHours(hours);
+                        if (nextDueDate.isBefore(System.currentTimeMillis()))
+                            nextDueDate = nextDueDate.plusHours(1);
+                        break;
+                    case DAY:
+                        int days = Days.daysBetween(dueDate, today).getDays();
+                        nextDueDate = nextDueDate.plusDays(days);
+                        if (nextDueDate.isBefore(System.currentTimeMillis()))
+                            nextDueDate = nextDueDate.plusDays(1);
+                        break;
+                    case WEEK:
+                        int weeks = Weeks.weeksBetween(dueDate, today).getWeeks();
+                        nextDueDate = nextDueDate.plusWeeks(weeks);
+                        if (nextDueDate.isBefore(System.currentTimeMillis()))
+                            nextDueDate = nextDueDate.plusWeeks(1);
+                        break;
+                    case MONTH:
+                        break;
+                    case YEAR:
+                        break;
+                }
+
+                set(Task_Alarm_Calendar.nextDueDate, nextDueDate);
+                return nextDueDate.getMillis();
+            }
+        }
     }
 
     public Task set(Task_Int repeatsType, RepeatsToken.Type type)
@@ -163,48 +209,46 @@ public class Task extends DataStructure
     @Override
     public <T extends DataStructure> T combine(T source)
     {
-        TaskCalendar taskCalendar = get(Task_Calendar.dueDate);
+        TaskCalendar taskCalendar = get(Task_Parser_Calendar.dueDate);
 
         super.combine(source);
 
-        set(Task_Calendar.dueDate, taskCalendar);
+        set(Task_Parser_Calendar.dueDate, taskCalendar);
 
-        get(Task_Calendar.dueDate).date = source.get(Task_Calendar.dueDate).date != null
-                ? source.get(Task_Calendar.dueDate).date
-                : get(Task_Calendar.dueDate).date;
+        get(Task_Parser_Calendar.dueDate).date = source.get(Task_Parser_Calendar.dueDate).date != null
+                ? source.get(Task_Parser_Calendar.dueDate).date
+                : get(Task_Parser_Calendar.dueDate).date;
 
-        get(Task_Calendar.dueDate).time = source.get(Task_Calendar.dueDate).time != null
-                ? source.get(Task_Calendar.dueDate).time
-                : get(Task_Calendar.dueDate).time;
+        get(Task_Parser_Calendar.dueDate).time = source.get(Task_Parser_Calendar.dueDate).time != null
+                ? source.get(Task_Parser_Calendar.dueDate).time
+                : get(Task_Parser_Calendar.dueDate).time;
 
-        get(Task_Calendar.dueDate).day = source.get(Task_Calendar.dueDate).day != null
-                ? source.get(Task_Calendar.dueDate).day
-                : get(Task_Calendar.dueDate).day;
+        get(Task_Parser_Calendar.dueDate).day = source.get(Task_Parser_Calendar.dueDate).day != null
+                ? source.get(Task_Parser_Calendar.dueDate).day
+                : get(Task_Parser_Calendar.dueDate).day;
 
         return (T) this;
     }
 
-    /**
-     * @deprecated use a builder instead
-     *
-     * @return content values
-     */
-    public ContentValues toContentValues()
+    public ContentValues getContentValuesForInsert()
     {
         ContentValues values = new ContentValues();
 
         //if (get(Task_Ids.id) != null) values.put("id", get(Task_Ids.id));
 
-        values.put(TaskCol.TASK_DESC.toString(), get(Task_String.desc));
+        values.put(Task_Ids.repeatId.colname, get(Task_Ids.repeatId));
 
-        if (get(Task_Int.repeatsType) != null)
-            values.put(TaskCol.TASK_REPEATS_ID_FK.toString(),
-                       get(Task_Int.repeatsType));
+        values.put(Task_String.desc.colname, get(Task_String.desc));
 
-        values.put(TaskCol.TASK_DUE_DATE.toString(),
-                   get(Task_Calendar.dueDate).getDate().getTime());
+        values.put(Task_Int.repeatsType.colname, get(Task_Int.repeatsType));
 
-        values.put(TaskCol.TASK_IS_COMPLETE.toString(),
+        values.put(Task_Parser_Calendar.dueDate.colname,
+                   get(Task_Parser_Calendar.dueDate).getDate().getTime());
+
+        values.put(Task_Alarm_Calendar.nextDueDate.colname,
+                   get(Task_Alarm_Calendar.nextDueDate).getMillis());
+
+        values.put(Task_Boolean.isComplete.colname,
                    get(Task_Boolean.isComplete) ? 1 : 0);
 
         return values;

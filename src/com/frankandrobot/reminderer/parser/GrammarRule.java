@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.frankandrobot.reminderer.datastructures.ReDate;
 import com.frankandrobot.reminderer.datastructures.Task;
-import com.frankandrobot.reminderer.datastructures.Task.Task_Calendar;
+import com.frankandrobot.reminderer.datastructures.Task.Task_Parser_Calendar;
 
 import java.util.LinkedList;
 
@@ -145,8 +145,8 @@ abstract public class GrammarRule implements IGrammarRule<Task>
             if (taskTime != null)
             {
                 Task task = new Task();
-                task.get(Task_Calendar.dueDate).setTime(taskTime);
-                //task.get(Task.Task_Calendar.class).getDate();
+                task.get(Task_Parser_Calendar.dueDate).setTime(taskTime);
+                //task.get(Task.Task_Parser_Calendar.class).getDate();
                 return task;
             }
 
@@ -195,13 +195,13 @@ abstract public class GrammarRule implements IGrammarRule<Task>
             {
                 ReDate date = dateParser.parse(inputString);
                 Task task = new Task();
-                task.get(Task_Calendar.dueDate).setDate(date);
+                task.get(Task_Parser_Calendar.dueDate).setDate(date);
                 return task;
             } else if (dayParser.find(inputString))
             {
                 ReDate day = dayParser.parse(inputString);
                 Task task = new Task();
-                task.get(Task_Calendar.dueDate).setDay(day);
+                task.get(Task_Parser_Calendar.dueDate).setDay(day);
                 return task;
             }
             inputString.setPos(curPos);
@@ -246,7 +246,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
                 {
                     ReDate day = dayParser.parse(inputString);
                     Task task = new Task();
-                    task.get(Task_Calendar.dueDate).setNextDay(day);
+                    task.get(Task_Parser_Calendar.dueDate).setNextDay(day);
                     return task;
                 }
             }
@@ -257,7 +257,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
             {
                 inputString.gobble(today);
                 Task task = new Task();
-                task.get(Task_Calendar.dueDate).setDate(new ReDate());
+                task.get(Task_Parser_Calendar.dueDate).setDate(new ReDate());
                 return task;
             }
 
@@ -265,7 +265,7 @@ abstract public class GrammarRule implements IGrammarRule<Task>
             {
                 inputString.gobble(tomorrow);
                 Task task = new Task();
-                task.get(Task_Calendar.dueDate).setTomorrow();
+                task.get(Task_Parser_Calendar.dueDate).setTomorrow();
                 return task;
             }
 
@@ -397,6 +397,19 @@ abstract public class GrammarRule implements IGrammarRule<Task>
             Type(int type) { this.type = type; }
             int type;
             public int getType() { return type; }
+            public static Type toType(int i)
+            {
+                switch(i)
+                {
+                    case 0: return HOUR;
+                    case 1: return DAY;
+                    case 2: return WEEK;
+                    case 3: return MONTH;
+                    case 4: return YEAR;
+                    default: throw new IllegalArgumentException("Unsupported type");
+                }
+
+            }
         }
 
         private Type type;

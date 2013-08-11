@@ -10,7 +10,7 @@ import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.AddTask;
 import com.frankandrobot.reminderer.datastructures.Task;
-import com.frankandrobot.reminderer.datastructures.Task.Task_Calendar;
+import com.frankandrobot.reminderer.datastructures.Task.Task_Parser_Calendar;
 import com.frankandrobot.reminderer.datastructures.Task.Task_String;
 import com.frankandrobot.reminderer.datastructures.TaskCalendar;
 
@@ -47,7 +47,7 @@ public class TaskDatabaseFacadeTest
 
         Task task = new Task();
         task.set(Task_String.desc, "hello world");
-        task.set(Task_Calendar.class, new TaskCalendar());
+        task.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
 
         AddTask addTask = new TaskDatabaseFacade(activity).getAddTaskLoader(task);
         addTask.loadInBackground();
@@ -73,8 +73,8 @@ public class TaskDatabaseFacadeTest
     {
         Task task2 = new Task();
         task2.set(Task_String.desc, "hello world2");
-        task2.set(Task_Calendar.class, new TaskCalendar());
-        task2.get(Task_Calendar.class).setTomorrow();
+        task2.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
+        task2.get(Task_Parser_Calendar.dueDate).setTomorrow();
 
         //add the task
         AddTask addTask2 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
@@ -83,16 +83,16 @@ public class TaskDatabaseFacadeTest
         //add the second one
         Task task1 = new Task();
         task1.set(Task_String.desc, "hello world1");
-        task1.set(Task_Calendar.class, new TaskCalendar());
+        task1.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
 
         //add the task
         AddTask addTask1 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
         addTask1.loadInBackground();
 
         assertThat(new AlarmManager().findAndEnableNextTasksDue(activity,
-                                                               task1.get(Task_Calendar.class).getDate().getTime(),
+                                                               task1.get(Task_Parser_Calendar.dueDate).getDate().getTime(),
                                                                CompareOp.ON_OR_AFTER)
-                          ,is(task2.get(Task_Calendar.class).getDate().getTime()));
+                          ,is(task2.get(Task_Parser_Calendar.dueDate).getDate().getTime()));
     }
 
     @Test

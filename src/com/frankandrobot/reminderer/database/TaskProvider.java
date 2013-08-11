@@ -28,8 +28,10 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
 
+import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import com.frankandrobot.reminderer.helpers.Logger;
 
+import static com.frankandrobot.reminderer.database.TaskTable.REPEATABLE_TABLE;
 import static com.frankandrobot.reminderer.database.TaskTable.TASK_TABLE;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskTableHelper;
@@ -201,45 +203,23 @@ public class TaskProvider extends ContentProvider
     @Override
     public Uri insert(Uri url, ContentValues initialValues)
     {
-        if (Logger.LOGV)
-            Log.v(TAG, "Inserting values " + url.toString());
-
         if (uriMatcher.match(url) != TASKS_URI)
         {
             throw new IllegalArgumentException("Cannot insert into URL: " + url);
         }
-        //
-        // ContentValues values;
-        // if (initialValues != null)
-        // values = new ContentValues(initialValues);
-        // else
-        // values = new ContentValues();
-        //
-        // if (!values.containsKey(alarm.Columns.HOUR))
-        // values.put(alarm.Columns.HOUR, 0);
-        //
-        // if (!values.containsKey(alarm.Columns.MINUTES))
-        // values.put(alarm.Columns.MINUTES, 0);
-        //
-        // if (!values.containsKey(alarm.Columns.DAYS_OF_WEEK))
-        // values.put(alarm.Columns.DAYS_OF_WEEK, 0);
-        //
-        // if (!values.containsKey(alarm.Columns.ALARM_TIME))
-        // values.put(alarm.Columns.ALARM_TIME, 0);
-        //
-        // if (!values.containsKey(alarm.Columns.ENABLED))
-        // values.put(alarm.Columns.ENABLED, 0);
-        //
-        // if (!values.containsKey(alarm.Columns.VIBRATE))
-        // values.put(alarm.Columns.VIBRATE, 1);
-        //
-        // if (!values.containsKey(alarm.Columns.MESSAGE))
-        // values.put(alarm.Columns.MESSAGE, "");
-        //
-        // if (!values.containsKey(alarm.Columns.ALERT))
-        // values.put(alarm.Columns.ALERT, "");
-        //
+
+        if (Logger.LOGD) Log.d(TAG, "Inserting values " + url.toString());
+
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        long repeatId = -1;
+
+        if (initialValues.containsKey("repeatsType"))
+        {
+            repeatId = db.insert(REPEATABLE_TABLE, null, initialValues);
+        }
+
+        initialValues.put(RepeatsCol.REPEAT_ID.toString(), repeatId);
+
         long rowId = db.insert(TASK_TABLE, null, initialValues);
         if (rowId < 0)
         {

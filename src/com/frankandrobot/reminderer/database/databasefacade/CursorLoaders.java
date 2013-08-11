@@ -79,7 +79,7 @@ abstract public class CursorLoaders
                     if (Logger.LOGD) Log.d(TAG, task.toString());
 
                     resolver.update(TaskProvider.CONTENT_URI,
-                                    task.toContentValues(),
+                                    task.getContentValuesForInsert(),
                                     "_id=?",
                                     new String[]{taskId});
                 }
