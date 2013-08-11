@@ -49,7 +49,7 @@ public class Task extends DataStructure
         public String colname;
     }
 
-    public enum Task_Int implements Field<Integer>, Column
+    public enum Task_Int implements DataStructure.Field<Integer>, Column
     {
         repeatsType(RepeatsCol.REPEAT_TYPE);
 
