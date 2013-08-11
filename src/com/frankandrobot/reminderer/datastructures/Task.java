@@ -3,6 +3,8 @@ package com.frankandrobot.reminderer.datastructures;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import com.frankandrobot.reminderer.database.TaskTable.Column;
+import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken;
 import com.frankandrobot.reminderer.datastructures.DataStructure.*;
@@ -27,35 +29,61 @@ import java.util.Calendar;
  */
 public class Task extends DataStructure
 {
-    // variables
-
-    public enum Task_String implements Field<String>
+    public enum Task_Ids implements Field<Long>, Column
     {
-        desc
-        ,location
+        id(TaskCol.TASK_ID)
+        ,repeatId(RepeatsCol.REPEAT_ID);
+
+        Task_Ids(Enum colname) { this.colname = colname.toString(); }
+        public String colname;
+        public String colname() { return colname; }
     }
 
-    public enum Task_Int implements Field<Integer>
+    public enum Task_String implements Field<String>, Column
     {
-        repeatsType
+        desc(TaskCol.TASK_DESC);
+        //,location();
+
+        Task_String(Enum colname) { this.colname = colname.toString(); }
+        public String colname() { return colname; }
+        public String colname;
     }
 
-    public class Task_Calendar implements Field<TaskCalendar> {}
-
-    public enum Task_Ids implements Field<Long>
+    public enum Task_Int implements Field<Integer>, Column
     {
-        id
-        ,repeatsId
+        repeatsType(RepeatsCol.REPEAT_TYPE);
+
+        Task_Int(Enum colname) { this.colname = colname.toString(); }
+        public String colname;
+        public String colname() { return colname; }
     }
 
-    public enum Task_Boolean implements Field<Boolean>
+    /**
+     * dueDate is used by the grammar parser.
+     * nextDueDate is used by the alarm system.
+     */
+    public enum Task_Calendar implements Field<TaskCalendar>, Column
     {
-        isComplete
+        dueDate(TaskCol.TASK_DUE_DATE)
+        ,nextDueDate(RepeatsCol.NEXT_DUE_DATE);
+
+        Task_Calendar(Enum colname) { this.colname = colname.toString(); }
+        public String colname;
+        public String colname() { return colname; }
+    }
+
+    public enum Task_Boolean implements Field<Boolean>, Column
+    {
+        isComplete(TaskCol.TASK_IS_COMPLETE);
+
+        Task_Boolean(Enum colname) { this.colname = colname.toString(); }
+        public String colname;
+        public String colname() { return colname; }
     }
 
     private void init()
     {
-        set(Task_Calendar.class, new TaskCalendar());
+        set(Task_Calendar.dueDate, new TaskCalendar());
         set(Task_Boolean.isComplete, false);
     }
 
@@ -67,19 +95,38 @@ public class Task extends DataStructure
     public Task(Cursor cursor)
     {
         init();
-        set(Task_Ids.id, cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_ID.toString())));
-        get(Task_Calendar.class).setTimeInMillis(cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_DUE_DATE.toString())));
-        set(Task_String.desc, cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.toString())));
-        set(Task_Int.repeatsType, cursor.getInt(cursor.getColumnIndex(TaskCol.TASK_REPEATS_ID_FK.toString())));
-        boolean isComplete = cursor.getInt(cursor.getColumnIndex(TaskCol.TASK_IS_COMPLETE.toString())) == 1
-                ? true : false;
-        set(Task_Boolean.isComplete, isComplete);
+
+        if (checkColumn(Task_Ids.id, cursor))
+        set(Task_Ids.id, cursor.getLong(cursor.getColumnIndex(Task_Ids.id.colname)));
+
+        if (checkColumn(Task_Ids.repeatId, cursor))
+        set(Task_Ids.repeatId, cursor.getLong(cursor.getColumnIndex(Task_Ids.repeatId.colname)));
+
+        if (checkColumn(Task_String.desc, cursor))
+        set(Task_String.desc, cursor.getString(cursor.getColumnIndex(Task_String.desc.colname)));
+
+        if (checkColumn(Task_Int.repeatsType, cursor))
+        set(Task_Int.repeatsType, cursor.getInt(cursor.getColumnIndex(Task_Int.repeatsType.colname)));
+
+        if (checkColumn(Task_Calendar.dueDate, cursor))
+        get(Task_Calendar.dueDate)
+                .setTimeInMillis(cursor.getLong(cursor.getColumnIndex(Task_Calendar.dueDate.colname)));
+
+        if (checkColumn(Task_Calendar.nextDueDate, cursor))
+            get(Task_Calendar.nextDueDate)
+                    .setTimeInMillis(cursor.getLong(cursor.getColumnIndex(Task_Calendar.nextDueDate.colname)));
+
+        if (checkColumn(Task_Boolean.isComplete, cursor))
+        {
+            boolean isComplete = cursor.getInt(cursor.getColumnIndex(Task_Boolean.isComplete.colname)) == 1;
+            set(Task_Boolean.isComplete, isComplete);
+        }
     }
 
     /**
      * Gets task
      *
-     * @return
+     * @return task description
      */
     public String getTaskDesc()
     {
@@ -89,32 +136,13 @@ public class Task extends DataStructure
     /**
      * Gets date/time task is due in epoch time
      *
-     * @return
+     * @return dueDate in epoch time
      */
     public long getTimeInMillis()
     {
-        return get(Task_Calendar.class).getDate().getTime();
-    }
-
-    /**
-     * Gets day task is due
-     *
-     * @return
-     */
-    public int getDayForDb()
-    {
-        return get(Task_Calendar.class).get(Calendar.DAY_OF_WEEK);
-    }
-
-    // ///////////////////////////////////////////////////////////////////////
-    // ///////////////////////////////////////////////////////////////////////
-    /*
-     * Start of methods used for displaying dates in user's locale
-     */
-
-    public long getId()
-    {
-        return get(Task_Ids.id);
+        return get(Task_Calendar.nextDueDate) != null
+               ? get(Task_Calendar.nextDueDate).getDate().getTime()
+                : get(Task_Calendar.dueDate).getDate().getTime();
     }
 
     public Task set(Task_Int repeatsType, RepeatsToken.Type type)
@@ -123,31 +151,35 @@ public class Task extends DataStructure
         return this;
     }
 
-    public int describeContents()
+    /**
+     * Combines two tasks into one. Copies the source datastructure into this.
+     *
+     * Used by the grammar parser.
+     *
+     * @param source datastructure
+     * @param <T> datastructure class
+     * @return new datastructure
+     */
+    @Override
+    public <T extends DataStructure> T combine(T source)
     {
-        return 0;
-    }
+        TaskCalendar taskCalendar = get(Task_Calendar.dueDate);
 
-   @Override
-    public <T extends DataStructure> T combine(T ds)
-    {
-        TaskCalendar taskCalendar = get(Task_Calendar.class);
+        super.combine(source);
 
-        super.combine(ds);
+        set(Task_Calendar.dueDate, taskCalendar);
 
-        set(Task_Calendar.class, taskCalendar);
+        get(Task_Calendar.dueDate).date = source.get(Task_Calendar.dueDate).date != null
+                ? source.get(Task_Calendar.dueDate).date
+                : get(Task_Calendar.dueDate).date;
 
-        get(Task_Calendar.class).date = ds.get(Task_Calendar.class).date != null
-                ? ds.get(Task_Calendar.class).date
-                : get(Task_Calendar.class).date;
+        get(Task_Calendar.dueDate).time = source.get(Task_Calendar.dueDate).time != null
+                ? source.get(Task_Calendar.dueDate).time
+                : get(Task_Calendar.dueDate).time;
 
-        get(Task_Calendar.class).time = ds.get(Task_Calendar.class).time != null
-                ? ds.get(Task_Calendar.class).time
-                : get(Task_Calendar.class).time;
-
-        get(Task_Calendar.class).day = ds.get(Task_Calendar.class).day != null
-                ? ds.get(Task_Calendar.class).day
-                : get(Task_Calendar.class).day;
+        get(Task_Calendar.dueDate).day = source.get(Task_Calendar.dueDate).day != null
+                ? source.get(Task_Calendar.dueDate).day
+                : get(Task_Calendar.dueDate).day;
 
         return (T) this;
     }
@@ -170,11 +202,16 @@ public class Task extends DataStructure
                        get(Task_Int.repeatsType));
 
         values.put(TaskCol.TASK_DUE_DATE.toString(),
-                   get(Task_Calendar.class).getDate().getTime());
+                   get(Task_Calendar.dueDate).getDate().getTime());
 
         values.put(TaskCol.TASK_IS_COMPLETE.toString(),
                    get(Task_Boolean.isComplete) ? 1 : 0);
 
         return values;
+    }
+
+    static boolean checkColumn(Column column, Cursor cursor)
+    {
+        return (cursor.getColumnIndex(column.colname()) >= 0);
     }
 }

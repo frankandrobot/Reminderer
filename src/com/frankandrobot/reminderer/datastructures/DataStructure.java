@@ -58,16 +58,16 @@ public class DataStructure
         return this;
     }
 
-    public <U,T extends Field<U>> DataStructure set(Class<T> key, U value)
+/*    public <U,T extends Field<U>> DataStructure set(Class<T> key, U value)
     {
         hmClassValues.put(key, value);
         return this;
-    }
+    }*/
 
-    public <U,T extends Field<U>> U get(Class<T> key)
+    /*public <U,T extends Field<U>> U get(Class<T> key)
     {
         return (U) hmClassValues.get(key);
-    }
+    }*/
 
     public <U> U get(Field<U> key)
     {

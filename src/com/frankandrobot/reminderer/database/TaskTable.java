@@ -14,13 +14,19 @@ import com.frankandrobot.reminderer.helpers.Logger;
 public class TaskTable
 {
     public final static String TASK_TABLE = "task";
+    public final static String REPEATABLE_TABLE = "repeatable";
+
+    public interface Column
+    {
+        public String colname();
+    }
 
     public enum TaskCol
     {
         TASK_ID("_id")
         , TASK_DESC
         , TASK_DUE_DATE
-        , TASK_REPEATS_TYPE
+        , TASK_REPEATS_ID_FK
         , TASK_IS_COMPLETE;
 
         private String value;
@@ -53,13 +59,37 @@ public class TaskTable
         }
     }
 
+    public enum RepeatsCol
+    {
+        REPEAT_ID
+        ,REPEAT_TYPE
+        ,NEXT_DUE_DATE;
+
+        public static String[] getAllColumns()
+        {
+            String[] aCols = new String[values().length];
+            int len = 0;
+            for(RepeatsCol col:values())
+                aCols[len++] = col.toString();
+            return aCols;
+        }
+        public static String[] getColumns(TaskCol... aCols)
+        {
+            String[] aStrCols = new String[aCols.length];
+            int len = 0;
+            for(TaskCol col:aCols)
+                aStrCols[len++] = col.toString();
+            return aStrCols;
+        }
+    }
+
     /**
      * Used to create and upgrade the database
      */
     static class TaskTableHelper extends SQLiteOpenHelper
     {
         private static final String DATABASE_NAME = "reminderer.db";
-        private static final int DATABASE_VERSION = 8;
+        private static final int DATABASE_VERSION = 9;
         private static final String TAG = "R:TaskHelper";
 
         public TaskTableHelper(Context context)
@@ -77,12 +107,20 @@ public class TaskTable
             dbCreateString += "(";
             dbCreateString += TaskCol.TASK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,";
             dbCreateString += TaskCol.TASK_DESC + " TEXT NOT NULL, ";
-            dbCreateString += TaskCol.TASK_REPEATS_TYPE + " INTEGER, ";
+            dbCreateString += TaskCol.TASK_REPEATS_ID_FK + " INTEGER, ";
             dbCreateString += TaskCol.TASK_DUE_DATE + " INTEGER, ";
             dbCreateString += TaskCol.TASK_IS_COMPLETE + " INTEGER";
             dbCreateString += ");";
             db.execSQL(dbCreateString);
 
+            dbCreateString = "";
+            dbCreateString += "CREATE TABLE " + REPEATABLE_TABLE;
+            dbCreateString += "(";
+            dbCreateString += RepeatsCol.REPEAT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,";
+            dbCreateString += RepeatsCol.REPEAT_TYPE + " INTEGER, ";
+            dbCreateString += RepeatsCol.NEXT_DUE_DATE + " INTEGER ";
+            dbCreateString += ");";
+            db.execSQL(dbCreateString);
         }
 
         @Override
@@ -95,6 +133,7 @@ public class TaskTable
                                    + ", which will destroy all old data");
 
             db.execSQL("DROP TABLE IF EXISTS " + TASK_TABLE);
+            db.execSQL("DROP TABLE IF EXISTS " + REPEATABLE_TABLE);
             onCreate(db);
 
         }
