@@ -34,6 +34,9 @@ final public class TaskTable
      */
     public String[] getAllColumns(Class<? extends Enum>... aTables)
     {
+        if (aTables == null)
+            throw new IllegalArgumentException("Need a table");
+
         //create enum sets first
         for(Class<? extends Enum> table:aTables)
         {
