@@ -71,7 +71,7 @@ public class Task extends DataStructure
         public String colname() { return colname; }
     }
 
-    private enum Task_Alarm_Calendar implements Field<DateTime>, Column
+    private enum Task_Alarm_Calendar implements Field<Long>, Column
     {
         nextDueDate(RepeatsCol.NEXT_DUE_DATE);
 
@@ -123,7 +123,7 @@ public class Task extends DataStructure
         if (checkColumn(Task_Alarm_Calendar.nextDueDate, cursor))
         {
             set(Task_Alarm_Calendar.nextDueDate,
-                new DateTime(cursor.getLong(cursor.getColumnIndex(Task_Alarm_Calendar.nextDueDate.colname))));
+                cursor.getLong(cursor.getColumnIndex(Task_Alarm_Calendar.nextDueDate.colname)));
         }
 
         if (checkColumn(Task_Boolean.isComplete, cursor))
@@ -185,7 +185,7 @@ public class Task extends DataStructure
                         break;
                 }
 
-                set(Task_Alarm_Calendar.nextDueDate, nextDueDate);
+                set(Task_Alarm_Calendar.nextDueDate, nextDueDate.getMillis());
                 return nextDueDate.getMillis();
             }
         }
@@ -246,7 +246,7 @@ public class Task extends DataStructure
                    get(Task_Parser_Calendar.dueDate).getDate().getTime());
 
         values.put(Task_Alarm_Calendar.nextDueDate.colname,
-                   get(Task_Alarm_Calendar.nextDueDate).getMillis());
+                   get(Task_Alarm_Calendar.nextDueDate));
 
         values.put(Task_Boolean.isComplete.colname,
                    get(Task_Boolean.isComplete) ? 1 : 0);
