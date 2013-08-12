@@ -36,9 +36,10 @@ public class Task extends DataStructure
     public enum Task_Ids implements Field<Long>, Column
     {
         id(TaskCol.TASK_ID)
+        ,repeatId_fk(TaskCol.TASK_REPEATS_ID_FK)
         ,repeatId(RepeatsCol.REPEAT_ID);
 
-        Task_Ids(Enum colname) { this.colname = colname.toString(); }
+        Task_Ids(Column colname) { this.colname = colname.colname(); }
         public String colname;
         public String colname() { return colname; }
     }
@@ -48,7 +49,7 @@ public class Task extends DataStructure
         desc(TaskCol.TASK_DESC);
         //,location();
 
-        Task_String(Enum colname) { this.colname = colname.toString(); }
+        Task_String(Column colname) { this.colname = colname.colname(); }
         public String colname() { return colname; }
         public String colname;
     }
@@ -57,7 +58,7 @@ public class Task extends DataStructure
     {
         repeatsType(RepeatsCol.REPEAT_TYPE);
 
-        Task_Int(Enum colname) { this.colname = colname.toString(); }
+        Task_Int(Column colname) { this.colname = colname.colname(); }
         public String colname;
         public String colname() { return colname; }
     }
@@ -66,16 +67,16 @@ public class Task extends DataStructure
     {
         dueDate(TaskCol.TASK_DUE_DATE);
 
-        Task_Parser_Calendar(Enum colname) { this.colname = colname.toString(); }
+        Task_Parser_Calendar(Column colname) { this.colname = colname.colname(); }
         public String colname;
         public String colname() { return colname; }
     }
 
-    private enum Task_Alarm_Calendar implements Field<Long>, Column
+    protected enum Task_Alarm_Calendar implements Field<Long>, Column
     {
         nextDueDate(RepeatsCol.NEXT_DUE_DATE);
 
-        Task_Alarm_Calendar(Enum colname) { this.colname = colname.toString(); }
+        Task_Alarm_Calendar(Column colname) { this.colname = colname.colname(); }
         public String colname;
         public String colname() { return colname; }
     }
@@ -84,7 +85,7 @@ public class Task extends DataStructure
     {
         isComplete(TaskCol.TASK_IS_COMPLETE);
 
-        Task_Boolean(Enum colname) { this.colname = colname.toString(); }
+        Task_Boolean(Column colname) { this.colname = colname.colname(); }
         public String colname;
         public String colname() { return colname; }
     }
@@ -107,14 +108,21 @@ public class Task extends DataStructure
         if (checkColumn(Task_Ids.id, cursor))
         set(Task_Ids.id, cursor.getLong(cursor.getColumnIndex(Task_Ids.id.colname)));
 
+        if (checkColumn(Task_Ids.repeatId_fk, cursor))
+        set(Task_Ids.repeatId_fk,
+            cursor.getLong(cursor.getColumnIndex(Task_Ids.repeatId_fk.colname)));
+
         if (checkColumn(Task_Ids.repeatId, cursor))
-        set(Task_Ids.repeatId, cursor.getLong(cursor.getColumnIndex(Task_Ids.repeatId.colname)));
+        set(Task_Ids.repeatId,
+            cursor.getLong(cursor.getColumnIndex(Task_Ids.repeatId.colname)));
 
         if (checkColumn(Task_String.desc, cursor))
-        set(Task_String.desc, cursor.getString(cursor.getColumnIndex(Task_String.desc.colname)));
+        set(Task_String.desc,
+            cursor.getString(cursor.getColumnIndex(Task_String.desc.colname)));
 
         if (checkColumn(Task_Int.repeatsType, cursor))
-        set(Task_Int.repeatsType, cursor.getInt(cursor.getColumnIndex(Task_Int.repeatsType.colname)));
+        set(Task_Int.repeatsType,
+            cursor.getInt(cursor.getColumnIndex(Task_Int.repeatsType.colname)));
 
         if (checkColumn(Task_Parser_Calendar.dueDate, cursor))
         get(Task_Parser_Calendar.dueDate)
@@ -235,6 +243,8 @@ public class Task extends DataStructure
         ContentValues values = new ContentValues();
 
         //if (get(Task_Ids.id) != null) values.put("id", get(Task_Ids.id));
+
+        values.put(Task_Ids.repeatId_fk.colname, get(Task_Ids.repeatId_fk));
 
         values.put(Task_Ids.repeatId.colname, get(Task_Ids.repeatId));
 
