@@ -13,7 +13,9 @@ import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.joda.time.Hours;
 import org.joda.time.LocalDate;
+import org.joda.time.Months;
 import org.joda.time.Weeks;
+import org.joda.time.Years;
 
 /**
  * Represents a task.
@@ -188,8 +190,16 @@ public class Task extends DataStructure
                             nextDueDate = nextDueDate.plusWeeks(1);
                         break;
                     case MONTH:
+                        int months = Months.monthsBetween(dueDate, today).getMonths();
+                        nextDueDate = nextDueDate.plusMonths(months);
+                        if (nextDueDate.isBefore(System.currentTimeMillis()))
+                            nextDueDate = nextDueDate.plusMonths(1);
                         break;
                     case YEAR:
+                        int years = Years.yearsBetween(dueDate, today).getYears();
+                        nextDueDate = nextDueDate.plusYears(years);
+                        if (nextDueDate.isBefore(System.currentTimeMillis()))
+                            nextDueDate = nextDueDate.plusYears(1);
                         break;
                 }
 
