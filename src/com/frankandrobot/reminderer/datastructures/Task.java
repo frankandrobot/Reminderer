@@ -166,13 +166,19 @@ public class Task extends DataStructure
             {
                 DateTime nextDueDate = new DateTime(get(Task_Parser_Calendar.dueDate).getDate());
 
-                LocalDate dueDate = new LocalDate(get(Task_Parser_Calendar.dueDate).getDate());
-                LocalDate today = LocalDate.now();
+                LocalDate dueDate = null;
+                LocalDate today = null;
+
+                if (Type.toType(get(Task_Int.repeatsType)) != Type.HOUR)
+                {
+                    dueDate = new LocalDate(get(Task_Parser_Calendar.dueDate).getDate());
+                    today = LocalDate.now();
+                }
 
                 switch (Type.toType(get(Task_Int.repeatsType)))
                 {
                     case HOUR:
-                        int hours = Hours.hoursBetween(dueDate, today).getHours();
+                        int hours = Hours.hoursBetween(nextDueDate, new DateTime()).getHours();
                         nextDueDate = nextDueDate.plusHours(hours);
                         if (nextDueDate.isBefore(System.currentTimeMillis()))
                             nextDueDate = nextDueDate.plusHours(1);
