@@ -217,7 +217,41 @@ public class TaskTest
     }
 
     @Test
-    public void testCalculateNextDueDate() throws Exception
+    public void testCalculateNextDueDateHour() throws Exception
+    {
+        DateTime calendar = new DateTime();
+        DateTime past = calendar.minusHours(12).minusMinutes(1);
+
+        Task task = new Task();
+        task.set(Task_String.desc, "Hell on earth");
+        task.set(Task_Boolean.isComplete, false);
+        task.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
+        task.get(Task_Parser_Calendar.dueDate).setTimeInMillis(past.getMillis());
+        task.set(Task_Int.repeatsType, Type.HOUR.getType());
+        task.calculateNextDueDate();
+
+        DateTime tomorrow = past.plusHours(13);
+        assertThat(task.get(Task_Alarm_Calendar.nextDueDate),
+                   is(tomorrow.getMillis()));
+
+        calendar = new DateTime();
+        past = calendar.minusHours(12).plusMinutes(1);
+
+        task = new Task();
+        task.set(Task_String.desc, "Hell on earth");
+        task.set(Task_Boolean.isComplete, false);
+        task.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
+        task.get(Task_Parser_Calendar.dueDate).setTimeInMillis(past.getMillis());
+        task.set(Task_Int.repeatsType, Type.HOUR.getType());
+        task.calculateNextDueDate();
+
+        tomorrow = past.plusHours(12);
+        assertThat(task.get(Task_Alarm_Calendar.nextDueDate),
+                   is(tomorrow.getMillis()));
+    }
+
+    @Test
+    public void testCalculateNextDueDateDay() throws Exception
     {
         DateTime calendar = new DateTime();
         DateTime past = calendar.minusDays(12).minusMinutes(1);
@@ -246,6 +280,108 @@ public class TaskTest
         task.calculateNextDueDate();
 
         tomorrow = past.plusDays(12);
+        assertThat(task.get(Task_Alarm_Calendar.nextDueDate),
+                   is(tomorrow.getMillis()));
+    }
+
+    @Test
+    public void testCalculateNextDueDateWeek() throws Exception
+    {
+        DateTime calendar = new DateTime();
+        DateTime past = calendar.minusWeeks(12).minusMinutes(1);
+
+        Task task = new Task();
+        task.set(Task_String.desc, "Hell on earth");
+        task.set(Task_Boolean.isComplete, false);
+        task.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
+        task.get(Task_Parser_Calendar.dueDate).setTimeInMillis(past.getMillis());
+        task.set(Task_Int.repeatsType, Type.WEEK.getType());
+        task.calculateNextDueDate();
+
+        DateTime tomorrow = past.plusWeeks(13);
+        assertThat(task.get(Task_Alarm_Calendar.nextDueDate),
+                   is(tomorrow.getMillis()));
+
+        calendar = new DateTime();
+        past = calendar.minusWeeks(12).plusMinutes(1);
+
+        task = new Task();
+        task.set(Task_String.desc, "Hell on earth");
+        task.set(Task_Boolean.isComplete, false);
+        task.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
+        task.get(Task_Parser_Calendar.dueDate).setTimeInMillis(past.getMillis());
+        task.set(Task_Int.repeatsType, Type.WEEK.getType());
+        task.calculateNextDueDate();
+
+        tomorrow = past.plusWeeks(12);
+        assertThat(task.get(Task_Alarm_Calendar.nextDueDate),
+                   is(tomorrow.getMillis()));
+    }
+
+    @Test
+    public void testCalculateNextDueDateMonth() throws Exception
+    {
+        DateTime calendar = new DateTime();
+        DateTime past = calendar.minusMonths(12).minusMinutes(1);
+
+        Task task = new Task();
+        task.set(Task_String.desc, "Hell on earth");
+        task.set(Task_Boolean.isComplete, false);
+        task.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
+        task.get(Task_Parser_Calendar.dueDate).setTimeInMillis(past.getMillis());
+        task.set(Task_Int.repeatsType, Type.MONTH.getType());
+        task.calculateNextDueDate();
+
+        DateTime tomorrow = past.plusMonths(13);
+        assertThat(task.get(Task_Alarm_Calendar.nextDueDate),
+                   is(tomorrow.getMillis()));
+
+        calendar = new DateTime();
+        past = calendar.minusMonths(12).plusMinutes(1);
+
+        task = new Task();
+        task.set(Task_String.desc, "Hell on earth");
+        task.set(Task_Boolean.isComplete, false);
+        task.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
+        task.get(Task_Parser_Calendar.dueDate).setTimeInMillis(past.getMillis());
+        task.set(Task_Int.repeatsType, Type.MONTH.getType());
+        task.calculateNextDueDate();
+
+        tomorrow = past.plusMonths(12);
+        assertThat(task.get(Task_Alarm_Calendar.nextDueDate),
+                   is(tomorrow.getMillis()));
+    }
+
+    @Test
+    public void testCalculateNextDueDateYear() throws Exception
+    {
+        DateTime calendar = new DateTime();
+        DateTime past = calendar.minusYears(12).minusMinutes(1);
+
+        Task task = new Task();
+        task.set(Task_String.desc, "Hell on earth");
+        task.set(Task_Boolean.isComplete, false);
+        task.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
+        task.get(Task_Parser_Calendar.dueDate).setTimeInMillis(past.getMillis());
+        task.set(Task_Int.repeatsType, Type.YEAR.getType());
+        task.calculateNextDueDate();
+
+        DateTime tomorrow = past.plusYears(13);
+        assertThat(task.get(Task_Alarm_Calendar.nextDueDate),
+                   is(tomorrow.getMillis()));
+
+        calendar = new DateTime();
+        past = calendar.minusYears(12).plusMinutes(1);
+
+        task = new Task();
+        task.set(Task_String.desc, "Hell on earth");
+        task.set(Task_Boolean.isComplete, false);
+        task.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
+        task.get(Task_Parser_Calendar.dueDate).setTimeInMillis(past.getMillis());
+        task.set(Task_Int.repeatsType, Type.YEAR.getType());
+        task.calculateNextDueDate();
+
+        tomorrow = past.plusYears(12);
         assertThat(task.get(Task_Alarm_Calendar.nextDueDate),
                    is(tomorrow.getMillis()));
     }
