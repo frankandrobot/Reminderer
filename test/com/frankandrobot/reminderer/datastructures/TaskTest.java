@@ -1,22 +1,37 @@
 package com.frankandrobot.reminderer.datastructures;
 
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.Loader;
 
+import com.frankandrobot.reminderer.RemindererActivity;
+import com.frankandrobot.reminderer.database.TaskProvider;
 import com.frankandrobot.reminderer.database.TaskTable;
 import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
+import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
+import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.AddTask;
+import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Alarm_Calendar;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Boolean;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Ids;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Int;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Parser_Calendar;
 import com.frankandrobot.reminderer.datastructures.Task.Task_String;
+import com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.Type;
+import com.frankandrobot.reminderer.widget.main.MainTaskListFragment;
 
 import org.hamcrest.core.Is;
 import org.hamcrest.core.IsNull;
+import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -151,18 +166,92 @@ public class TaskTest
         //assertThat(values.getAsString(TaskCol.TASK_ID.colname()), is("1"));
         assertThat(values.getAsString(TaskCol.TASK_DESC.colname()),
                    is("Hello world"));
-        assertThat(values.getAsString(TaskCol.TASK_REPEATS_ID_FK.colname()),
-                   is("2"));
+//        assertThat(values.getAsString(TaskCol.TASK_REPEATS_ID_FK.colname()),
+//                   is("2"));
         assertThat(values.getAsString(TaskCol.TASK_IS_COMPLETE.colname()),
                    is("0"));
-        assertThat(values.getAsString(RepeatsCol.REPEAT_ID.colname()), is("2"));
+//        assertThat(values.getAsString(RepeatsCol.REPEAT_ID.colname()), is("2"));
         assertThat(values.getAsString(RepeatsCol.REPEAT_TYPE.colname()), is("3"));
         assertThat(values.getAsString(RepeatsCol.NEXT_DUE_DATE.colname()),
                    is(String.valueOf(now)));
     }
 
     @Test
+    public void insertIntoDb1() throws Exception
+    {
+        Task task = new Task();
+        task.set(Task_String.desc, "Hell on earth");
+        task.set(Task_Boolean.isComplete, false);
+        task.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
+        Date now = new Date();
+        task.get(Task_Parser_Calendar.dueDate).setTimeInMillis(now.getTime());
+
+        //setup task provider
+        FragmentActivity activity = Robolectric.buildActivity( FragmentActivity.class )
+                                            .create()
+                                            .start()
+                                            .resume()
+                                            .get();
+        TaskProvider taskProvider = new TaskProvider();
+        taskProvider.onCreate();
+
+
+        ShadowContentResolver.registerProvider(TaskProvider.AUTHORITY_NAME,
+                                               taskProvider);
+
+        //run insert
+        AddTask addTask = new TaskDatabaseFacade(activity).getAddTaskLoader(task);
+        addTask.loadInBackground();
+
+        ContentResolver resolver = activity.getContentResolver();
+        Cursor cursor = resolver.query(TaskProvider.CONTENT_URI,
+                                       new TaskTable().getAllColumns(TaskCol.class),
+                                       TaskCol.TASK_DUE_DATE+"="+now.getTime(),
+                                       null,
+                                       null);
+        assert(cursor != null);
+        cursor.moveToFirst();
+        assertThat(cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.colname())),
+                   is("Hell on earth"));
+
+    }
+
+    @Test
     public void testCalculateNextDueDate() throws Exception
+    {
+        DateTime calendar = new DateTime();
+        DateTime past = calendar.minusDays(12).minusMinutes(1);
+
+        Task task = new Task();
+        task.set(Task_String.desc, "Hell on earth");
+        task.set(Task_Boolean.isComplete, false);
+        task.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
+        task.get(Task_Parser_Calendar.dueDate).setTimeInMillis(past.getMillis());
+        task.set(Task_Int.repeatsType, Type.DAY.getType());
+        task.calculateNextDueDate();
+
+        DateTime tomorrow = past.plusDays(13);
+        assertThat(task.get(Task_Alarm_Calendar.nextDueDate),
+                   is(tomorrow.getMillis()));
+
+        calendar = new DateTime();
+        past = calendar.minusDays(12).plusMinutes(1);
+
+        task = new Task();
+        task.set(Task_String.desc, "Hell on earth");
+        task.set(Task_Boolean.isComplete, false);
+        task.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
+        task.get(Task_Parser_Calendar.dueDate).setTimeInMillis(past.getMillis());
+        task.set(Task_Int.repeatsType, Type.DAY.getType());
+        task.calculateNextDueDate();
+
+        tomorrow = past.plusDays(12);
+        assertThat(task.get(Task_Alarm_Calendar.nextDueDate),
+                   is(tomorrow.getMillis()));
+    }
+
+    @Test
+    public void insertIntoDb2() throws Exception
     {
 
     }
