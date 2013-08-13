@@ -162,9 +162,9 @@ public class Task extends DataStructure
             }
             else
             {
-                DateTime nextDueDate = new DateTime(get(Task_Parser_Calendar.dueDate));
+                DateTime nextDueDate = new DateTime(get(Task_Parser_Calendar.dueDate).getDate());
 
-                LocalDate dueDate = new LocalDate(get(Task_Parser_Calendar.dueDate).getDate().getTime());
+                LocalDate dueDate = new LocalDate(get(Task_Parser_Calendar.dueDate).getDate());
                 LocalDate today = LocalDate.now();
 
                 switch (Type.toType(get(Task_Int.repeatsType)))
@@ -244,9 +244,9 @@ public class Task extends DataStructure
 
         //if (get(Task_Ids.id) != null) values.put("id", get(Task_Ids.id));
 
-        values.put(Task_Ids.repeatId_fk.colname, get(Task_Ids.repeatId_fk));
-
-        values.put(Task_Ids.repeatId.colname, get(Task_Ids.repeatId));
+        //your creating a new row, so you dont know what the repeat id is
+        //values.put(Task_Ids.repeatId_fk.colname, get(Task_Ids.repeatId_fk));
+        //values.put(Task_Ids.repeatId.colname, get(Task_Ids.repeatId));
 
         values.put(Task_String.desc.colname, get(Task_String.desc));
 
@@ -255,8 +255,14 @@ public class Task extends DataStructure
         values.put(Task_Parser_Calendar.dueDate.colname,
                    get(Task_Parser_Calendar.dueDate).getDate().getTime());
 
-        values.put(Task_Alarm_Calendar.nextDueDate.colname,
-                   get(Task_Alarm_Calendar.nextDueDate));
+        if (get(Task_Int.repeatsType) != null)
+        {
+            if (get(Task_Alarm_Calendar.nextDueDate) == null)
+                throw new IllegalStateException("Forgot to calculate next due date");
+
+            values.put(Task_Alarm_Calendar.nextDueDate.colname,
+                       get(Task_Alarm_Calendar.nextDueDate));
+        }
 
         values.put(Task_Boolean.isComplete.colname,
                    get(Task_Boolean.isComplete) ? 1 : 0);
@@ -267,5 +273,27 @@ public class Task extends DataStructure
     static boolean checkColumn(Column column, Cursor cursor)
     {
         return (cursor.getColumnIndex(column.colname()) >= 0);
+    }
+
+    public static ContentValues getTaskValuesFromInitial(ContentValues initialValues)
+    {
+        ContentValues taskValues = new ContentValues();
+        taskValues.put(Task_String.desc.colname,
+                       (String)initialValues.get(Task_String.desc.colname));
+        taskValues.put(Task_Parser_Calendar.dueDate.colname,
+                       (Long)initialValues.get(Task_Parser_Calendar.dueDate.colname));
+        taskValues.put(Task_Boolean.isComplete.colname,
+                       (Integer)initialValues.get(Task_Boolean.isComplete.colname));
+        return taskValues;
+    }
+
+    public static ContentValues getRepeatValuesFromInitial(ContentValues initialValues)
+    {
+        ContentValues repeatValues = new ContentValues();
+        repeatValues.put(Task_Ids.repeatId.colname,
+                         (Long)initialValues.get(Task_Ids.repeatId.colname));
+        repeatValues.put(Task_Int.repeatsType.colname,
+                         (Integer)initialValues.get(Task_Int.repeatsType.colname));
+        return repeatValues;
     }
 }

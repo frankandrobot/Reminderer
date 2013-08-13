@@ -29,6 +29,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
+import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
 
 import static com.frankandrobot.reminderer.database.TaskTable.REPEATABLE_TABLE;
@@ -215,20 +216,24 @@ public class TaskProvider extends ContentProvider
 
         if (initialValues.containsKey("repeatsType"))
         {
-            repeatId = db.insert(REPEATABLE_TABLE, null, initialValues);
+            ContentValues repeatValues = Task.getRepeatValuesFromInitial(initialValues);
+            repeatId = db.insert(REPEATABLE_TABLE, null, repeatValues);
+            initialValues.put(RepeatsCol.REPEAT_ID.toString(), repeatId);
         }
 
-        initialValues.put(RepeatsCol.REPEAT_ID.toString(), repeatId);
+        ContentValues taskValues = Task.getTaskValuesFromInitial(initialValues);
+        long rowId = db.insert(TASK_TABLE, null, taskValues);
 
-        long rowId = db.insert(TASK_TABLE, null, initialValues);
         if (rowId < 0)
         {
             throw new SQLException("Failed to insert row into " + url);
         }
-        if (Logger.LOGV)
-            Log.v(TAG, "Added task rowId = " + rowId);
+
+        if (Logger.LOGD) Log.d(TAG, "Added task rowId = " + rowId);
+
         Uri newUrl = ContentUris.withAppendedId(CONTENT_URI, rowId);
         getContext().getContentResolver().notifyChange(newUrl, null);
+
         return newUrl;
     }
 
