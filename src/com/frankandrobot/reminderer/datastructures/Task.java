@@ -38,8 +38,8 @@ public class Task extends DataStructure
     public enum Task_Ids implements Field<Long>, Column
     {
         id(TaskCol.TASK_ID)
-        ,repeatId_fk(TaskCol.TASK_REPEATS_ID_FK)
-        ,repeatId(RepeatsCol.REPEAT_ID);
+        ,repeatId(RepeatsCol.REPEAT_ID)
+        ,taskId_fk(RepeatsCol.REPEAT_TASK_ID_FK);
 
         Task_Ids(Column colname) { this.colname = colname.colname(); }
         public String colname;
@@ -58,7 +58,7 @@ public class Task extends DataStructure
 
     public enum Task_Int implements DataStructure.Field<Integer>, Column
     {
-        repeatsType(RepeatsCol.REPEAT_TYPE);
+        repeatsType(TaskCol.TASK_REPEAT_TYPE);
 
         Task_Int(Column colname) { this.colname = colname.colname(); }
         public String colname;
@@ -76,7 +76,7 @@ public class Task extends DataStructure
 
     protected enum Task_Alarm_Calendar implements Field<Long>, Column
     {
-        nextDueDate(RepeatsCol.NEXT_DUE_DATE);
+        nextDueDate(RepeatsCol.REPEAT_NEXT_DUE_DATE);
 
         Task_Alarm_Calendar(Column colname) { this.colname = colname.colname(); }
         public String colname;
@@ -96,6 +96,7 @@ public class Task extends DataStructure
     {
         set(Task_Parser_Calendar.dueDate, new TaskCalendar());
         set(Task_Boolean.isComplete, false);
+        set(Task_Int.repeatsType, 0);
     }
 
     public Task()
@@ -110,13 +111,13 @@ public class Task extends DataStructure
         if (checkColumn(Task_Ids.id, cursor))
         set(Task_Ids.id, cursor.getLong(cursor.getColumnIndex(Task_Ids.id.colname)));
 
-        if (checkColumn(Task_Ids.repeatId_fk, cursor))
-        set(Task_Ids.repeatId_fk,
-            cursor.getLong(cursor.getColumnIndex(Task_Ids.repeatId_fk.colname)));
-
         if (checkColumn(Task_Ids.repeatId, cursor))
         set(Task_Ids.repeatId,
             cursor.getLong(cursor.getColumnIndex(Task_Ids.repeatId.colname)));
+
+        if (checkColumn(Task_Ids.taskId_fk, cursor))
+        set(Task_Ids.taskId_fk,
+            cursor.getLong(cursor.getColumnIndex(Task_Ids.taskId_fk.colname)));
 
         if (checkColumn(Task_String.desc, cursor))
         set(Task_String.desc,
@@ -151,7 +152,7 @@ public class Task extends DataStructure
      */
     public long calculateNextDueDate()
     {
-        if (get(Task_Int.repeatsType) == null)
+        if (get(Task_Int.repeatsType) == 0)
         {
             return get(Task_Parser_Calendar.dueDate).getDate().getTime();
         }
@@ -258,11 +259,7 @@ public class Task extends DataStructure
     {
         ContentValues values = new ContentValues();
 
-        //if (get(Task_Ids.id) != null) values.put("id", get(Task_Ids.id));
-
-        //your creating a new row, so you dont know what the repeat id is
-        //values.put(Task_Ids.repeatId_fk.colname, get(Task_Ids.repeatId_fk));
-        //values.put(Task_Ids.repeatId.colname, get(Task_Ids.repeatId));
+        //FYI your creating a new row, so you dont know what the ids are
 
         values.put(Task_String.desc.colname, get(Task_String.desc));
 
@@ -271,7 +268,7 @@ public class Task extends DataStructure
         values.put(Task_Parser_Calendar.dueDate.colname,
                    get(Task_Parser_Calendar.dueDate).getDate().getTime());
 
-        if (get(Task_Int.repeatsType) != null)
+        if (get(Task_Int.repeatsType) != 0)
         {
             if (get(Task_Alarm_Calendar.nextDueDate) == null)
                 throw new IllegalStateException("Forgot to calculate next due date");
@@ -298,6 +295,8 @@ public class Task extends DataStructure
                        (String)initialValues.get(Task_String.desc.colname));
         taskValues.put(Task_Parser_Calendar.dueDate.colname,
                        (Long)initialValues.get(Task_Parser_Calendar.dueDate.colname));
+        taskValues.put(Task_Int.repeatsType.colname,
+                       (Integer)initialValues.get(Task_Int.repeatsType.colname));
         taskValues.put(Task_Boolean.isComplete.colname,
                        (Integer)initialValues.get(Task_Boolean.isComplete.colname));
         return taskValues;
@@ -306,10 +305,8 @@ public class Task extends DataStructure
     public static ContentValues getRepeatValuesFromInitial(ContentValues initialValues)
     {
         ContentValues repeatValues = new ContentValues();
-        repeatValues.put(Task_Ids.repeatId.colname,
-                         (Long)initialValues.get(Task_Ids.repeatId.colname));
-        repeatValues.put(Task_Int.repeatsType.colname,
-                         (Integer)initialValues.get(Task_Int.repeatsType.colname));
+        repeatValues.put(Task_Alarm_Calendar.nextDueDate.colname,
+                         (Long)initialValues.get(Task_Alarm_Calendar.nextDueDate.colname));
         return repeatValues;
     }
 }

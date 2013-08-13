@@ -81,7 +81,7 @@ final public class TaskTable
         TASK_ID("_id")
         , TASK_DESC
         , TASK_DUE_DATE
-        , TASK_REPEATS_ID_FK
+        , TASK_REPEAT_TYPE
         , TASK_IS_COMPLETE;
 
         private String colname;
@@ -102,8 +102,8 @@ final public class TaskTable
     public enum RepeatsCol implements Column
     {
         REPEAT_ID
-        ,REPEAT_TYPE
-        ,NEXT_DUE_DATE;
+        ,REPEAT_TASK_ID_FK
+        ,REPEAT_NEXT_DUE_DATE;
 
         @Override
         public String colname() { return name(); }
@@ -115,7 +115,7 @@ final public class TaskTable
     static class TaskTableHelper extends SQLiteOpenHelper
     {
         private static final String DATABASE_NAME = "reminderer.db";
-        private static final int DATABASE_VERSION = 9;
+        private static final int DATABASE_VERSION = 10;
         private static final String TAG = "R:TaskHelper";
 
         public TaskTableHelper(Context context)
@@ -133,8 +133,8 @@ final public class TaskTable
             dbCreateString += "(";
             dbCreateString += TaskCol.TASK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,";
             dbCreateString += TaskCol.TASK_DESC + " TEXT NOT NULL, ";
-            dbCreateString += TaskCol.TASK_REPEATS_ID_FK + " INTEGER, ";
             dbCreateString += TaskCol.TASK_DUE_DATE + " INTEGER, ";
+            dbCreateString += TaskCol.TASK_REPEAT_TYPE + " INTEGER, ";
             dbCreateString += TaskCol.TASK_IS_COMPLETE + " INTEGER";
             dbCreateString += ");";
             db.execSQL(dbCreateString);
@@ -143,8 +143,8 @@ final public class TaskTable
             dbCreateString += "CREATE TABLE " + REPEATABLE_TABLE;
             dbCreateString += "(";
             dbCreateString += RepeatsCol.REPEAT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,";
-            dbCreateString += RepeatsCol.REPEAT_TYPE + " INTEGER, ";
-            dbCreateString += RepeatsCol.NEXT_DUE_DATE + " INTEGER ";
+            dbCreateString += RepeatsCol.REPEAT_TASK_ID_FK + "INTEGER, ";
+            dbCreateString += RepeatsCol.REPEAT_NEXT_DUE_DATE + " INTEGER ";
             dbCreateString += ");";
             db.execSQL(dbCreateString);
         }

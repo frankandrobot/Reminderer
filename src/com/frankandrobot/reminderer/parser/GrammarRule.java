@@ -388,11 +388,11 @@ abstract public class GrammarRule implements IGrammarRule<Task>
     {
         public enum Type
         {
-            HOUR(0)
-            ,DAY(1)
-            ,WEEK(2)
-            ,MONTH(3)
-            ,YEAR(4);
+            HOUR(1)
+            ,DAY(2)
+            ,WEEK(3)
+            ,MONTH(4)
+            ,YEAR(5);
 
             Type(int type) { this.type = type; }
             int type;
@@ -401,11 +401,11 @@ abstract public class GrammarRule implements IGrammarRule<Task>
             {
                 switch(i)
                 {
-                    case 0: return HOUR;
-                    case 1: return DAY;
-                    case 2: return WEEK;
-                    case 3: return MONTH;
-                    case 4: return YEAR;
+                    case 1: return HOUR;
+                    case 2: return DAY;
+                    case 3: return WEEK;
+                    case 4: return MONTH;
+                    case 5: return YEAR;
                     default: throw new IllegalArgumentException("Unsupported type");
                 }
 
