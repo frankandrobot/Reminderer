@@ -170,8 +170,13 @@ public class TaskTest
                    is(String.valueOf(now.getMillis())));
     }
 
+    /**
+     * Insert non-repeating task
+     *
+     * @throws Exception
+     */
     @Test
-    public void insertIntoDb1() throws Exception
+    public void insertNonRepeatingTaskIntoDb1() throws Exception
     {
         Task task = new Task();
         task.set(Task_String.desc, "Hell on earth");
