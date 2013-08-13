@@ -93,15 +93,24 @@ public class DataStructure
         return tmp + "]";
     }
 
-    public <T extends DataStructure> T combine(T ds)
+    /**
+     * Copies over the fields that are set in the source into this object.
+     * If a field is not set in the source, then it does _not_ override
+     * the destination field.
+     *
+     * @param source the source datastructure
+     * @param <T> a datastructure class
+     * @return this datastructure
+     */
+    public <T extends DataStructure> T combine(T source)
     {
-        if (ds != null)
+        if (source != null)
         {
-            for(Map.Entry<Field<?>,?> entry:ds.hmFieldValues.entrySet())
+            for(Map.Entry<Field<?>,?> entry:source.hmFieldValues.entrySet())
             {
                 hmFieldValues.put(entry.getKey(), entry.getValue());
             }
-            for(Map.Entry<Class<? extends Field<?>>, Object> entry:ds.hmClassValues.entrySet())
+            for(Map.Entry<Class<? extends Field<?>>, Object> entry:source.hmClassValues.entrySet())
             {
                 hmClassValues.put(entry.getKey(), entry.getValue());
             }
