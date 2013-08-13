@@ -39,6 +39,11 @@ import static org.junit.Assert.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class TaskTest
 {
+    /**
+     * Tests task that does not repeat
+     *
+     * @throws Exception
+     */
     @Test
     public void testNewTaskFromCursor1() throws Exception
     {
@@ -46,19 +51,17 @@ public class TaskTest
         TASK_ID
         , TASK_DESC
         , TASK_DUE_DATE
-        , TASK_REPEATS_ID_FK
+        , TASK_REPEAT_TYPE
         , TASK_IS_COMPLETE;*/
-        SimpleTestCursor cursor = new SimpleTestCursor();
-        ArrayList<String> alCols = new ArrayList<String>();
-        String[] aCols = new TaskTable().getAllColumns(TaskCol.class);
-        alCols.addAll(Arrays.asList(aCols));
-        cursor.setColumnNames(alCols);
+
+        TaskTable table = new TaskTable();
+        MatrixCursor cursor = new MatrixCursor(table.getAllColumns(TaskCol.class), 1);
 
         Date now = new Date();
 
-        cursor.setResults(new Object[][] {
-               new Object[] { (long)1, "Hello world", now.getTime(), (long)0, 1}
-        });
+        cursor.addRow(new Object[]
+               { (long)1, "Hello world", now.getTime(), 5, 1}
+        );
         cursor.moveToNext();
 
         Task task = new Task(cursor);
@@ -66,16 +69,22 @@ public class TaskTest
         assertThat(task.get(Task_String.desc), is("Hello world"));
         assertThat(task.get(Task_Parser_Calendar.dueDate).getDate().getTime(),
                    is(now.getTime()));
-        assertThat(task.get(Task_Ids.repeatId), IsNull.<Long>nullValue());
+        assertThat(task.get(Task_Int.repeatsType), is(5));
         assertThat(task.get(Task_Boolean.isComplete), is(true));
+        assertThat(task.get(Task_Ids.repeatId), IsNull.<Long>nullValue());
     }
 
+    /**
+     * Sets only two columns. Check that others are null or have default values
+     *
+     * @throws Exception
+     */
     @Test
     public void testNewTaskFromCursor1b() throws Exception
     {
         /*TASK_DESC
                 , TASK_DUE_DATE
-                , TASK_REPEATS_ID_FK
+                , TASK_REPEAT_TYPE
                 , TASK_IS_COMPLETE;*/
         TaskTable table = new TaskTable();
         MatrixCursor cursor = new MatrixCursor(table.getColumns(TaskCol.TASK_ID,
@@ -91,14 +100,21 @@ public class TaskTest
         assertThat(task.get(Task_Ids.id), is((long)1));
         assertThat(task.get(Task_String.desc), is("Hello world"));
         assertThat(task.get(Task_Ids.repeatId), IsNull.<Long>nullValue());
+        assertThat(task.get(Task_Int.repeatsType), is(0));
+        assertThat(task.get(Task_Boolean.isComplete), is(false));
     }
 
+    /**
+     * Cursor contains a repeating task
+     *
+     * @throws Exception
+     */
     @Test
     public void testNewTaskFromCursor1c() throws Exception
     {
         /*TASK_DESC
         , TASK_DUE_DATE
-        , TASK_REPEATS_ID_FK
+        , TASK_REPEAT_TYPE
         , TASK_IS_COMPLETE;*/
         TaskTable table = new TaskTable();
         long now = new Date().getTime();
@@ -109,10 +125,10 @@ public class TaskTest
                                            (long)1,
                                            "Hello world",
                                            now,
-                                           2, //repeatId_FK
+                                           2, //repeat type
                                            0, //isComplete
-                                           2, //repeatsId
-                                           3, //repeat type
+                                           (long)2, //repeatsId
+                                           (long)1, //task id FK
                                            now// next due date
         });
         cursor.moveToFirst();
@@ -122,47 +138,36 @@ public class TaskTest
         assertThat(task.get(Task_String.desc), is("Hello world"));
         assertThat(task.get(Task_Parser_Calendar.dueDate).getDate().getTime(),
                    is(now));
-        assertThat(task.get(Task_Ids.repeatId), is((long) 2));
+        assertThat(task.get(Task_Int.repeatsType), is(2));
         assertThat(task.get(Task_Boolean.isComplete), is(false));
         assertThat(task.get(Task_Ids.repeatId), is((long)2));
-        assertThat(task.get(Task_Int.repeatsType), is(3));
+        assertThat(task.get(Task_Ids.taskId_fk), is((long)1));
         assertThat(task.get(Task_Alarm_Calendar.nextDueDate), is(now));
     }
 
     @Test
     public void testContentValues() throws Exception
     {
-        TaskTable table = new TaskTable();
-        long now = new Date().getTime();
-        MatrixCursor cursor = new MatrixCursor(table.getAllColumns(TaskCol.class,
-                                                                   RepeatsCol.class),
-                                               1);
-        cursor.addRow(new Object[] {
-                                           (long)1,
-                                           "Hello world",
-                                           now,
-                                           2, //repeatId_FK
-                                           0, //isComplete
-                                           2, //repeatsId
-                                           3, //repeat type
-                                           now// next due date
-        });
-        cursor.moveToFirst();
+        Task task = new Task();
+        task.set(Task_Ids.id, (long)1);
+        task.set(Task_Ids.repeatId, (long)2);
+        task.set(Task_Ids.taskId_fk, (long)1);
+        task.set(Task_String.desc, "Hello world");
+        DateTime now = DateTime.now();
+        task.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
+        task.get(Task_Parser_Calendar.dueDate).setTimeInMillis(now.getMillis());
+        task.set(Task_Boolean.isComplete, false);
+        task.set(Task_Int.repeatsType, Type.MONTH);
+        task.set(Task_Alarm_Calendar.nextDueDate, now.getMillis());
 
-        Task task = new Task(cursor);
-        System.out.println(task);
         ContentValues values = task.getContentValuesForInsert();
-        //assertThat(values.getAsString(TaskCol.TASK_ID.colname()), is("1"));
         assertThat(values.getAsString(TaskCol.TASK_DESC.colname()),
                    is("Hello world"));
-//        assertThat(values.getAsString(TaskCol.TASK_REPEATS_ID_FK.colname()),
-//                   is("2"));
         assertThat(values.getAsString(TaskCol.TASK_IS_COMPLETE.colname()),
                    is("0"));
-//        assertThat(values.getAsString(RepeatsCol.REPEAT_ID.colname()), is("2"));
-        assertThat(values.getAsString(RepeatsCol.REPEAT_TYPE.colname()), is("3"));
-        assertThat(values.getAsString(RepeatsCol.NEXT_DUE_DATE.colname()),
-                   is(String.valueOf(now)));
+        assertThat(values.getAsInteger(TaskCol.TASK_REPEAT_TYPE.colname()), is(Type.MONTH.getType()));
+        assertThat(values.getAsString(RepeatsCol.REPEAT_NEXT_DUE_DATE.colname()),
+                   is(String.valueOf(now.getMillis())));
     }
 
     @Test

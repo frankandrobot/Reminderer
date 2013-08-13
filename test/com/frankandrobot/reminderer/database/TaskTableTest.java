@@ -4,7 +4,6 @@ import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 
 import org.junit.Test;
-import org.robolectric.test.Assertions;
 
 import java.util.Arrays;
 
@@ -41,13 +40,13 @@ public class TaskTableTest
         assert(aCols.length == 1);
         assert(Arrays.asList(aCols).contains("_id"));
 
-        aCols = table.getColumns(RepeatsCol.NEXT_DUE_DATE);
+        aCols = table.getColumns(RepeatsCol.REPEAT_NEXT_DUE_DATE);
         assert(aCols.length == 1);
-        assert(Arrays.asList(aCols).contains(RepeatsCol.NEXT_DUE_DATE.colname()));
+        assert(Arrays.asList(aCols).contains(RepeatsCol.REPEAT_NEXT_DUE_DATE.colname()));
 
-        aCols = table.getColumns(TaskCol.TASK_DUE_DATE, RepeatsCol.NEXT_DUE_DATE);
+        aCols = table.getColumns(TaskCol.TASK_DUE_DATE, RepeatsCol.REPEAT_NEXT_DUE_DATE);
         assert(aCols.length == 2);
-        assert(Arrays.asList(aCols).contains(RepeatsCol.NEXT_DUE_DATE.colname()));
+        assert(Arrays.asList(aCols).contains(RepeatsCol.REPEAT_NEXT_DUE_DATE.colname()));
         assert(Arrays.asList(aCols).contains(TaskCol.TASK_DUE_DATE.colname()));
     }
 }
