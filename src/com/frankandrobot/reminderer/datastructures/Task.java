@@ -145,7 +145,7 @@ public class Task extends DataStructure
 
     /**
      * Calculates the next due date.
-     * It's somewhat expensive so much sure to store the result.
+     * It's somewhat expensive so don't call it unnecessarily.
      *
      * @return next due date
      */

@@ -1,25 +1,17 @@
 package com.frankandrobot.reminderer.datastructures;
 
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.MatrixCursor;
-import android.net.Uri;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.Loader;
 
-import com.frankandrobot.reminderer.RemindererActivity;
 import com.frankandrobot.reminderer.database.TaskProvider;
 import com.frankandrobot.reminderer.database.TaskTable;
 import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.AddTask;
-import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Alarm_Calendar;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Boolean;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Ids;
@@ -27,15 +19,12 @@ import com.frankandrobot.reminderer.datastructures.Task.Task_Int;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Parser_Calendar;
 import com.frankandrobot.reminderer.datastructures.Task.Task_String;
 import com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.Type;
-import com.frankandrobot.reminderer.widget.main.MainTaskListFragment;
 
-import org.hamcrest.core.Is;
 import org.hamcrest.core.IsNull;
 import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.TestRunners;
 import org.robolectric.shadows.ShadowContentResolver;
 import org.robolectric.tester.android.database.SimpleTestCursor;
