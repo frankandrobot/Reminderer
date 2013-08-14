@@ -388,6 +388,59 @@ public class TaskTest
     @Test
     public void insertIntoDb2() throws Exception
     {
+        Task task = new Task();
+        task.set(Task_String.desc, "Insert into db2");
+        DateTime now = DateTime.now().minusDays(1).minusMinutes(1);
+        task.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
+        task.get(Task_Parser_Calendar.dueDate).setTimeInMillis(now.getMillis());
+        task.set(Task_Boolean.isComplete, false);
+        task.set(Task_Int.repeatsType, Type.DAY);
+        task.calculateNextDueDate();
 
+        //setup task provider
+        FragmentActivity activity = Robolectric.buildActivity( FragmentActivity.class )
+                                            .create()
+                                            .start()
+                                            .resume()
+                                            .get();
+        TaskProvider taskProvider = new TaskProvider();
+        taskProvider.onCreate();
+
+
+        ShadowContentResolver.registerProvider(TaskProvider.AUTHORITY_NAME,
+                                               taskProvider);
+
+        //run insert
+        AddTask addTask = new TaskDatabaseFacade(activity).getAddTaskLoader(task);
+        addTask.loadInBackground();
+
+        ContentResolver resolver = activity.getContentResolver();
+        Cursor cursor = resolver.query(TaskProvider.CONTENT_URI,
+                                       new TaskTable().getAllColumns(TaskCol.class),
+                                       TaskCol.TASK_DUE_DATE+"="+now.getMillis(),
+                                       null,
+                                       null);
+        assert(cursor != null);
+        cursor.moveToFirst();
+        /*TASK_ID("_id")
+                , TASK_DESC
+                , TASK_DUE_DATE
+                , TASK_REPEAT_TYPE
+                , TASK_IS_COMPLETE;*/
+        assert(cursor.getString(cursor.getColumnIndex(TaskCol.TASK_ID.colname())) != null);
+        assertThat(cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.colname())),
+                   is("Insert into db2"));
+        assertThat(cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_DUE_DATE.colname())),
+                   is(now.getMillis()));
+        assertThat(cursor.getInt(cursor.getColumnIndex(TaskCol.TASK_REPEAT_TYPE.colname())),
+                   is(Type.DAY.getType()));
+        assertThat(cursor.getInt(cursor.getColumnIndex(TaskCol.TASK_IS_COMPLETE.colname())),
+                   is(0));
+        assert(cursor.getString(cursor.getColumnIndex(RepeatsCol.REPEAT_ID.colname())) != null);
+        long taskId = cursor.getLong(cursor.getColumnIndex(TaskCol.TASK_ID.colname()));
+        long taskIdFk = cursor.getLong(cursor.getColumnIndex(RepeatsCol.REPEAT_TASK_ID_FK.colname()));
+        assertThat(taskId, is(taskIdFk));
+        assertThat(cursor.getLong(cursor.getColumnIndex(RepeatsCol.REPEAT_NEXT_DUE_DATE.colname())),
+                   is(now.plusDays(2).getMillis()));
     }
 }
