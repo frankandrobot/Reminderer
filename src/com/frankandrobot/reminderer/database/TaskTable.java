@@ -143,9 +143,10 @@ final public class TaskTable
             dbCreateString += "CREATE TABLE " + REPEATABLE_TABLE;
             dbCreateString += "(";
             dbCreateString += RepeatsCol.REPEAT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,";
-            dbCreateString += RepeatsCol.REPEAT_TASK_ID_FK + "INTEGER, ";
+            dbCreateString += RepeatsCol.REPEAT_TASK_ID_FK + " INTEGER, ";
             dbCreateString += RepeatsCol.REPEAT_NEXT_DUE_DATE + " INTEGER ";
             dbCreateString += ");";
+
             db.execSQL(dbCreateString);
         }
 
