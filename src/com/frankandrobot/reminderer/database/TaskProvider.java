@@ -212,26 +212,32 @@ public class TaskProvider extends ContentProvider
         if (Logger.LOGD) Log.d(TAG, "Inserting values " + url.toString());
 
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-        long repeatId = -1;
 
-        if (initialValues.containsKey("repeatsType"))
-        {
-            ContentValues repeatValues = Task.getRepeatValuesFromInitial(initialValues);
-            repeatId = db.insert(REPEATABLE_TABLE, null, repeatValues);
-            initialValues.put(RepeatsCol.REPEAT_ID.toString(), repeatId);
-        }
+        long taskId = db.insert(TASK_TABLE,
+                                null,
+                                Task.getTaskValuesFromInitial(initialValues));
 
-        ContentValues taskValues = Task.getTaskValuesFromInitial(initialValues);
-        long rowId = db.insert(TASK_TABLE, null, taskValues);
-
-        if (rowId < 0)
+        if (taskId < 0)
         {
             throw new SQLException("Failed to insert row into " + url);
         }
 
-        if (Logger.LOGD) Log.d(TAG, "Added task rowId = " + rowId);
+        if (initialValues.containsKey(TaskCol.TASK_REPEAT_TYPE.colname())
+                    && initialValues.getAsInteger(TaskCol.TASK_REPEAT_TYPE.colname()) != 0)
+        {
+            ContentValues repeatValues = Task.getRepeatValuesFromInitial(initialValues);
+            repeatValues.put(RepeatsCol.REPEAT_TASK_ID_FK.colname(), taskId);
+            long repeatId = db.insert(REPEATABLE_TABLE, null, repeatValues);
 
-        Uri newUrl = ContentUris.withAppendedId(CONTENT_URI, rowId);
+            if (repeatId < 0)
+            {
+                throw new SQLException("Failed to insert row into " + url);
+            }
+        }
+
+        if (Logger.LOGD) Log.d(TAG, "Added task rowId = " + taskId);
+
+        Uri newUrl = ContentUris.withAppendedId(CONTENT_URI, taskId);
         getContext().getContentResolver().notifyChange(newUrl, null);
 
         return newUrl;

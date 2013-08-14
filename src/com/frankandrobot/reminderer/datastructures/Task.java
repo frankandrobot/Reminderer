@@ -159,7 +159,7 @@ public class Task extends DataStructure
         else
         {
             //due date is in future so return that
-            if (get(Task_Parser_Calendar.dueDate).getDate().getTime() > System.currentTimeMillis())
+            if (get(Task_Parser_Calendar.dueDate).getDate().getTime() >= System.currentTimeMillis())
             {
                 return get(Task_Parser_Calendar.dueDate).getDate().getTime();
             }
