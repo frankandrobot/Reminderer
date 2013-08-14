@@ -60,7 +60,7 @@ public class TaskProvider extends ContentProvider
     /**
      * View that uses all columns from the task table and its related tables
      */
-    public final static Uri ALL_TASK_COLUMNS_URI = Uri.parse(baseUri + "task/allcolumns");
+    public final static Uri VIEW_EVERYTHING_URI = Uri.parse(baseUri + "task/allcolumns");
 
     /**
      * A {@link UriMatcher} is a helper object that helps parse incoming
@@ -75,15 +75,15 @@ public class TaskProvider extends ContentProvider
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     private static final int TASKS_URI_ID = 1;
-    private static final int ALL_TASK_COLUMNS_URI_ID = 3;
+    private static final int VIEW_EVERYTHING_URI_ID = 2;
 
 
     static
     {
         uriMatcher.addURI(AUTHORITY_NAME, TASK_TABLE, TASKS_URI_ID);
-        uriMatcher.addURI(ALL_TASK_COLUMNS_URI.getAuthority(),
-                          ALL_TASK_COLUMNS_URI.getPath().substring(1),
-                          ALL_TASK_COLUMNS_URI_ID);
+        uriMatcher.addURI(VIEW_EVERYTHING_URI.getAuthority(),
+                          VIEW_EVERYTHING_URI.getPath().substring(1),
+                          VIEW_EVERYTHING_URI_ID);
     }
 
     private SQLiteOpenHelper mOpenHelper;
@@ -127,7 +127,7 @@ public class TaskProvider extends ContentProvider
                                sort);
 
                 break;
-            case ALL_TASK_COLUMNS_URI_ID:
+            case VIEW_EVERYTHING_URI_ID:
                 rawQuery = "SELECT * FROM "+TaskTable.TASK_TABLE+","+TaskTable.REPEATABLE_TABLE;
                 ret = db.rawQuery(rawQuery, null);
                 break;

@@ -27,10 +27,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.shadows.ShadowContentResolver;
-import org.robolectric.tester.android.database.SimpleTestCursor;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 
 import static org.hamcrest.core.Is.is;
@@ -59,13 +56,11 @@ public class TaskTest
 
         Date now = new Date();
 
-        cursor.addRow(new Object[]
-               { (long)1, "Hello world", now.getTime(), 5, 1}
-        );
+        cursor.addRow(new Object[]{(long) 1, "Hello world", now.getTime(), 5, 1});
         cursor.moveToNext();
 
         Task task = new Task(cursor);
-        assertThat(task.get(Task_Ids.id), is((long)1));
+        assertThat(task.get(Task_Ids.id), is((long) 1));
         assertThat(task.get(Task_String.desc), is("Hello world"));
         assertThat(task.get(Task_Parser_Calendar.dueDate).getDate().getTime(),
                    is(now.getTime()));
@@ -151,7 +146,7 @@ public class TaskTest
         Task task = new Task();
         task.set(Task_Ids.id, (long)1);
         task.set(Task_Ids.repeatId, (long)2);
-        task.set(Task_Ids.taskId_fk, (long)1);
+        task.set(Task_Ids.taskId_fk, (long) 1);
         task.set(Task_String.desc, "Hello world");
         DateTime now = DateTime.now();
         task.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
@@ -415,7 +410,7 @@ public class TaskTest
         addTask.loadInBackground();
 
         ContentResolver resolver = activity.getContentResolver();
-        Cursor cursor = resolver.query(TaskProvider.ALL_TASK_COLUMNS_URI,
+        Cursor cursor = resolver.query(TaskProvider.VIEW_EVERYTHING_URI,
                                        new TaskTable().getAllColumns(TaskCol.class,
                                                                      RepeatsCol.class),
                                        TaskCol.TASK_DUE_DATE+"="+now.getMillis(),
