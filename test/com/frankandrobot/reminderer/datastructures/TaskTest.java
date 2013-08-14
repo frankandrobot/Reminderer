@@ -415,8 +415,9 @@ public class TaskTest
         addTask.loadInBackground();
 
         ContentResolver resolver = activity.getContentResolver();
-        Cursor cursor = resolver.query(TaskProvider.CONTENT_URI,
-                                       new TaskTable().getAllColumns(TaskCol.class),
+        Cursor cursor = resolver.query(TaskProvider.ALL_TASK_COLUMNS_URI,
+                                       new TaskTable().getAllColumns(TaskCol.class,
+                                                                     RepeatsCol.class),
                                        TaskCol.TASK_DUE_DATE+"="+now.getMillis(),
                                        null,
                                        null);

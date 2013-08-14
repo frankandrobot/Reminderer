@@ -49,54 +49,41 @@ public class TaskProvider extends ContentProvider
      * The authority name is the unique identifier of this provideer
      */
     public final static String AUTHORITY_NAME = "com.frankandrobot.reminderer.dbprovider";
-    public final static Uri DUEDATE_URI = Uri.parse("content://" + AUTHORITY_NAME
-                                                            + "/" + TASK_TABLE + "/"
-                                                            + TaskCol.TASK_DUE_DATE);
-    // URIs
-    public final static Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY_NAME
-                                                            + "/" + TASK_TABLE);
+
+    private final static String baseUri = "content://" + AUTHORITY_NAME + "/";
+
+    /**
+     * {@link Uri}s provide different views of different tables
+     */
+    public final static Uri CONTENT_URI = Uri.parse(baseUri + TASK_TABLE);
+
+    /**
+     * View that uses all columns from the task table and its related tables
+     */
+    public final static Uri ALL_TASK_COLUMNS_URI = Uri.parse(baseUri + "task/allcolumns");
+
     /**
      * A {@link UriMatcher} is a helper object that helps parse incoming
      * Uri requests.
-     * <p/>
-     * This uri matcher supports the following Uris:
-     * <p/>
+     *
+     * Example:
+     *
      * - com.frankandrobot.reminderer.dbprovider/tasks
      * - com.frankandrobot.reminderer.dbprovider/tasks/#
      * - com.frankandrobot.reminderer.dbprovider/duedate/#
      */
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
-    /**
-     * Get all tasks
-     */
-    private static final int TASKS_URI = 1;
+    private static final int TASKS_URI_ID = 1;
+    private static final int ALL_TASK_COLUMNS_URI_ID = 3;
 
-    /**
-     * Get task with specific ID
-     */
-    private static final int TASK_ID_URI = 2;
-
-    /**
-     * Get tasks due on specific date and time
-     */
-    private static final int TASKS_DUE_URI = 3;
-
-    private static final int GPS_TASKS = 4;
-    private static final int GPS_TASKS_ID = 5;
 
     static
     {
-        // com.frankandrobot.reminderer.dbprovider/tasks
-        uriMatcher.addURI(AUTHORITY_NAME, TASK_TABLE, TASKS_URI);
-        uriMatcher.addURI(AUTHORITY_NAME,
-                          TASK_TABLE + "/#",
-                          TASK_ID_URI);
-        uriMatcher.addURI(AUTHORITY_NAME,
-                          TASK_TABLE + "/duedate/#",
-                          TASKS_DUE_URI);
-        uriMatcher.addURI(AUTHORITY_NAME, "gps_tasks", GPS_TASKS);
-        uriMatcher.addURI(AUTHORITY_NAME, "gps_tasks/#", GPS_TASKS_ID);
+        uriMatcher.addURI(AUTHORITY_NAME, TASK_TABLE, TASKS_URI_ID);
+        uriMatcher.addURI(ALL_TASK_COLUMNS_URI.getAuthority(),
+                          ALL_TASK_COLUMNS_URI.getPath().substring(1),
+                          ALL_TASK_COLUMNS_URI_ID);
     }
 
     private SQLiteOpenHelper mOpenHelper;
@@ -122,31 +109,37 @@ public class TaskProvider extends ContentProvider
         if (Logger.LOGV)
             Log.v(TAG, "query() ");
 
+        SQLiteDatabase db = mOpenHelper.getReadableDatabase();
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        Cursor ret;
+        String rawQuery;
 
-        // Generate the body of the query
         switch (uriMatcher.match(url))
         {
-            case TASKS_URI: // query is for all tasks
+            case TASKS_URI_ID:
                 qb.setTables(TASK_TABLE);
+                ret = qb.query(db,
+                               projectionIn,
+                               selection,
+                               selectionArgs,
+                               null,
+                               null,
+                               sort);
+
                 break;
-            case TASK_ID_URI: // query is for specific task
+            case ALL_TASK_COLUMNS_URI_ID:
+                rawQuery = "SELECT * FROM "+TaskTable.TASK_TABLE+","+TaskTable.REPEATABLE_TABLE;
+                ret = db.rawQuery(rawQuery, null);
+                break;
+            /*case TASK_ID_URI: // query is for specific task
                 qb.setTables(TASK_TABLE);
                 qb.appendWhere(TaskCol.TASK_ID + "=");
                 qb.appendWhere(url.getPathSegments().get(1));
                 break;
-            case TASKS_DUE_URI: // query is for specific task
-                qb.setTables(TASK_TABLE);
-                qb.appendWhere(TaskCol.TASK_DUE_DATE + "=");
-                qb.appendWhere(url.getPathSegments().get(1));
-                break;
+            */
             default:
                 throw new IllegalArgumentException("Unknown URI " + url);
         }
-
-        SQLiteDatabase db = mOpenHelper.getReadableDatabase();
-        Cursor ret = qb.query(db, projectionIn, selection, selectionArgs, null,
-                              null, sort);
 
         if (ret == null && Logger.LOGV)
         {
@@ -174,12 +167,12 @@ public class TaskProvider extends ContentProvider
 
         switch (uriMatcher.match(url))
         {
-            case TASKS_URI:
+            case TASKS_URI_ID:
             {
                 count = db.update(TaskTable.TASK_TABLE, values, where, whereArgs);
                 break;
             }
-            case TASK_ID_URI:
+            /*case TASK_ID_URI:
             {
                 // "com..frankandrobot.reminderer.dbprovider/tasks/#"
                 rowId = Long.parseLong(url.getPathSegments().get(1));
@@ -187,7 +180,7 @@ public class TaskProvider extends ContentProvider
                 break;
             }
 
-            default:
+*/            default:
             {
                 throw new IllegalArgumentException("Cannot update URL: " + url);
             }
@@ -204,7 +197,7 @@ public class TaskProvider extends ContentProvider
     @Override
     public Uri insert(Uri url, ContentValues initialValues)
     {
-        if (uriMatcher.match(url) != TASKS_URI)
+        if (uriMatcher.match(url) != TASKS_URI_ID)
         {
             throw new IllegalArgumentException("Cannot insert into URL: " + url);
         }
@@ -282,13 +275,10 @@ public class TaskProvider extends ContentProvider
     {
         switch (uriMatcher.match(url))
         {
-            case TASKS_URI:
+            case TASKS_URI_ID:
                 return "vnd.android.cursor.dir/" + AUTHORITY_NAME + "." + TASK_TABLE;
-            case TASK_ID_URI:
-                return "vnd.android.cursor.item/" + AUTHORITY_NAME + "." + TASK_TABLE;
-            case TASKS_DUE_URI:
-                return "vnd.android.cursor.item/" + AUTHORITY_NAME + "."
-                               + TASK_TABLE + ".duedate";
+            /*case TASK_ID_URI:
+                return "vnd.android.cursor.item/" + AUTHORITY_NAME + "." + TASK_TABLE;*/
             default:
                 throw new IllegalArgumentException("Unknown URII");
         }
