@@ -25,15 +25,7 @@ abstract public class CursorLoaders
         public AllOpenTasksLoader(Context context)
         {
             super(context);
-            this.setUri(TaskProvider.TASK_JOIN_REPEAT_URI);
-            this.setProjection(table.getColumns(TaskCol.TASK_ID,
-                                                TaskCol.TASK_DESC,
-                                                TaskCol.TASK_DUE_DATE,
-                                                TaskCol.TASK_REPEAT_TYPE,
-                                                RepeatsCol.REPEAT_NEXT_DUE_DATE));
-            this.setSelection(TaskCol.TASK_IS_COMPLETE+"=0");
-            this.setSelectionArgs(null);
-            this.setSortOrder(TaskCol.TASK_DUE_DATE.colname());
+            this.setUri(TaskProvider.LOAD_OPEN_TASKS_URI);
         }
     }
 
