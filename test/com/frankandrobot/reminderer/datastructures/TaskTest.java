@@ -36,6 +36,11 @@ import static org.junit.Assert.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class TaskTest
 {
+
+    private FragmentActivity activity;
+    private TaskProvider taskProvider;
+    private boolean isDbSetup;
+
     /**
      * Tests task that does not repeat
      *
@@ -165,6 +170,26 @@ public class TaskTest
                    is(String.valueOf(now.getMillis())));
     }
 
+    public void setupDb()
+    {
+        if (!isDbSetup)
+        {
+            //setup task provider
+            activity = Robolectric.buildActivity(FragmentActivity.class)
+                                                .create()
+                                                .start()
+                                                .resume()
+                                                .get();
+            taskProvider = new TaskProvider();
+            taskProvider.onCreate();
+
+            ShadowContentResolver.registerProvider(TaskProvider.AUTHORITY_NAME,
+                                                   taskProvider);
+
+            isDbSetup = true;
+        }
+    }
+
     /**
      * Insert non-repeating task
      *
@@ -180,18 +205,7 @@ public class TaskTest
         Date now = new Date();
         task.get(Task_Parser_Calendar.dueDate).setTimeInMillis(now.getTime());
 
-        //setup task provider
-        FragmentActivity activity = Robolectric.buildActivity( FragmentActivity.class )
-                                            .create()
-                                            .start()
-                                            .resume()
-                                            .get();
-        TaskProvider taskProvider = new TaskProvider();
-        taskProvider.onCreate();
-
-
-        ShadowContentResolver.registerProvider(TaskProvider.AUTHORITY_NAME,
-                                               taskProvider);
+        setupDb();
 
         //run insert
         AddTask addTask = new TaskDatabaseFacade(activity).getAddTaskLoader(task);
@@ -392,18 +406,7 @@ public class TaskTest
         task.set(Task_Int.repeatsType, Type.DAY);
         task.calculateNextDueDate();
 
-        //setup task provider
-        FragmentActivity activity = Robolectric.buildActivity( FragmentActivity.class )
-                                            .create()
-                                            .start()
-                                            .resume()
-                                            .get();
-        TaskProvider taskProvider = new TaskProvider();
-        taskProvider.onCreate();
-
-
-        ShadowContentResolver.registerProvider(TaskProvider.AUTHORITY_NAME,
-                                               taskProvider);
+        setupDb();
 
         //run insert
         AddTask addTask = new TaskDatabaseFacade(activity).getAddTaskLoader(task);
@@ -438,5 +441,37 @@ public class TaskTest
         assertThat(taskId, is(taskIdFk));
         assertThat(cursor.getLong(cursor.getColumnIndex(RepeatsCol.REPEAT_NEXT_DUE_DATE.colname())),
                    is(now.plusDays(2).getMillis()));
+    }
+
+    @Test
+    public void testOpenTaskLoader() throws Exception
+    {
+        setupDb();
+        insertNonRepeatingTaskIntoDb1();
+        insertIntoDb2();
+
+        FragmentActivity activity = Robolectric.buildActivity( FragmentActivity.class )
+                                            .create()
+                                            .start()
+                                            .resume()
+                                            .get();
+
+        ContentResolver resolver = activity.getContentResolver();
+        Cursor cursor = resolver.query(TaskProvider.LOAD_OPEN_TASKS_URI,
+                                       null,
+                                       null,
+                                       null,
+                                       null);
+
+        assert(cursor != null);
+        assertThat(cursor.getCount(),
+                   is(2));
+        cursor.moveToFirst();
+        assertThat(cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.colname())),
+                   is("Hell on earth"));
+        cursor.moveToNext();
+        assertThat(cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.colname())),
+                   is("Insert into db2"));
+
     }
 }

@@ -245,7 +245,7 @@ public class TaskProvider extends ContentProvider
             repeatQuery += TaskCol.TASK_REPEAT_TYPE+">0";
 
             String rawQuery = "";
-            rawQuery += "("+taskQuery+" UNION ALL "+repeatQuery+")";
+            rawQuery += taskQuery+" UNION "+repeatQuery;
             rawQuery += " ORDER BY " + TaskCol.TASK_DUE_DATE;
 
             return db.rawQuery(rawQuery, null);
