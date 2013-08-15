@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.frankandrobot.reminderer.database.TaskProvider;
 import com.frankandrobot.reminderer.database.TaskTable;
+import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Boolean;
@@ -24,10 +25,12 @@ abstract public class CursorLoaders
         public AllOpenTasksLoader(Context context)
         {
             super(context);
-            this.setUri(TaskProvider.CONTENT_URI);
+            this.setUri(TaskProvider.TASK_JOIN_REPEAT_URI);
             this.setProjection(table.getColumns(TaskCol.TASK_ID,
                                                 TaskCol.TASK_DESC,
-                                                TaskCol.TASK_DUE_DATE));
+                                                TaskCol.TASK_DUE_DATE,
+                                                TaskCol.TASK_REPEAT_TYPE,
+                                                RepeatsCol.REPEAT_NEXT_DUE_DATE));
             this.setSelection(TaskCol.TASK_IS_COMPLETE+"=0");
             this.setSelectionArgs(null);
             this.setSortOrder(TaskCol.TASK_DUE_DATE.colname());

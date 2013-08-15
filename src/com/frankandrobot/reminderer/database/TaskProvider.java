@@ -32,6 +32,8 @@ import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
 
+import java.util.HashMap;
+
 import static com.frankandrobot.reminderer.database.TaskTable.REPEATABLE_TABLE;
 import static com.frankandrobot.reminderer.database.TaskTable.TASK_TABLE;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskCol;
@@ -44,6 +46,18 @@ import static com.frankandrobot.reminderer.database.TaskTable.TaskTableHelper;
 public class TaskProvider extends ContentProvider
 {
     private static String TAG = "R:Provider";
+
+    static private HashMap<Integer, TaskQuery> hmQueries = new HashMap<Integer, TaskQuery>();
+
+    private interface TaskQuery
+    {
+        public Cursor query(SQLiteOpenHelper openHelper,
+                            Uri url,
+                            String[] projectionIn,
+                            String selection,
+                            String[] selectionArgs,
+                            String sort);
+    }
 
     /**
      * The authority name is the unique identifier of this provideer
@@ -58,9 +72,10 @@ public class TaskProvider extends ContentProvider
     public final static Uri CONTENT_URI = Uri.parse(baseUri + TASK_TABLE);
 
     /**
-     * View that uses all columns from the task table and its related tables
+     * View that combines the task and repeat table
      */
-    public final static Uri VIEW_EVERYTHING_URI = Uri.parse(baseUri + "task/allcolumns");
+    public final static Uri TASK_JOIN_REPEAT_URI = Uri.parse(baseUri + "taskjoinrepeat");
+    public final static Uri TASK_UNION_REPEAT_URI = Uri.parse(baseUri + "taskunionrepeat");
 
     /**
      * A {@link UriMatcher} is a helper object that helps parse incoming
@@ -75,15 +90,22 @@ public class TaskProvider extends ContentProvider
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     private static final int TASKS_URI_ID = 1;
-    private static final int VIEW_EVERYTHING_URI_ID = 2;
+    private static final int TASK_JOIN_REPEAT_URI_ID = 2;
+    private static final int TASK_UNION_REPEAT_URI_ID = 3;
 
 
     static
     {
         uriMatcher.addURI(AUTHORITY_NAME, TASK_TABLE, TASKS_URI_ID);
-        uriMatcher.addURI(VIEW_EVERYTHING_URI.getAuthority(),
-                          VIEW_EVERYTHING_URI.getPath().substring(1),
-                          VIEW_EVERYTHING_URI_ID);
+        uriMatcher.addURI(TASK_JOIN_REPEAT_URI.getAuthority(),
+                          TASK_JOIN_REPEAT_URI.getPath().substring(1),
+                          TASK_JOIN_REPEAT_URI_ID);
+        uriMatcher.addURI(TASK_UNION_REPEAT_URI.getAuthority(),
+                          TASK_UNION_REPEAT_URI.getPath().substring(1),
+                          TASK_UNION_REPEAT_URI_ID);
+
+        hmQueries.put(TASKS_URI_ID, new TaskUriQuery());
+        hmQueries.put(TASK_JOIN_REPEAT_URI_ID, new TaskJoinRepeatQuery());
     }
 
     private SQLiteOpenHelper mOpenHelper;
@@ -109,37 +131,14 @@ public class TaskProvider extends ContentProvider
         if (Logger.LOGV)
             Log.v(TAG, "query() ");
 
-        SQLiteDatabase db = mOpenHelper.getReadableDatabase();
-        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
-        Cursor ret;
-        String rawQuery;
+        TaskQuery taskQuery = hmQueries.get(uriMatcher.match(url));
 
-        switch (uriMatcher.match(url))
-        {
-            case TASKS_URI_ID:
-                qb.setTables(TASK_TABLE);
-                ret = qb.query(db,
-                               projectionIn,
-                               selection,
-                               selectionArgs,
-                               null,
-                               null,
-                               sort);
-
-                break;
-            case VIEW_EVERYTHING_URI_ID:
-                rawQuery = "SELECT * FROM "+TaskTable.TASK_TABLE+","+TaskTable.REPEATABLE_TABLE;
-                ret = db.rawQuery(rawQuery, null);
-                break;
-            /*case TASK_ID_URI: // query is for specific task
-                qb.setTables(TASK_TABLE);
-                qb.appendWhere(TaskCol.TASK_ID + "=");
-                qb.appendWhere(url.getPathSegments().get(1));
-                break;
-            */
-            default:
-                throw new IllegalArgumentException("Unknown URI " + url);
-        }
+        Cursor ret = taskQuery.query(mOpenHelper,
+                                     url,
+                                     projectionIn,
+                                     selection,
+                                     selectionArgs,
+                                     sort);
 
         if (ret == null && Logger.LOGV)
         {
@@ -152,6 +151,58 @@ public class TaskProvider extends ContentProvider
 
         return ret;
     }
+
+    static private class TaskUriQuery implements TaskQuery
+    {
+
+        @Override
+        public Cursor query(SQLiteOpenHelper openHelper,
+                            Uri url,
+                            String[] projectionIn,
+                            String selection,
+                            String[] selectionArgs,
+                            String sort)
+        {
+            SQLiteDatabase db = openHelper.getReadableDatabase();
+            SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+            qb.setTables(TASK_TABLE);
+            return qb.query(db,
+                            projectionIn,
+                            selection,
+                            selectionArgs,
+                            null,
+                            null,
+                            sort);
+
+        }
+    }
+
+    static private class TaskJoinRepeatQuery implements TaskQuery
+    {
+
+        @Override
+        public Cursor query(SQLiteOpenHelper openHelper,
+                            Uri url,
+                            String[] projectionIn,
+                            String selection,
+                            String[] selectionArgs,
+                            String sort)
+        {
+            SQLiteDatabase db = openHelper.getReadableDatabase();
+            String rawQuery = selection != null ?
+                               String.format("SELECT %s FROM %s,%s WHERE %s",
+                                             convertArrayToString(projectionIn),
+                                             TaskTable.TASK_TABLE,
+                                             TaskTable.REPEATABLE_TABLE,
+                                             selection)
+                               :String.format("SELECT %s FROM %s,%s",
+                                              convertArrayToString(projectionIn),
+                                              TaskTable.TASK_TABLE,
+                                              TaskTable.REPEATABLE_TABLE);
+            return db.rawQuery(rawQuery, selectionArgs);
+        }
+    }
+
 
 
     @Override
@@ -284,4 +335,15 @@ public class TaskProvider extends ContentProvider
         }
     }
 
+    public static String convertArrayToString(String[] array){
+        String str = "";
+        for (int i = 0;i<array.length; i++) {
+            str += array[i];
+            if(i<array.length-1)
+            {
+                str = str+",";
+            }
+        }
+        return str;
+    }
 }

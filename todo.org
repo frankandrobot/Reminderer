@@ -148,3 +148,7 @@ conjunction with DateFormat.
 ** TODO Refactor PhoneBoot to use a service
  + Receivers cannot perform long running operations!
 ** TODO No receiver can call the database directly
+* Backend
+** TODO make sure db is multi-thread safe
+* UI
+** TODO implement cartoon animation to swipe to delete

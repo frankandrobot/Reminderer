@@ -410,7 +410,7 @@ public class TaskTest
         addTask.loadInBackground();
 
         ContentResolver resolver = activity.getContentResolver();
-        Cursor cursor = resolver.query(TaskProvider.VIEW_EVERYTHING_URI,
+        Cursor cursor = resolver.query(TaskProvider.TASK_JOIN_REPEAT_URI,
                                        new TaskTable().getAllColumns(TaskCol.class,
                                                                      RepeatsCol.class),
                                        TaskCol.TASK_DUE_DATE+"="+now.getMillis(),
