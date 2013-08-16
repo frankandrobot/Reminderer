@@ -41,9 +41,11 @@ public class Task extends DataStructure
         ,repeatId(RepeatsCol.REPEAT_ID)
         ,taskId_fk(RepeatsCol.REPEAT_TASK_ID_FK);
 
-        Task_Ids(Column colname) { this.colname = colname.colname(); }
+        Task_Ids(Column colname) { this.colname = colname.colname(); type = Long.class; }
         public String colname;
         public String colname() { return colname; }
+        public Class<?> type;
+        public Class<?> type() { return type; }
     }
 
     public enum Task_String implements Field<String>, Column
@@ -51,45 +53,55 @@ public class Task extends DataStructure
         desc(TaskCol.TASK_DESC);
         //,location();
 
-        Task_String(Column colname) { this.colname = colname.colname(); }
+        Task_String(Column colname) { this.colname = colname.colname(); type = String.class; }
         public String colname() { return colname; }
         public String colname;
+        public Class<?> type;
+        public Class<?> type() { return type; }
     }
 
     public enum Task_Int implements DataStructure.Field<Integer>, Column
     {
         repeatsType(TaskCol.TASK_REPEAT_TYPE);
 
-        Task_Int(Column colname) { this.colname = colname.colname(); }
+        Task_Int(Column colname) { this.colname = colname.colname(); type = Integer.class; }
         public String colname;
         public String colname() { return colname; }
+        public Class<?> type;
+        public Class<?> type() { return type; }
     }
 
     public enum Task_Parser_Calendar implements Field<TaskCalendar>, Column
     {
         dueDate(TaskCol.TASK_DUE_DATE);
 
-        Task_Parser_Calendar(Column colname) { this.colname = colname.colname(); }
+        Task_Parser_Calendar(Column colname) { this.colname = colname.colname(); type = TaskCalendar.class;}
         public String colname;
         public String colname() { return colname; }
+        public Class<?> type;
+        public Class<?> type() { return type; }
     }
 
     protected enum Task_Alarm_Calendar implements Field<Long>, Column
     {
         nextDueDate(RepeatsCol.REPEAT_NEXT_DUE_DATE);
 
-        Task_Alarm_Calendar(Column colname) { this.colname = colname.colname(); }
+        Task_Alarm_Calendar(Column colname) { this.colname = colname.colname(); this.type = Long.class; }
         public String colname;
         public String colname() { return colname; }
+        public Class<?> type;
+        public Class<?> type() { return type; }
     }
 
     public enum Task_Boolean implements Field<Boolean>, Column
     {
         isComplete(TaskCol.TASK_IS_COMPLETE);
 
-        Task_Boolean(Column colname) { this.colname = colname.colname(); }
+        Task_Boolean(Column colname) { this.colname = colname.colname(); this.type = Boolean.class; }
         public String colname;
         public String colname() { return colname; }
+        public Class<?> type;
+        public Class<?> type() { return type; }
     }
 
     private void init()
@@ -317,4 +329,26 @@ public class Task extends DataStructure
                          (Long)initialValues.get(Task_Alarm_Calendar.nextDueDate.colname));
         return repeatValues;
     }
+
+    public ContentValues getContentValues(Field<?>... aFieldType)
+    {
+        ContentValues values = new ContentValues();
+        for(Field<?> fieldType:aFieldType)
+        {
+            if (fieldType.type() == Long.class)
+                values.put(((Column)fieldType).colname(), (Long)get(fieldType) );
+            else if (fieldType.type() == Integer.class)
+                values.put(((Column)fieldType).colname(), (Integer)get(fieldType) );
+            else if (fieldType.type() == Boolean.class)
+                values.put(((Column)fieldType).colname(), (Boolean)get(fieldType) ? 1 : 0);
+            else if (fieldType.type() == String.class)
+                values.put(((Column)fieldType).colname(), (String)get(fieldType) );
+            else if (fieldType.type() == TaskCalendar.class)
+                values.put(((Column)fieldType).colname(),
+                           ((TaskCalendar)get(fieldType)).getDate().getTime());
+        }
+        return values;
+    }
+
+
 }

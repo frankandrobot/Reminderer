@@ -47,7 +47,10 @@ import java.util.Calendar;
  */
 public class DataStructure
 {
-    public interface Field<T> {}
+    public interface Field<T>
+    {
+        public Class<?> type();
+    }
 
     protected HashMap<Field<?>,Object> hmFieldValues = new HashMap<Field<?>,Object>();
     protected HashMap<Class<? extends Field<?>>,Object> hmClassValues  = new HashMap<Class<? extends Field<?>>,Object>();
