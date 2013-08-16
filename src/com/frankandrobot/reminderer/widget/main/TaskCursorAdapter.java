@@ -189,13 +189,14 @@ public class TaskCursorAdapter extends SimpleCursorAdapter
 
                 taskDatabaseFacade.forceLoad(builder,
                                              listFragment,
+
                                              new TaskLoadListenerAdapter()
                                              {
                                                  @Override
                                                  public void onLoadFinished(Loader<Cursor> loader,
                                                                             Cursor data)
                                                  {
-                                                     ((SimpleCursorAdapter)listFragment.getListAdapter()).swapCursor(data);
+                                                     //((SimpleCursorAdapter)listFragment.getListAdapter()).swapCursor(data);
                                                  }
                                              });
 
