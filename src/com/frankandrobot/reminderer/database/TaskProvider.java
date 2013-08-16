@@ -221,8 +221,7 @@ public class TaskProvider extends ContentProvider
             taskQuery += TaskCol.TASK_ID + ",";
             taskQuery += TaskCol.TASK_DESC + ",";
             taskQuery += TaskCol.TASK_DUE_DATE + ",";
-            taskQuery += TaskCol.TASK_REPEAT_TYPE + ",";
-            taskQuery += " NULL ";
+            taskQuery += TaskCol.TASK_REPEAT_TYPE;
             taskQuery += " FROM ";
             taskQuery += TASK_TABLE;
             taskQuery += " WHERE ";
@@ -234,9 +233,8 @@ public class TaskProvider extends ContentProvider
             repeatQuery += "SELECT ";
             repeatQuery += TaskCol.TASK_ID + ",";
             repeatQuery += TaskCol.TASK_DESC + ",";
-            repeatQuery += TaskCol.TASK_DUE_DATE + ",";
-            repeatQuery += TaskCol.TASK_REPEAT_TYPE + ",";
-            repeatQuery += RepeatsCol.REPEAT_NEXT_DUE_DATE;
+            repeatQuery += RepeatsCol.REPEAT_NEXT_DUE_DATE + ",";
+            repeatQuery += TaskCol.TASK_REPEAT_TYPE;
             repeatQuery += " FROM ";
             repeatQuery += TASK_TABLE+","+REPEATABLE_TABLE;
             repeatQuery += " WHERE ";

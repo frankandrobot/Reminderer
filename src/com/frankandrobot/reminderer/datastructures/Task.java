@@ -161,6 +161,8 @@ public class Task extends DataStructure
             //due date is in future so return that
             if (get(Task_Parser_Calendar.dueDate).getDate().getTime() >= System.currentTimeMillis())
             {
+                set(Task_Alarm_Calendar.nextDueDate,
+                    get(Task_Parser_Calendar.dueDate).getDate().getTime());
                 return get(Task_Parser_Calendar.dueDate).getDate().getTime();
             }
             else
@@ -235,6 +237,7 @@ public class Task extends DataStructure
     public <T extends DataStructure> T combine(T source)
     {
         TaskCalendar taskCalendar = get(Task_Parser_Calendar.dueDate);
+        int repeatType = get(Task_Int.repeatsType);
 
         super.combine(source);
 
@@ -251,6 +254,11 @@ public class Task extends DataStructure
         get(Task_Parser_Calendar.dueDate).day = source.get(Task_Parser_Calendar.dueDate).day != null
                 ? source.get(Task_Parser_Calendar.dueDate).day
                 : get(Task_Parser_Calendar.dueDate).day;
+
+        //if this repeat type is not 0, then keep it
+        //otherwise override it with the new value
+        if (repeatType != 0)
+            set(Task_Int.repeatsType, repeatType);
 
         return (T) this;
     }

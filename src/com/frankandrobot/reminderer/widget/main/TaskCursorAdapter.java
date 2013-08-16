@@ -23,11 +23,14 @@ import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.LoaderBuilder;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.helpers.Logger;
+import com.frankandrobot.reminderer.parser.GrammarRule;
 import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener;
 import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener.IFlingListener;
 import com.frankandrobot.reminderer.widget.main.MainTaskListFragment.MainTaskViewHolder;
 
 import java.util.Calendar;
+
+import static com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken;
 
 /**
  * Adapter that converts cursors to these rows:
@@ -145,7 +148,11 @@ public class TaskCursorAdapter extends SimpleCursorAdapter
         {
             MainTaskViewHolder viewHolder = (MainTaskViewHolder) rowView.getTag();
             viewHolder.taskDesc.setText(getCursor().getString(getCursor().getColumnIndex(TaskCol.TASK_DESC.colname())));
-            viewHolder.taskDueDate.setText(getDueDate(getCursor()));
+            String dueDate = getDueDate(getCursor());
+            int repeatType = getCursor().getInt(getCursor().getColumnIndex(TaskCol.TASK_REPEAT_TYPE.colname()));
+            String repeatVal = "";
+            if (repeatType > 0) repeatVal=", Repeats: "+ RepeatsToken.Type.toType(repeatType).getDescription();
+            viewHolder.taskDueDate.setText(dueDate+repeatVal);
             viewHolder.touchListener.setCursorPosition(position);
         }
 

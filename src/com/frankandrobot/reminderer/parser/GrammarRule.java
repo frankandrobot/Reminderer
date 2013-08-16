@@ -388,15 +388,17 @@ abstract public class GrammarRule implements IGrammarRule<Task>
     {
         public enum Type
         {
-            HOUR(1)
-            ,DAY(2)
-            ,WEEK(3)
-            ,MONTH(4)
-            ,YEAR(5);
+            HOUR(1, "HOURLY")
+            ,DAY(2, "DAILY")
+            ,WEEK(3, "WEEKLY")
+            ,MONTH(4, "MONTHLY")
+            ,YEAR(5, "YEARLY");
 
-            Type(int type) { this.type = type; }
+            Type(int type, String adj) { this.type = type; this.adj = adj; }
             int type;
+            String adj;
             public int getType() { return type; }
+            public String getDescription() { return adj; }
             public static Type toType(int i)
             {
                 switch(i)
