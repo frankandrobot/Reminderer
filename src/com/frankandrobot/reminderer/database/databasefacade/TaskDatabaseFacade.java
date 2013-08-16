@@ -124,15 +124,13 @@ public class TaskDatabaseFacade
         {
             this.context = ((FragmentActivity) activity);
             ((FragmentActivity) activity).getSupportLoaderManager()
-                    .initLoader(builder.loaderId, args, new LoaderCallback())
-                    .forceLoad();
+                    .restartLoader(builder.loaderId, args, new LoaderCallback()).forceLoad();
         }
         else
         {
             this.context = ((Fragment) activity).getActivity();
             ((Fragment) activity).getLoaderManager()
-                    .initLoader(builder.loaderId, args, new LoaderCallback())
-                    .forceLoad();
+                    .restartLoader(builder.loaderId, args, new LoaderCallback()).forceLoad();
         }
 
         return this;
@@ -167,13 +165,13 @@ public class TaskDatabaseFacade
         {
             this.context = ((FragmentActivity) activity);
             ((FragmentActivity) activity).getSupportLoaderManager()
-                    .initLoader(builder.loaderId, args, new LoaderCallback());
+                    .restartLoader(builder.loaderId, args, new LoaderCallback());
         }
         else
         {
             this.context = ((Fragment) activity).getActivity();
             ((Fragment) activity).getLoaderManager()
-                    .initLoader(builder.loaderId, args, new LoaderCallback());
+                    .restartLoader(builder.loaderId, args, new LoaderCallback());
         }
 
         return this;
