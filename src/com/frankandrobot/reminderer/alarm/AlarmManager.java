@@ -123,7 +123,7 @@ public class AlarmManager
         return context.getContentResolver().query(
                 TaskProvider.LOAD_DUE_TASKS_URI,
                 null,
-                null,
+                compareOp.toString(),
                 new String[]{Long.toString(dueTime)},
                 TaskCol.TASK_DUE_DATE.colname());
     }

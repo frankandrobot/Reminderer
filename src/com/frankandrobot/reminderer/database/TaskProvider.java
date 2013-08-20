@@ -244,9 +244,9 @@ public class TaskProvider extends ContentProvider
     static private class LoadDueTasksQuery implements TaskQuery
     {
         @Override
-        public Cursor query(SQLiteOpenHelper openHelper, Uri url, String[] projectionIn, String selection, String[] selectionArgs, String sort)
+        public Cursor query(SQLiteOpenHelper openHelper, Uri url, String[] projectionIn, String operator, String[] selectionArgs, String sort)
         {
-            if (projectionIn != null && selection != null)
+            if (projectionIn != null && operator != null)
                 throw new IllegalArgumentException("This query does not support projectin or selection params");
 
             String[] realProjection = new TaskTable().getColumns(
@@ -260,11 +260,11 @@ public class TaskProvider extends ContentProvider
             String realSelection = "";
             realSelection += TASK_IS_COMPLETE+"=0";
             realSelection += " AND ";
-            realSelection +=TASK_DUE_DATE+"=?";
+            realSelection += TASK_DUE_DATE+operator+"?";
             realSelection += SEPARATOR;
             realSelection += TASK_IS_COMPLETE+"=0";
             realSelection += " AND ";
-            realSelection += REPEAT_NEXT_DUE_DATE+"=?";
+            realSelection += REPEAT_NEXT_DUE_DATE+operator+"?";
 
             return new TaskUnionRepeatQuery().query(openHelper,
                                                     url,
@@ -303,7 +303,7 @@ public class TaskProvider extends ContentProvider
             String[] splitSelection = null;
             if (selection != null)
             {
-                if (selection.matches("^.*"+SEPARATOR+".*$"))
+                if (selection.matches("^.*" + SEPARATOR + ".*$"))
                 {
                     splitSelection = selection.split(SEPARATOR);
                 }
