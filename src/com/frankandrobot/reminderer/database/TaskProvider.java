@@ -49,7 +49,7 @@ public class TaskProvider extends ContentProvider
 
     static private HashMap<Integer, TaskQuery> hmQueries = new HashMap<Integer, TaskQuery>();
 
-    final static private String SEPARATOR = "\\|";
+    final static private String SEPARATOR = "###";
 
     private interface TaskQuery
     {
@@ -80,24 +80,16 @@ public class TaskProvider extends ContentProvider
     public final static Uri LOAD_OPEN_TASKS_URI = Uri.parse(baseUri + "loadopentasks");
     public final static Uri LOAD_DUE_TASKS_URI = Uri.parse(baseUri + "loadduetasks");
 
-    /**
-     * A {@link UriMatcher} is a helper object that helps parse incoming
-     * Uri requests.
-     *
-     * Example:
-     *
-     * - com.frankandrobot.reminderer.dbprovider/tasks
-     * - com.frankandrobot.reminderer.dbprovider/tasks/#
-     * - com.frankandrobot.reminderer.dbprovider/duedate/#
-     */
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
-    private static final int TASKS_URI_ID = 1;
+    private static final int TASKS_URI_ID = 0;
 
     static
     {
         int len = 0;
-        uriMatcher.addURI(AUTHORITY_NAME, TASK_TABLE, len++);
+        uriMatcher.addURI(CONTENT_URI.getAuthority(),
+                          CONTENT_URI.getPath().substring(1),
+                          len++);
         uriMatcher.addURI(TASK_JOIN_REPEAT_URI.getAuthority(),
                           TASK_JOIN_REPEAT_URI.getPath().substring(1),
                           len++);
@@ -267,9 +259,11 @@ public class TaskProvider extends ContentProvider
 
             String realSelection = "";
             realSelection += TASK_IS_COMPLETE+"=0";
-            realSelection += TASK_DUE_DATE+"=?";
+            realSelection += " AND ";
+            realSelection +=TASK_DUE_DATE+"=?";
             realSelection += SEPARATOR;
             realSelection += TASK_IS_COMPLETE+"=0";
+            realSelection += " AND ";
             realSelection += REPEAT_NEXT_DUE_DATE+"=?";
 
             return new TaskUnionRepeatQuery().query(openHelper,
