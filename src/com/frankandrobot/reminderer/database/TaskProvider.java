@@ -250,6 +250,63 @@ public class TaskProvider extends ContentProvider
         }
     }
 
+    static private class TaskUnionRepeatQuery implements TaskQuery
+    {
+        @Override
+        public Cursor query(SQLiteOpenHelper openHelper,
+                            Uri url,
+                            String[] projectionIn,
+                            String selection,
+                            String[] selectionArgs,
+                            String sort)
+        {
+            if (projectionIn.length % 2 != 0)
+                throw new IllegalArgumentException("Not a multiple of 2. Are you using the right projection?");
+
+            SQLiteDatabase db = openHelper.getReadableDatabase();
+
+            String taskQuery = "";
+            taskQuery += "SELECT ";
+            //first half of projection arguments are for task table
+            for(int i=0; i<projectionIn.length / 2 - 1; ++i)
+            taskQuery += projectionIn[i] + ",";
+            taskQuery += projectionIn[projectionIn.length / 2 - 1];
+            //end of selection
+            taskQuery += " FROM ";
+            taskQuery += TASK_TABLE;
+            taskQuery += " WHERE ";
+            taskQuery += TaskCol.TASK_REPEAT_TYPE+"=0";
+            taskQuery += " AND ";
+            taskQuery += selection;
+
+            String repeatQuery = "";
+            repeatQuery += "SELECT ";
+            //second half of projection arguments are for repeat table
+            for(int i=projectionIn.length / 2; i<projectionIn.length - 1; ++i)
+            repeatQuery += projectionIn[i] + ",";
+            repeatQuery += projectionIn[projectionIn.length - 1];
+            //end of selection
+            repeatQuery += " FROM ";
+            repeatQuery += TASK_TABLE+","+REPEATABLE_TABLE;
+            repeatQuery += " WHERE ";
+            repeatQuery += TaskCol.TASK_REPEAT_TYPE+">0";
+            repeatQuery += " AND ";
+            repeatQuery += selection;
+
+            String rawQuery = "";
+            rawQuery += taskQuery+" UNION "+repeatQuery;
+            rawQuery += " ORDER BY " + sort;
+
+            String[] newSelectionArgs = new String[2*selectionArgs.length];
+            int len = 0;
+            for(String selectionArg:selectionArgs)
+                newSelectionArgs[len++] = selectionArg;
+            for(String selectionArg:selectionArgs)
+                newSelectionArgs[len++] = selectionArg;
+            return db.rawQuery(rawQuery, newSelectionArgs);
+        }
+    }
+
     @Override
     public int update(Uri url,
                       ContentValues values,
