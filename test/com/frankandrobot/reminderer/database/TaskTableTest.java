@@ -49,4 +49,20 @@ public class TaskTableTest
         assert(Arrays.asList(aCols).contains(RepeatsCol.REPEAT_NEXT_DUE_DATE.colname()));
         assert(Arrays.asList(aCols).contains(TaskCol.TASK_DUE_DATE.colname()));
     }
+
+    @Test
+    public void testGetColumnsWithNull()
+    {
+        TaskTable table = new TaskTable();
+        String[] aCols = table.getColumns(TaskCol.TASK_ID, null);
+        assert(aCols.length == 2);
+        assert(Arrays.asList(aCols).contains(TaskCol.TASK_ID.colname()));
+        assert(Arrays.asList(aCols).contains("NULL"));
+
+        aCols = table.getColumns(null, TaskCol.TASK_ID);
+        assert(aCols.length == 2);
+        assert(Arrays.asList(aCols).contains("NULL"));
+        assert(Arrays.asList(aCols).contains(TaskCol.TASK_ID.colname()));
+
+    }
 }

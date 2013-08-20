@@ -72,7 +72,7 @@ final public class TaskTable
         String[] aStrCols = new String[aCols.length];
         int len = 0;
         for(Column col:aCols)
-            aStrCols[len++] = col.colname();
+            aStrCols[len++] = col != null ? col.colname() : "NULL";
         return aStrCols;
     }
 
