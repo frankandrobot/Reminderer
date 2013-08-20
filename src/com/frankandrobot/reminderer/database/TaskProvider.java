@@ -35,8 +35,10 @@ import com.frankandrobot.reminderer.helpers.Logger;
 import java.util.HashMap;
 
 import static com.frankandrobot.reminderer.database.TaskTable.REPEATABLE_TABLE;
+import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.*;
 import static com.frankandrobot.reminderer.database.TaskTable.TASK_TABLE;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskCol;
+import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.*;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskTableHelper;
 
 /**
@@ -219,19 +221,19 @@ public class TaskProvider extends ContentProvider
 
             String[] realProjection = new TaskTable().getColumns(
                     //task table
-                    TaskCol.TASK_ID,
-                    TaskCol.TASK_DESC,
-                    TaskCol.TASK_DUE_DATE,
-                    TaskCol.TASK_REPEAT_TYPE,
+                    TASK_ID,
+                    TASK_DESC,
+                    TASK_DUE_DATE,
+                    TASK_REPEAT_TYPE,
                     //repeat table
-                    TaskCol.TASK_ID,
-                    TaskCol.TASK_DESC,
-                    RepeatsCol.REPEAT_NEXT_DUE_DATE,
-                    TaskCol.TASK_REPEAT_TYPE
+                    TASK_ID,
+                    TASK_DESC,
+                    REPEAT_NEXT_DUE_DATE,
+                    TASK_REPEAT_TYPE
             );
 
-            String realSelection = TaskCol.TASK_IS_COMPLETE+"=0";
-            String realOrder = TaskCol.TASK_DUE_DATE.colname();
+            String realSelection = TASK_IS_COMPLETE+"=0";
+            String realOrder = TASK_DUE_DATE.colname();
 
             return new TaskUnionRepeatQuery().query(openHelper,
                                                     url,
@@ -267,7 +269,7 @@ public class TaskProvider extends ContentProvider
             taskQuery += " FROM ";
             taskQuery += TASK_TABLE;
             taskQuery += " WHERE ";
-            taskQuery += TaskCol.TASK_REPEAT_TYPE+"=0";
+            taskQuery += TASK_REPEAT_TYPE+"=0";
             if (selection != null)
             {
                 taskQuery += " AND ";
@@ -284,7 +286,7 @@ public class TaskProvider extends ContentProvider
             repeatQuery += " FROM ";
             repeatQuery += TASK_TABLE+","+REPEATABLE_TABLE;
             repeatQuery += " WHERE ";
-            repeatQuery += TaskCol.TASK_REPEAT_TYPE+">0";
+            repeatQuery += TASK_REPEAT_TYPE+">0";
             if (selection != null)
             {
                 repeatQuery += " AND ";
@@ -370,11 +372,11 @@ public class TaskProvider extends ContentProvider
             throw new SQLException("Failed to insert row into " + url);
         }
 
-        if (initialValues.containsKey(TaskCol.TASK_REPEAT_TYPE.colname())
-                    && initialValues.getAsInteger(TaskCol.TASK_REPEAT_TYPE.colname()) != 0)
+        if (initialValues.containsKey(TASK_REPEAT_TYPE.colname())
+                    && initialValues.getAsInteger(TASK_REPEAT_TYPE.colname()) != 0)
         {
             ContentValues repeatValues = Task.getRepeatValuesFromInitial(initialValues);
-            repeatValues.put(RepeatsCol.REPEAT_TASK_ID_FK.colname(), taskId);
+            repeatValues.put(REPEAT_TASK_ID_FK.colname(), taskId);
             long repeatId = db.insert(REPEATABLE_TABLE, null, repeatValues);
 
             if (repeatId < 0)
