@@ -214,39 +214,31 @@ public class TaskProvider extends ContentProvider
                             String[] selectionArgs,
                             String sort)
         {
-            SQLiteDatabase db = openHelper.getReadableDatabase();
+            if (projectionIn != null && selection != null && selectionArgs != null && sort != null)
+                throw new IllegalArgumentException("This query does not support any params");
 
-            String taskQuery = "";
-            taskQuery += "SELECT ";
-            taskQuery += TaskCol.TASK_ID + ",";
-            taskQuery += TaskCol.TASK_DESC + ",";
-            taskQuery += TaskCol.TASK_DUE_DATE + ",";
-            taskQuery += TaskCol.TASK_REPEAT_TYPE;
-            taskQuery += " FROM ";
-            taskQuery += TASK_TABLE;
-            taskQuery += " WHERE ";
-            taskQuery += TaskCol.TASK_IS_COMPLETE+"=0";
-            taskQuery += " AND ";
-            taskQuery += TaskCol.TASK_REPEAT_TYPE+"=0";
+            String[] realProjection = new TaskTable().getColumns(
+                    //task table
+                    TaskCol.TASK_ID,
+                    TaskCol.TASK_DESC,
+                    TaskCol.TASK_DUE_DATE,
+                    TaskCol.TASK_REPEAT_TYPE,
+                    //repeat table
+                    TaskCol.TASK_ID,
+                    TaskCol.TASK_DESC,
+                    RepeatsCol.REPEAT_NEXT_DUE_DATE,
+                    TaskCol.TASK_REPEAT_TYPE
+            );
 
-            String repeatQuery = "";
-            repeatQuery += "SELECT ";
-            repeatQuery += TaskCol.TASK_ID + ",";
-            repeatQuery += TaskCol.TASK_DESC + ",";
-            repeatQuery += RepeatsCol.REPEAT_NEXT_DUE_DATE + ",";
-            repeatQuery += TaskCol.TASK_REPEAT_TYPE;
-            repeatQuery += " FROM ";
-            repeatQuery += TASK_TABLE+","+REPEATABLE_TABLE;
-            repeatQuery += " WHERE ";
-            repeatQuery += TaskCol.TASK_IS_COMPLETE+"=0";
-            repeatQuery += " AND ";
-            repeatQuery += TaskCol.TASK_REPEAT_TYPE+">0";
+            String realSelection = TaskCol.TASK_IS_COMPLETE+"=0";
+            String realOrder = TaskCol.TASK_DUE_DATE.colname();
 
-            String rawQuery = "";
-            rawQuery += taskQuery+" UNION "+repeatQuery;
-            rawQuery += " ORDER BY " + TaskCol.TASK_DUE_DATE;
-
-            return db.rawQuery(rawQuery, null);
+            return new TaskUnionRepeatQuery().query(openHelper,
+                                                    url,
+                                                    realProjection,
+                                                    realSelection,
+                                                    null,
+                                                    realOrder);
         }
     }
 
@@ -276,8 +268,11 @@ public class TaskProvider extends ContentProvider
             taskQuery += TASK_TABLE;
             taskQuery += " WHERE ";
             taskQuery += TaskCol.TASK_REPEAT_TYPE+"=0";
-            taskQuery += " AND ";
-            taskQuery += selection;
+            if (selection != null)
+            {
+                taskQuery += " AND ";
+                taskQuery += selection;
+            }
 
             String repeatQuery = "";
             repeatQuery += "SELECT ";
@@ -290,19 +285,26 @@ public class TaskProvider extends ContentProvider
             repeatQuery += TASK_TABLE+","+REPEATABLE_TABLE;
             repeatQuery += " WHERE ";
             repeatQuery += TaskCol.TASK_REPEAT_TYPE+">0";
-            repeatQuery += " AND ";
-            repeatQuery += selection;
+            if (selection != null)
+            {
+                repeatQuery += " AND ";
+                repeatQuery += selection;
+            }
 
             String rawQuery = "";
             rawQuery += taskQuery+" UNION "+repeatQuery;
             rawQuery += " ORDER BY " + sort;
 
-            String[] newSelectionArgs = new String[2*selectionArgs.length];
-            int len = 0;
-            for(String selectionArg:selectionArgs)
-                newSelectionArgs[len++] = selectionArg;
-            for(String selectionArg:selectionArgs)
-                newSelectionArgs[len++] = selectionArg;
+            String[] newSelectionArgs = null;
+            if (selectionArgs != null)
+            {
+                newSelectionArgs = new String[2*selectionArgs.length];
+                int len = 0;
+                for(String selectionArg:selectionArgs)
+                    newSelectionArgs[len++] = selectionArg;
+                for(String selectionArg:selectionArgs)
+                    newSelectionArgs[len++] = selectionArg;
+            }
             return db.rawQuery(rawQuery, newSelectionArgs);
         }
     }
