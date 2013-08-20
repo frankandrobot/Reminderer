@@ -28,7 +28,6 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
 
-import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
 
@@ -37,7 +36,6 @@ import java.util.HashMap;
 import static com.frankandrobot.reminderer.database.TaskTable.REPEATABLE_TABLE;
 import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.*;
 import static com.frankandrobot.reminderer.database.TaskTable.TASK_TABLE;
-import static com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.*;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskTableHelper;
 
@@ -47,9 +45,11 @@ import static com.frankandrobot.reminderer.database.TaskTable.TaskTableHelper;
  */
 public class TaskProvider extends ContentProvider
 {
-    private static String TAG = "R:Provider";
+    final private static String TAG = "R:Provider";
 
     static private HashMap<Integer, TaskQuery> hmQueries = new HashMap<Integer, TaskQuery>();
+
+    final static private String SEPARATOR = "\\|";
 
     private interface TaskQuery
     {
@@ -78,6 +78,7 @@ public class TaskProvider extends ContentProvider
      */
     public final static Uri TASK_JOIN_REPEAT_URI = Uri.parse(baseUri + "taskjoinrepeat");
     public final static Uri LOAD_OPEN_TASKS_URI = Uri.parse(baseUri + "loadopentasks");
+    public final static Uri LOAD_DUE_TASKS_URI = Uri.parse(baseUri + "loadduetasks");
 
     /**
      * A {@link UriMatcher} is a helper object that helps parse incoming
@@ -92,23 +93,25 @@ public class TaskProvider extends ContentProvider
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     private static final int TASKS_URI_ID = 1;
-    private static final int TASK_JOIN_REPEAT_URI_ID = 2;
-    private static final int LOAD_OPEN_TASKS_URI_ID = 3;
-
 
     static
     {
-        uriMatcher.addURI(AUTHORITY_NAME, TASK_TABLE, TASKS_URI_ID);
+        int len = 0;
+        uriMatcher.addURI(AUTHORITY_NAME, TASK_TABLE, len++);
         uriMatcher.addURI(TASK_JOIN_REPEAT_URI.getAuthority(),
                           TASK_JOIN_REPEAT_URI.getPath().substring(1),
-                          TASK_JOIN_REPEAT_URI_ID);
+                          len++);
         uriMatcher.addURI(LOAD_OPEN_TASKS_URI.getAuthority(),
                           LOAD_OPEN_TASKS_URI.getPath().substring(1),
-                          LOAD_OPEN_TASKS_URI_ID);
+                          len++);
+        uriMatcher.addURI(LOAD_DUE_TASKS_URI.getAuthority(),
+                          LOAD_DUE_TASKS_URI.getPath().substring(1),
+                          len++);
 
-        hmQueries.put(TASKS_URI_ID, new TaskUriQuery());
-        hmQueries.put(TASK_JOIN_REPEAT_URI_ID, new TaskJoinRepeatQuery());
-        hmQueries.put(LOAD_OPEN_TASKS_URI_ID, new LoadOpenTasksQuery());
+        hmQueries.put(uriMatcher.match(CONTENT_URI), new TaskUriQuery());
+        hmQueries.put(uriMatcher.match(TASK_JOIN_REPEAT_URI), new TaskJoinRepeatQuery());
+        hmQueries.put(uriMatcher.match(LOAD_OPEN_TASKS_URI), new LoadOpenTasksQuery());
+        hmQueries.put(uriMatcher.match(LOAD_DUE_TASKS_URI), new LoadDueTasksQuery());
     }
 
     private SQLiteOpenHelper mOpenHelper;
@@ -225,11 +228,13 @@ public class TaskProvider extends ContentProvider
                     TASK_DESC,
                     TASK_DUE_DATE,
                     TASK_REPEAT_TYPE,
+                    null,
                     //repeat table
                     TASK_ID,
                     TASK_DESC,
                     REPEAT_NEXT_DUE_DATE,
-                    TASK_REPEAT_TYPE
+                    TASK_REPEAT_TYPE,
+                    REPEAT_TASK_ID_FK
             );
 
             String realSelection = TASK_IS_COMPLETE+"=0";
@@ -244,6 +249,48 @@ public class TaskProvider extends ContentProvider
         }
     }
 
+    static private class LoadDueTasksQuery implements TaskQuery
+    {
+        @Override
+        public Cursor query(SQLiteOpenHelper openHelper, Uri url, String[] projectionIn, String selection, String[] selectionArgs, String sort)
+        {
+            if (projectionIn != null && selection != null)
+                throw new IllegalArgumentException("This query does not support projectin or selection params");
+
+            String[] realProjection = new TaskTable().getColumns(
+                    TASK_ID,
+                    TASK_DUE_DATE,
+                    //... other table
+                    TASK_ID,
+                    REPEAT_NEXT_DUE_DATE
+            );
+
+            String realSelection = "";
+            realSelection += TASK_IS_COMPLETE+"=0";
+            realSelection += TASK_DUE_DATE+"=?";
+            realSelection += SEPARATOR;
+            realSelection += TASK_IS_COMPLETE+"=0";
+            realSelection += REPEAT_NEXT_DUE_DATE+"=?";
+
+            return new TaskUnionRepeatQuery().query(openHelper,
+                                                    url,
+                                                    realProjection,
+                                                    realSelection,
+                                                    selectionArgs,
+                                                    sort);
+        }
+    }
+
+    /**
+     * Convenience class that does a union with the task and repeat tables.
+     * Maps the first half of the projection to the task table.
+     * Maps the second half of the projection to the repeat table.
+     * Both tables share the selection args.
+     * Sort is done on the union.
+     *
+     * @note the repeat table is actually a join with the task table!
+     *
+     */
     static private class TaskUnionRepeatQuery implements TaskQuery
     {
         @Override
@@ -259,6 +306,19 @@ public class TaskProvider extends ContentProvider
 
             SQLiteDatabase db = openHelper.getReadableDatabase();
 
+            String[] splitSelection = null;
+            if (selection != null)
+            {
+                if (selection.matches("^.*"+SEPARATOR+".*$"))
+                {
+                    splitSelection = selection.split(SEPARATOR);
+                }
+                else
+                {
+                    splitSelection = new String[]{ selection, selection };
+                }
+            }
+
             String taskQuery = "";
             taskQuery += "SELECT ";
             //first half of projection arguments are for task table
@@ -273,7 +333,7 @@ public class TaskProvider extends ContentProvider
             if (selection != null)
             {
                 taskQuery += " AND ";
-                taskQuery += selection;
+                taskQuery += splitSelection[0];
             }
 
             String repeatQuery = "";
@@ -290,7 +350,7 @@ public class TaskProvider extends ContentProvider
             if (selection != null)
             {
                 repeatQuery += " AND ";
-                repeatQuery += selection;
+                repeatQuery += splitSelection[1];
             }
 
             String rawQuery = "";

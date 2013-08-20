@@ -120,11 +120,10 @@ public class AlarmManager
      */
     private Cursor getDueAlarmIds(Context context, long dueTime, CompareOp compareOp)
     {
-        final TaskTable table = new TaskTable();
         return context.getContentResolver().query(
-                TaskProvider.CONTENT_URI,
-                table.getColumns(TaskCol.TASK_ID, TaskCol.TASK_DUE_DATE),
-                TaskCol.TASK_DUE_DATE + compareOp.toString() + "?",
+                TaskProvider.LOAD_DUE_TASKS_URI,
+                null,
+                null,
                 new String[]{Long.toString(dueTime)},
                 TaskCol.TASK_DUE_DATE.colname());
     }
