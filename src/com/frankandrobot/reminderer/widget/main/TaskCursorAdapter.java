@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.frankandrobot.reminderer.R;
 import com.frankandrobot.reminderer.R.id;
 import com.frankandrobot.reminderer.database.TaskTable;
+import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.database.databasefacade.CursorDeleteProxy;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
