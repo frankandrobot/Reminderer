@@ -35,6 +35,7 @@ import com.frankandrobot.reminderer.helpers.Logger;
 import java.util.HashMap;
 
 import static com.frankandrobot.reminderer.database.TaskTable.REPEATABLE_TABLE;
+import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.REPEAT_ID;
 import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.REPEAT_NEXT_DUE_DATE;
 import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.REPEAT_TASK_ID_FK;
 import static com.frankandrobot.reminderer.database.TaskTable.TASK_TABLE;
@@ -381,7 +382,7 @@ public class TaskProvider extends ContentProvider
                     TASK_DESC,
                     REPEAT_NEXT_DUE_DATE,
                     TASK_REPEAT_TYPE,
-                    REPEAT_TASK_ID_FK
+                    REPEAT_ID
             );
 
             String realSelection = TASK_IS_COMPLETE + "=0";

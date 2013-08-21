@@ -54,6 +54,7 @@ public class TaskDatabaseFacade
         private int loaderId;
         private long dueTime;
         private long taskId;
+        private long repeatId;
 
         public LoaderBuilder setLoaderId(int loaderId)
         {
@@ -70,6 +71,12 @@ public class TaskDatabaseFacade
         public LoaderBuilder setTaskId(long taskId)
         {
             this.taskId = taskId;
+            return this;
+        }
+
+        public LoaderBuilder setRepeatId(long repeatId)
+        {
+            this.repeatId = repeatId;
             return this;
         }
     }
@@ -119,6 +126,7 @@ public class TaskDatabaseFacade
         Bundle args = new Bundle();
         args.putLong("dueTime", builder.dueTime);
         args.putLong("taskId", builder.taskId);
+        args.putLong("repeatId", builder.repeatId);
 
         if (activity instanceof FragmentActivity)
         {
@@ -160,6 +168,7 @@ public class TaskDatabaseFacade
         Bundle args = new Bundle();
         args.putLong("dueTime", builder.dueTime);
         args.putLong("taskId", builder.taskId);
+        args.putLong("repeatId", builder.repeatId);
 
         if (activity instanceof FragmentActivity)
         {

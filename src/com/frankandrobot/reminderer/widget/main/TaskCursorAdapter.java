@@ -173,6 +173,9 @@ public class TaskCursorAdapter extends SimpleCursorAdapter
                 //save the task to delete before "deleting" from cursor
                 getCursor().moveToPosition(positionToRemove);
                 long taskToCompleteId = getCursor().getLong(getCursor().getColumnIndex(TaskCol.TASK_ID.colname()));
+                long repeatIdToComplete = !getCursor().isNull(getCursor().getColumnIndex(RepeatsCol.REPEAT_ID.colname()))
+                                                  ? getCursor().getLong(getCursor().getColumnIndex(RepeatsCol.REPEAT_ID.colname()))
+                                                  : -1;
 
                 if (Logger.LOGD) Log.d(TAG,
                                        "onFling removing " + positionToRemove + " " + taskToCompleteId);
@@ -186,7 +189,8 @@ public class TaskCursorAdapter extends SimpleCursorAdapter
                 //Complete the task
                 LoaderBuilder builder = new LoaderBuilder();
                 builder.setLoaderId(TaskDatabaseFacade.CURSOR_COMPLETE_TASK_ID)
-                        .setTaskId(taskToCompleteId);
+                        .setTaskId(taskToCompleteId)
+                        .setRepeatId(repeatIdToComplete);
 
                 taskDatabaseFacade.forceLoad(builder,
                                              listFragment,
