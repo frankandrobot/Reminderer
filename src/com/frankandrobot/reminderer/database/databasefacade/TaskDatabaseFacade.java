@@ -198,7 +198,8 @@ public class TaskDatabaseFacade
                     return new AllOpenTasksLoader(context);
                 case CURSOR_COMPLETE_TASK_ID :
                     long taskId = args.getLong("taskId");
-                    return new CompleteTaskLoader(context, taskId);
+                    long repeatId = args.getLong("repeatId");
+                    return new CompleteTaskLoader(context, taskId, repeatId);
                 case CURSOR_LOAD_ALL_DUE_TASKS_ID:
                     long dueTime = args.getLong("dueTime", 0);
                     return new AllDueOpenTasksLoader(context, dueTime);
@@ -256,7 +257,7 @@ public class TaskDatabaseFacade
 
                 task.calculateNextDueDate();
 
-                resolver.insert(TaskProvider.CONTENT_URI,
+                resolver.insert(TaskProvider.TASKS_URI,
                                 task.getContentValuesForInsert());
                 alarmHelper.findAndEnableNextTasksDue(getContext(),
                                                       now,
@@ -281,7 +282,7 @@ public class TaskDatabaseFacade
                 Log.v(TAG, "Loading tasks");
             }
 
-            Cursor cursor = getContext().getContentResolver().query(TaskProvider.CONTENT_URI,
+            Cursor cursor = getContext().getContentResolver().query(TaskProvider.TASKS_URI,
                                                                     new String[]{TaskCol.TASK_DESC.toString()},
                                                                     null,
                                                                     null,

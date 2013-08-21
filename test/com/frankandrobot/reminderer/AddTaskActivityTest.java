@@ -53,7 +53,7 @@ public class AddTaskActivityTest
         Button saveButton = (Button) activity.findViewById(id.save_button);
         saveButton.performClick();
 
-        Cursor cursor = resolver.query(TaskProvider.CONTENT_URI,
+        Cursor cursor = resolver.query(TaskProvider.TASKS_URI,
             new String[]{TaskTable.TaskCol.TASK_DESC.toString()},
             null,
             null,

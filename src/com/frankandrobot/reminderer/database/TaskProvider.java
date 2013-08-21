@@ -26,6 +26,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.alarm.AlarmManager;
@@ -58,10 +59,9 @@ public class TaskProvider extends ContentProvider
      */
     public final static String AUTHORITY_NAME = "com.frankandrobot.reminderer.dbprovider";
     private final static String baseUri = "content://" + AUTHORITY_NAME + "/";
-    /**
-     * {@link Uri}s provide different views of different tables
-     */
-    public final static Uri CONTENT_URI = Uri.parse(baseUri + TASK_TABLE);
+
+    public final static Uri TASKS_URI = Uri.parse(baseUri + TASK_TABLE);
+    public final static Uri REPEAT_URI = Uri.parse(baseUri + REPEATABLE_TABLE);
     /**
      * Provides a view that is a join of the task and repeat table
      */
@@ -78,25 +78,26 @@ public class TaskProvider extends ContentProvider
 
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     private static final int TASKS_URI_ID = 0;
-    private static HashMap<Integer, TaskQuery> hmQueries = new HashMap<Integer, TaskQuery>();
+    private static HashMap<Integer, UriProvider> hmQueries = new HashMap<Integer, UriProvider>();
     private static int uriCount = 0;
 
     static
     {
-        addUri(CONTENT_URI, new TaskUriQuery());
-        addUri(TASK_JOIN_REPEAT_URI, new TaskJoinRepeatQuery());
-        addUri(LOAD_OPEN_TASKS_URI, new LoadOpenTasksQuery());
-        addUri(LOAD_DUE_TASKS_URI, new LoadDueTasksQuery());
+        addUri(TASKS_URI, new TaskUriProvider(), false);
+        addUri(REPEAT_URI, new SingleRowRepeatUriProvider(), true);
+        addUri(TASK_JOIN_REPEAT_URI, new TaskJoinRepeatProvider(), false);
+        addUri(LOAD_OPEN_TASKS_URI, new LoadOpenTasksProvider(), false);
+        addUri(LOAD_DUE_TASKS_URI, new LoadDueTasksProvider(), false);
     }
 
     private SQLiteOpenHelper mOpenHelper;
 
     public TaskProvider() {}
 
-    private static void addUri(Uri uri, TaskQuery query)
+    private static void addUri(Uri uri, UriProvider query, boolean isSingleRow)
     {
         uriMatcher.addURI(uri.getAuthority(),
-                          uri.getPath().substring(1),
+                          uri.getPath().substring(1)+(isSingleRow?"/#":""),
                           uriCount++);
         hmQueries.put(uriMatcher.match(uri), query);
     }
@@ -131,9 +132,9 @@ public class TaskProvider extends ContentProvider
     {
         if (Logger.LOGV) Log.v(TAG, "query() ");
 
-        TaskQuery taskQuery = hmQueries.get(uriMatcher.match(url));
+        UriProvider uriProvider = hmQueries.get(uriMatcher.match(url));
 
-        Cursor ret = taskQuery.query(mOpenHelper,
+        Cursor ret = uriProvider.query(mOpenHelper,
                                      url,
                                      projectionIn,
                                      selection,
@@ -222,7 +223,7 @@ public class TaskProvider extends ContentProvider
 
         if (Logger.LOGD) Log.d(TAG, "Added task rowId = " + taskId);
 
-        Uri newUrl = ContentUris.withAppendedId(CONTENT_URI, taskId);
+        Uri newUrl = ContentUris.withAppendedId(TASKS_URI, taskId);
         getContext().getContentResolver().notifyChange(newUrl, null);
 
         return newUrl;
@@ -230,30 +231,9 @@ public class TaskProvider extends ContentProvider
 
     public int delete(Uri url, String where, String[] whereArgs)
     {
-        return 0;
-        // SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-        // int count;
-        // long rowId = 0;
-        // switch (uriMatcher.match(url)) {
-        // case ALARMS:
-        // count = db.delete("alarms", where, whereArgs);
-        // break;
-        // case ALARMS_ID:
-        // String segment = url.getPathSegments().get(1);
-        // rowId = Long.parseLong(segment);
-        // if (TextUtils.isEmpty(where)) {
-        // where = "_id=" + segment;
-        // } else {
-        // where = "_id=" + segment + " AND (" + where + ")";
-        // }
-        // count = db.delete("alarms", where, whereArgs);
-        // break;
-        // default:
-        // throw new IllegalArgumentException("Cannot delete from URL: " + url);
-        // }
-        //
-        // getContext().getContentResolver().notifyChange(url, null);
-        // return count;
+        UriProvider uriProvider = hmQueries.get(uriMatcher.match(url));
+
+        return uriProvider.delete(mOpenHelper, url, where, whereArgs);
     }
 
     /**
@@ -276,17 +256,29 @@ public class TaskProvider extends ContentProvider
         }
     }
 
-    private interface TaskQuery
+    abstract static private class UriProvider
     {
+
         public Cursor query(SQLiteOpenHelper openHelper,
                             Uri url,
                             String[] projectionIn,
                             String selection,
                             String[] selectionArgs,
-                            String sort);
+                            String sort)
+        {
+            throw new UnsupportedOperationException("You shouldn't be calling this");
+        }
+
+        public int delete(SQLiteOpenHelper openHelper,
+                           Uri url,
+                           String where,
+                           String[] whereArgs)
+        {
+            throw new UnsupportedOperationException("You shouldn't be calling this");
+        }
     }
 
-    static private class TaskUriQuery implements TaskQuery
+    static private class TaskUriProvider extends UriProvider
     {
 
         @Override
@@ -314,7 +306,7 @@ public class TaskProvider extends ContentProvider
     /**
      * Task query class for the task and repeat table join
      */
-    static private class TaskJoinRepeatQuery implements TaskQuery
+    static private class TaskJoinRepeatProvider extends UriProvider
     {
         /**
          * Does a join on the task and repeat table.
@@ -349,7 +341,7 @@ public class TaskProvider extends ContentProvider
     /**
      * Convenience class to return a view of open tasks.
      */
-    static private class LoadOpenTasksQuery implements TaskQuery
+    static private class LoadOpenTasksProvider extends UriProvider
     {
         /**
          * Uses the TaskUnionRepeatQuery class to return a view showing open tasks.
@@ -400,7 +392,7 @@ public class TaskProvider extends ContentProvider
     /**
      * Convenience class to get a view of due tasks
      */
-    static private class LoadDueTasksQuery implements TaskQuery
+    static private class LoadDueTasksProvider extends UriProvider
     {
         /**
          * Convenience class to get a view of due tasks
@@ -455,7 +447,7 @@ public class TaskProvider extends ContentProvider
      *
      * @note the repeat table is actually a join with the task table!
      */
-    static private class TaskUnionRepeatQuery implements TaskQuery
+    static private class TaskUnionRepeatQuery extends UriProvider
     {
         final static private String SEPARATOR = "###";
 
@@ -546,6 +538,26 @@ public class TaskProvider extends ContentProvider
                     newSelectionArgs[len++] = selectionArg;
             }
             return db.rawQuery(rawQuery, newSelectionArgs);
+        }
+    }
+
+    static class SingleRowRepeatUriProvider extends UriProvider
+    {
+        @Override
+        public int delete(SQLiteOpenHelper openHelper, Uri url, String where, String[] whereArgs)
+        {
+            SQLiteDatabase db = openHelper.getWritableDatabase();
+
+            String rowId = url.getPathSegments().get(1);
+            if (TextUtils.isEmpty(where))
+            {
+                where = REPEAT_ID+"="+rowId;
+            }
+            else
+            {
+                where = REPEAT_ID+"="+rowId + " AND (" + where + ")";
+            }
+            return db.delete(REPEATABLE_TABLE, where, whereArgs);
         }
     }
 }

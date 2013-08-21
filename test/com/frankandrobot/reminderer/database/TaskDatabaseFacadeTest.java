@@ -54,7 +54,7 @@ public class TaskDatabaseFacadeTest
 
         ContentResolver resolver = activity.getContentResolver();
 
-        Cursor cursor = resolver.query(TaskProvider.CONTENT_URI,
+        Cursor cursor = resolver.query(TaskProvider.TASKS_URI,
                                        new String[]{TaskTable.TaskCol.TASK_DESC.toString()},
                                        null,
                                        null,

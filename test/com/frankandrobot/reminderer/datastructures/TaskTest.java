@@ -212,7 +212,7 @@ public class TaskTest
         addTask.loadInBackground();
 
         ContentResolver resolver = activity.getContentResolver();
-        Cursor cursor = resolver.query(TaskProvider.CONTENT_URI,
+        Cursor cursor = resolver.query(TaskProvider.TASKS_URI,
                                        new TaskTable().getAllColumns(TaskCol.class),
                                        TaskCol.TASK_DUE_DATE+"="+now.getTime(),
                                        null,
