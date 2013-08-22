@@ -3,6 +3,7 @@ package com.frankandrobot.reminderer.database;
 import android.app.Activity;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
 
 import com.frankandrobot.reminderer.alarm.AlarmManager.CompareOp;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.AddTask;
@@ -133,6 +134,24 @@ public class TaskProviderTest
             assertThat(desc, is(dateOrder[cursor.getPosition()]));
             cursor.moveToNext();
         }
+    }
+
+    @Test
+    public void testSingleRowRepeatUriProvider()
+    {
+        //delete task 3 in repeat table
+        Uri deleteUri = Uri.withAppendedPath(TaskProvider.REPEAT_URI, "1");
+        int noDeleted = taskProvider.delete(deleteUri, null, null);
+        assertThat(noDeleted, is(1));
+
+        Cursor cursor = taskProvider.query(LOAD_DUE_TASKS_URI,
+                                           null,
+                                           CompareOp.EQ.toString(),
+                                           new String[]{String.valueOf(now.plusMinutes(5).getMillis())},
+                                           TASK_ID.colname());
+        assert(cursor != null);
+        dump(cursor);
+        assertThat(cursor.getCount(), is(1));
     }
 
     @Test
