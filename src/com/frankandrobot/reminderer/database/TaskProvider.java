@@ -374,7 +374,7 @@ public class TaskProvider extends ContentProvider
             );
 
             String realSelection = TASK_IS_COMPLETE + "=0";
-            String realOrder = TASK_DUE_DATE.colname();
+            String realOrder = TASK_DUE_DATE+","+TASK_ID;
 
             return new TaskUnionRepeatQuery().query(openHelper,
                                                     url,
@@ -395,6 +395,8 @@ public class TaskProvider extends ContentProvider
 
          * @param projectionIn don't pass this in
          * @param operator the only string this accepts is a {@link AlarmManager.CompareOp}.
+         * @param dueTime you can pass only the due time
+         * @param sort you can sort only by TASK_ID, TASK_DUE_DATE, REPEAT_NEXT_DUE_DATE
          * @return cursor
          */
         @Override
@@ -402,7 +404,7 @@ public class TaskProvider extends ContentProvider
                             Uri url,
                             String[] projectionIn,
                             String operator,
-                            String[] selectionArgs,
+                            String[] dueTime,
                             String sort)
         {
             if (projectionIn != null)
@@ -427,7 +429,7 @@ public class TaskProvider extends ContentProvider
                                                     url,
                                                     realProjection,
                                                     realSelection,
-                                                    selectionArgs,
+                                                    dueTime,
                                                     sort);
         }
     }
@@ -513,6 +515,7 @@ public class TaskProvider extends ContentProvider
             repeatQuery += TASK_TABLE + "," + REPEATABLE_TABLE;
             repeatQuery += " WHERE ";
             repeatQuery += TASK_REPEAT_TYPE + ">0";
+            repeatQuery += " AND "+TASK_ID+"="+REPEAT_TASK_ID_FK;
             if (selection != null)
             {
                 repeatQuery += " AND ";
