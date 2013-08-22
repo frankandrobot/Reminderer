@@ -98,8 +98,8 @@ public class TaskProvider extends ContentProvider
     {
         uriMatcher.addURI(uri.getAuthority(),
                           uri.getPath().substring(1)+(isSingleRow?"/#":""),
-                          uriCount++);
-        hmQueries.put(uriMatcher.match(uri), query);
+                          uriCount);
+        hmQueries.put(uriCount++, query);
     }
 
     public static String convertArrayToString(String[] array)
