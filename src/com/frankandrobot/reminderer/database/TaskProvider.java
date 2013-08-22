@@ -306,14 +306,12 @@ public class TaskProvider extends ContentProvider
     /**
      * Task query class for the task and repeat table join
      */
-    static private class TaskJoinRepeatProvider extends UriProvider
+    static protected class TaskJoinRepeatProvider extends UriProvider
     {
         /**
          * Does a join on the task and repeat table.
          * You can use the projection to control the columns queried,
          * as well as the selection and sort.
-         *
-         * @note it looks like we're ignoring sort (for now)
          */
         @Override
         public Cursor query(SQLiteOpenHelper openHelper,
@@ -324,16 +322,14 @@ public class TaskProvider extends ContentProvider
                             String sort)
         {
             SQLiteDatabase db = openHelper.getReadableDatabase();
-            String rawQuery = selection != null ?
-                              String.format("SELECT %s FROM %s,%s WHERE %s",
+            String joinCondition = TASK_ID+"="+REPEAT_TASK_ID_FK;
+            String rawQuery = String.format("SELECT %s FROM %s,%s WHERE %s %s ORDER BY %s",
                                             convertArrayToString(projectionIn),
                                             TaskTable.TASK_TABLE,
                                             TaskTable.REPEATABLE_TABLE,
-                                            selection)
-                                      : String.format("SELECT %s FROM %s,%s",
-                                                      convertArrayToString(projectionIn),
-                                                      TaskTable.TASK_TABLE,
-                                                      TaskTable.REPEATABLE_TABLE);
+                                            joinCondition,
+                                            selection!=null ? "AND "+selection:"",
+                                            sort);
             return db.rawQuery(rawQuery, selectionArgs);
         }
     }
