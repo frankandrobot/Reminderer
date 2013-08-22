@@ -4,16 +4,14 @@ import android.app.Activity;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.frankandrobot.reminderer.database.TaskProvider.TaskJoinRepeatProvider;
-import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
-import com.frankandrobot.reminderer.database.TaskTable.TaskTableHelper;
+import com.frankandrobot.reminderer.alarm.AlarmManager.CompareOp;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.AddTask;
 import com.frankandrobot.reminderer.datastructures.Task;
+import com.frankandrobot.reminderer.datastructures.Task.Task_Boolean;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Int;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Parser_Calendar;
 import com.frankandrobot.reminderer.datastructures.Task.Task_String;
 import com.frankandrobot.reminderer.datastructures.TaskCalendar;
-import com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken;
 import com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.Type;
 
 import org.joda.time.DateTime;
@@ -49,18 +47,23 @@ public class TaskProviderTest
         //openHelper = new TaskTableHelper(activity);
 
         //add some sample tasks
-        addTask("task1", now, null);
-        addTask("task2", now.plusDays(5), null);
-        addTask("task3", now, Type.DAY);
-        addTask("task4", now.minusDays(1), Type.WEEK);
+        addTask("task1", now.plusMinutes(5), null, false);
+        addTask("task2", now.plusDays(5), null, false);
+        addTask("task3", now.plusMinutes(5), Type.DAY, false);
+        addTask("task4", now.minusDays(1), Type.WEEK, false);
+        addTask("task5", now.plusMinutes(10), null, true);
     }
 
-    private long addTask(String desc, DateTime dueTime, Type repeatType)
+    private long addTask(String desc,
+                         DateTime dueTime,
+                         Type repeatType,
+                         boolean isComplete)
     {
         Task task = new Task();
         task.set(Task_String.desc, desc);
         task.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
         task.get(Task_Parser_Calendar.dueDate).setTimeInMillis(dueTime.getMillis());
+        task.set(Task_Boolean.isComplete, isComplete);
         long taskDueTime = task.get(Task_Parser_Calendar.dueDate).getDate().getTime();
         if (repeatType != null)
         {
@@ -73,14 +76,14 @@ public class TaskProviderTest
     }
 
     @Test
-    public void TaskJoinRepeatProvider()
+    public void testTaskJoinRepeatProvider()
     {
         //get tasks that are due now
         Cursor cursor = taskProvider.query(
                                        TASK_JOIN_REPEAT_URI,
                                        new TaskTable().getColumns(TASK_DESC),
                                        TASK_DUE_DATE+"=?",
-                                       new String[]{String.valueOf(now.getMillis())},
+                                       new String[]{String.valueOf(now.plusMinutes(5).getMillis())},
                                        TASK_ID + " ASC"
                                        );
         assert(cursor != null);
@@ -91,10 +94,62 @@ public class TaskProviderTest
     }
 
     @Test
+    public void testLoadOpenTasksProvider()
+    {
+        Cursor cursor = taskProvider.query(LOAD_OPEN_TASKS_URI,
+                                           null,
+                                           null,
+                                           null,
+                                           null);
+        assert(cursor != null);
+        dump(cursor);
+        assertThat(cursor.getCount(), is(4));
+        cursor.moveToFirst();
+        String[] dateOrder = new String[]{"task1", "task3", "task2", "task4"};
+        while(!cursor.isAfterLast())
+        {
+            String desc = cursor.getString(cursor.getColumnIndex(TASK_DESC.colname()));
+            assertThat(desc, is(dateOrder[cursor.getPosition()]));
+            cursor.moveToNext();
+        }
+    }
+
+    @Test
+    public void testLoadDueTasksProvider()
+    {
+        Cursor cursor = taskProvider.query(LOAD_DUE_TASKS_URI,
+                                           null,
+                                           CompareOp.EQ.toString(),
+                                           new String[]{String.valueOf(now.plusMinutes(5).getMillis())},
+                                           TASK_ID.colname());
+        assert(cursor != null);
+        dump(cursor);
+        assertThat(cursor.getCount(), is(2));
+        cursor.moveToFirst();
+        String[] dateOrder = new String[]{"1", "3"};
+        while(!cursor.isAfterLast())
+        {
+            String desc = cursor.getString(cursor.getColumnIndex(TASK_ID.colname()));
+            assertThat(desc, is(dateOrder[cursor.getPosition()]));
+            cursor.moveToNext();
+        }
+    }
+
+    @Test
     public void testConvertArrayToString() throws Exception
     {
 
     }
 
-
+    static private void dump(Cursor cursor)
+    {
+        int pos = cursor.getPosition();
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast())
+        {
+            System.out.println(new Task(cursor));
+            cursor.moveToNext();
+        }
+        if (pos >= 0) cursor.moveToPosition(pos);
+    }
 }
