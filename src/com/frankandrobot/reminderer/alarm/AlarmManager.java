@@ -8,7 +8,6 @@ import android.database.Cursor;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.database.TaskProvider;
-import com.frankandrobot.reminderer.database.TaskTable;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.helpers.Logger;
 
@@ -23,8 +22,7 @@ public class AlarmManager
 
     public enum CompareOp
     {
-        EQ("=")
-        ,AFTER(">")
+        AFTER(">")
         ,ON_OR_AFTER(">=");
 
         CompareOp(String val) { this.val = val; }
@@ -56,7 +54,8 @@ public class AlarmManager
         disableAlert(context);
 
         // get all tasks due after curTime
-        Cursor nextAlarms = getDueAlarmIds(context, dueTime, compareOp);
+        final long oneMinute = 1000*60;
+        Cursor nextAlarms = getDueAlarmIds(context, dueTime, compareOp, dueTime + oneMinute);
 
         if (nextAlarms == null)
         {
@@ -79,20 +78,41 @@ public class AlarmManager
                 Log.v(TAG, dumpCursor(nextAlarms));
             }
 
-            android.app.AlarmManager am = (android.app.AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            scheduleAlarm(context, nextDueTime);
 
-            Intent intent = new Intent(AlarmConstants.TASK_ALARM_ALERT);
-            intent.putExtra(AlarmConstants.TASK_DUETIME, nextDueTime);
-            PendingIntent sender = PendingIntent.getBroadcast(context,
-                                                              0,
-                                                              intent,
-                                                              PendingIntent.FLAG_CANCEL_CURRENT);
+            if (nextDueTime < System.currentTimeMillis())
+            {
+                //we're assuming in the worst case scenario, the db op
+                //took a really long time (one minute)
+                //we may have to reschedule the next due task as well
+                nextAlarms.moveToLast();
+                long secondDueTime = nextAlarms.getLong(index);
 
-            am.set(android.app.AlarmManager.RTC_WAKEUP, nextDueTime, sender);
+                if (secondDueTime > nextDueTime)
+                {
+                    if (Logger.LOGV) Log.v(TAG, "dueTime:" + secondDueTime);
 
+                    scheduleAlarm(context, secondDueTime);
+                }
+
+            }
             return nextDueTime;
         }
         return 0;
+    }
+
+    private void scheduleAlarm(Context context, long nextDueTime)
+    {
+        android.app.AlarmManager am = (android.app.AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
+        Intent intent = new Intent(AlarmConstants.TASK_ALARM_ALERT);
+        intent.putExtra(AlarmConstants.TASK_DUETIME, nextDueTime);
+        PendingIntent sender = PendingIntent.getBroadcast(context,
+                                                          0,
+                                                          intent,
+                                                          PendingIntent.FLAG_CANCEL_CURRENT);
+
+        am.set(android.app.AlarmManager.RTC_WAKEUP, nextDueTime, sender);
     }
 
     /**
@@ -111,20 +131,21 @@ public class AlarmManager
     }
 
     /**
-     * Gets all alarms due after, before, at the given time
+     * Gets all alarms due after, before, between dueTime and endTime
      *
      * @param context da contex
      * @param dueTime the time to compare
-     * @param compareOp is one of =, >, >=
+     * @param compareOp is one of >, >=
+     * @param endTime dueTime <= endTime
      * @return the cursor containing the due alarms
      */
-    private Cursor getDueAlarmIds(Context context, long dueTime, CompareOp compareOp)
+    private Cursor getDueAlarmIds(Context context, long dueTime, CompareOp compareOp, long endTime)
     {
         return context.getContentResolver().query(
                 TaskProvider.LOAD_DUE_TASKS_URI,
                 null,
                 compareOp.toString(),
-                new String[]{Long.toString(dueTime)},
+                new String[]{Long.toString(dueTime), Long.toString(endTime)},
                 TaskCol.TASK_DUE_DATE.colname());
     }
 

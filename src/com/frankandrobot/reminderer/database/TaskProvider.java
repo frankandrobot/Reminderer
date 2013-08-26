@@ -408,7 +408,7 @@ public class TaskProvider extends ContentProvider
                             String sort)
         {
             if (projectionIn != null)
-                throw new IllegalArgumentException("This query does not support projectin or selection params");
+                throw new IllegalArgumentException("This query does not support projections");
 
             String[] realProjection = new TaskTable().getColumns(TASK_ID,
                                                                  TASK_DUE_DATE,
@@ -419,11 +419,15 @@ public class TaskProvider extends ContentProvider
             String realSelection = "";
             realSelection += TASK_IS_COMPLETE + "=0";
             realSelection += " AND ";
-            realSelection += TASK_DUE_DATE + operator + "?";
+            realSelection += TASK_DUE_DATE + operator + "?"; //lower bound
+            realSelection += " AND ";
+            realSelection += TASK_DUE_DATE + "<=?"; //upper bound
             realSelection += TaskUnionRepeatQuery.SEPARATOR;
             realSelection += TASK_IS_COMPLETE + "=0";
             realSelection += " AND ";
-            realSelection += REPEAT_NEXT_DUE_DATE + operator + "?";
+            realSelection += REPEAT_NEXT_DUE_DATE + operator + "?"; //lower bound
+            realSelection += " AND ";
+            realSelection += REPEAT_NEXT_DUE_DATE + "<=?"; //upper bound
 
             return new TaskUnionRepeatQuery().query(openHelper,
                                                     url,
