@@ -120,8 +120,9 @@ public class TaskProviderTest
     {
         Cursor cursor = taskProvider.query(LOAD_DUE_TASKS_URI,
                                            null,
-                                           CompareOp.EQ.toString(),
-                                           new String[]{String.valueOf(now.plusMinutes(5).getMillis())},
+                                           CompareOp.ON_OR_AFTER.toString(),
+                                           new String[]{String.valueOf(now.plusMinutes(5).getMillis()),
+                                                        String.valueOf(now.plusMinutes(5).getMillis())},
                                            TASK_ID.colname());
         assert(cursor != null);
         dump(cursor);
@@ -146,8 +147,9 @@ public class TaskProviderTest
 
         Cursor cursor = taskProvider.query(LOAD_DUE_TASKS_URI,
                                            null,
-                                           CompareOp.EQ.toString(),
-                                           new String[]{String.valueOf(now.plusMinutes(5).getMillis())},
+                                           CompareOp.ON_OR_AFTER.toString(),
+                                           new String[]{String.valueOf(now.plusMinutes(5).getMillis()),
+                                                   String.valueOf(now.plusMinutes(5).getMillis())},
                                            TASK_ID.colname());
         assert(cursor != null);
         dump(cursor);

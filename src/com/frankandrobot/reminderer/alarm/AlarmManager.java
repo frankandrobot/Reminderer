@@ -54,8 +54,10 @@ public class AlarmManager
         disableAlert(context);
 
         // get all tasks due after curTime
+        // this is potentially expensive
         final long oneMinute = 1000*60;
         Cursor nextAlarms = getDueAlarmIds(context, dueTime, compareOp, dueTime + oneMinute);
+        // might be NOW + 1 minute later
 
         if (nextAlarms == null)
         {
