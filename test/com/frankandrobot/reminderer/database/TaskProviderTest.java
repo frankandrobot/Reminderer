@@ -50,8 +50,8 @@ public class TaskProviderTest
         //add some sample tasks
         addTask("task1", now.plusMinutes(5), null, false);
         addTask("task2", now.plusDays(5), null, false);
-        addTask("task3", now.plusMinutes(5), Type.DAY, false);
-        addTask("task4", now.minusDays(1), Type.WEEK, false);
+        addTask("task3", now.plusMinutes(5), Type.DAY, false); //due date NOW + 5 min
+        addTask("task4", now.minusDays(1), Type.WEEK, false); //due date in 1 week
         addTask("task5", now.plusMinutes(10), null, true);
     }
 
@@ -116,7 +116,7 @@ public class TaskProviderTest
     }
 
     @Test
-    public void testLoadDueTasksProvider()
+    public void testLoadDueTimesProvider()
     {
         Cursor cursor = taskProvider.query(LOAD_DUE_TIMES_URI,
                                            null,

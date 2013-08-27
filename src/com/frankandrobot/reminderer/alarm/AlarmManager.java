@@ -55,8 +55,7 @@ public class AlarmManager
 
         // get all tasks due after curTime
         // this is potentially expensive
-        final long oneMinute = 1000*60;
-        Cursor nextAlarms = getDueAlarmIds(context, dueTime, compareOp, dueTime + oneMinute);
+        Cursor nextAlarms = getDueAlarmIds(context, dueTime, compareOp);
         // might be NOW + 1 minute later
 
         if (nextAlarms == null)
@@ -133,21 +132,20 @@ public class AlarmManager
     }
 
     /**
-     * Gets all alarms due after, before, between dueTime and endTime
+     * Gets all alarms due after, before dueTime
      *
      * @param context da contex
      * @param dueTime the time to compare
      * @param compareOp is one of >, >=
-     * @param endTime dueTime <= endTime
      * @return the cursor containing the due alarms
      */
-    private Cursor getDueAlarmIds(Context context, long dueTime, CompareOp compareOp, long endTime)
+    private Cursor getDueAlarmIds(Context context, long dueTime, CompareOp compareOp)
     {
         return context.getContentResolver().query(
                 TaskProvider.LOAD_DUE_TIMES_URI,
                 null,
                 compareOp.toString(),
-                new String[]{Long.toString(dueTime), Long.toString(endTime)},
+                new String[]{Long.toString(dueTime)},
                 TaskCol.TASK_DUE_DATE.colname());
     }
 
