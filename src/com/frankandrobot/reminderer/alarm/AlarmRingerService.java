@@ -337,7 +337,7 @@ public class AlarmRingerService extends Service
             mMediaPlayer.release();
             mMediaPlayer = null;
         }
-        phoneVibrator.stop();
+        if (phoneVibrator != null) phoneVibrator.stop();
     }
 
     /**
