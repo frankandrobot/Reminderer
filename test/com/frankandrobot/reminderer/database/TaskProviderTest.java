@@ -52,7 +52,7 @@ public class TaskProviderTest
         addTask("task2", now.plusDays(5), null, false);
         addTask("task3", now.plusMinutes(5), Type.DAY, false); //due date NOW + 5 min
         addTask("task4", now.minusDays(1), Type.WEEK, false); //due date in 1 week
-        addTask("task5", now.plusMinutes(10), null, true);
+        addTask("task5", now.plusMinutes(10), null, true); //disabled
     }
 
     private long addTask(String desc,
@@ -74,6 +74,19 @@ public class TaskProviderTest
         AddTask addTask = new AddTask(activity, task);
         addTask.loadInBackground();
         return taskDueTime;
+    }
+
+    @Test
+    public void testDeleteRows()
+    {
+        //delete task 3 in repeat table
+        Uri deleteUri = Uri.withAppendedPath(TaskProvider.REPEAT_URI, "1");
+        int noDeleted = taskProvider.delete(deleteUri, null, null);
+        assertThat(noDeleted, is(1));
+
+        deleteUri = Uri.withAppendedPath(TaskProvider.REPEAT_URI, "3");
+        noDeleted = taskProvider.delete(deleteUri, null, null);
+        assertThat(noDeleted, is(0));
     }
 
     @Test
@@ -118,42 +131,48 @@ public class TaskProviderTest
     @Test
     public void testLoadDueTimesProvider()
     {
+        //add duplicate task
+        addTask("task6", now.plusMinutes(5), null, false);
+
         Cursor cursor = taskProvider.query(LOAD_DUE_TIMES_URI,
                                            null,
                                            CompareOp.ON_OR_AFTER.toString(),
-                                           new String[]{String.valueOf(now.plusMinutes(5).getMillis()),
-                                                        String.valueOf(now.plusMinutes(5).getMillis())},
-                                           TASK_ID.colname());
+                                           new String[]{String.valueOf(now.getMillis())},
+                                           TASK_DUE_DATE.colname());
         assert(cursor != null);
         dump(cursor);
         assertThat(cursor.getCount(), is(2));
+
         cursor.moveToFirst();
-        String[] dateOrder = new String[]{"1", "3"};
-        while(!cursor.isAfterLast())
-        {
-            String desc = cursor.getString(cursor.getColumnIndex(TASK_ID.colname()));
-            assertThat(desc, is(dateOrder[cursor.getPosition()]));
-            cursor.moveToNext();
-        }
+        long dueTime = cursor.getLong(0);
+        assertThat(dueTime, is(now.plusMinutes(5).getMillis()));
+
+        cursor.moveToNext();
+        dueTime = cursor.getLong(0);
+        assertThat(dueTime, is(now.plusDays(5).getMillis()));
     }
 
     @Test
     public void testSingleRowRepeatUriProvider()
     {
-        //delete task 3 in repeat table
+        //delete both repeating tasks
+
         Uri deleteUri = Uri.withAppendedPath(TaskProvider.REPEAT_URI, "1");
         int noDeleted = taskProvider.delete(deleteUri, null, null);
+        assertThat(noDeleted, is(1));
+
+        deleteUri = Uri.withAppendedPath(TaskProvider.REPEAT_URI, "2");
+        noDeleted = taskProvider.delete(deleteUri, null, null);
         assertThat(noDeleted, is(1));
 
         Cursor cursor = taskProvider.query(LOAD_DUE_TIMES_URI,
                                            null,
                                            CompareOp.ON_OR_AFTER.toString(),
-                                           new String[]{String.valueOf(now.plusMinutes(5).getMillis()),
-                                                   String.valueOf(now.plusMinutes(5).getMillis())},
-                                           TASK_ID.colname());
+                                           new String[]{String.valueOf(now.plusWeeks(1).getMillis())},
+                                           TASK_DUE_DATE.colname());
         assert(cursor != null);
         dump(cursor);
-        assertThat(cursor.getCount(), is(1));
+        assertThat(cursor.getCount(), is(0));
     }
 
     @Test

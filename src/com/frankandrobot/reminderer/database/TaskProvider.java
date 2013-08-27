@@ -388,7 +388,7 @@ public class TaskProvider extends ContentProvider
     /**
      * Convenience class to get a view of due times
      *
-     * Gets the next due time. Could be in a minute, in an hour, etc.
+     * Gets the next _two_ due times. Could be in a minute, in an hour, etc.
      */
     static private class LoadDueTimesProvider extends UriProvider
     {
@@ -412,11 +412,12 @@ public class TaskProvider extends ContentProvider
             if (projectionIn != null)
                 throw new IllegalArgumentException("This query does not support projections");
 
-            String[] realProjection = new TaskTable().getColumns(TASK_ID,
-                                                                 TASK_DUE_DATE,
+            String[] realProjection = new TaskTable().getColumns(TASK_DUE_DATE,
                                                                  //... other table
-                                                                 TASK_ID,
                                                                  REPEAT_NEXT_DUE_DATE);
+            //add distinct clause
+            realProjection[0] = "DISTINCT "+realProjection[0];
+            realProjection[1] = "DISTINCT "+realProjection[1];
 
             String realSelection = "";
             realSelection += TASK_IS_COMPLETE + "=0";
