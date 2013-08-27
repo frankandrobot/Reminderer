@@ -37,6 +37,7 @@ abstract public class CursorLoaders
             this.setUri(TaskProvider.TASKS_URI);
             this.setProjection(table.getColumns(TaskCol.TASK_ID,
                                                 TaskCol.TASK_DESC,
+                                                TaskCol.TASK_REPEAT_TYPE,
                                                 TaskCol.TASK_DUE_DATE));
             this.setSelection(TaskCol.TASK_IS_COMPLETE+"=0 AND "
                               + TaskCol.TASK_DUE_DATE+"=?");
