@@ -87,7 +87,7 @@ public class TaskProvider extends ContentProvider
         addUri(REPEAT_URI, new SingleRowRepeatUriProvider(), true);
         addUri(TASK_JOIN_REPEAT_URI, new TaskJoinRepeatProvider(), false);
         addUri(LOAD_OPEN_TASKS_URI, new LoadOpenTasksProvider(), false);
-        addUri(LOAD_DUE_TASKS_URI, new LoadDueTasksProvider(), false);
+        addUri(LOAD_DUE_TASKS_URI, new LoadDueTimesProvider(), false);
     }
 
     private SQLiteOpenHelper mOpenHelper;
@@ -386,9 +386,11 @@ public class TaskProvider extends ContentProvider
     }
 
     /**
-     * Convenience class to get a view of due tasks
+     * Convenience class to get a view of due times
+     *
+     * Gets the next due time. Could be in a minute, in an hour, etc.
      */
-    static private class LoadDueTasksProvider extends UriProvider
+    static private class LoadDueTimesProvider extends UriProvider
     {
         /**
          * Convenience class to get a view of due tasks
@@ -420,21 +422,19 @@ public class TaskProvider extends ContentProvider
             realSelection += TASK_IS_COMPLETE + "=0";
             realSelection += " AND ";
             realSelection += TASK_DUE_DATE + operator + "?"; //lower bound
-            realSelection += " AND ";
-            realSelection += TASK_DUE_DATE + "<=?"; //upper bound
             realSelection += TaskUnionRepeatQuery.SEPARATOR;
             realSelection += TASK_IS_COMPLETE + "=0";
             realSelection += " AND ";
             realSelection += REPEAT_NEXT_DUE_DATE + operator + "?"; //lower bound
-            realSelection += " AND ";
-            realSelection += REPEAT_NEXT_DUE_DATE + "<=?"; //upper bound
 
+            String sortLimit = (sort != null) ? sort + " LIMIT 2" : " LIMIT 2";
+            
             return new TaskUnionRepeatQuery().query(openHelper,
                                                     url,
                                                     realProjection,
                                                     realSelection,
                                                     dueTime,
-                                                    sort);
+                                                    sortLimit);
         }
     }
 
