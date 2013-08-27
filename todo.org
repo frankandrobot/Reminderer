@@ -152,3 +152,5 @@ conjunction with DateFormat.
 ** TODO make sure db is multi-thread safe
 * UI
 ** TODO implement cartoon animation to swipe to delete
+* Bugs
+** TODO alarm doesn't vibrate when phone set in vibrate mode

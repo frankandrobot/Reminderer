@@ -8,6 +8,7 @@ import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.datastructures.TaskCalendar;
 import com.frankandrobot.reminderer.parser.GrammarRule;
 
+import org.hamcrest.CoreMatchers;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -99,4 +100,22 @@ public class AlarmManagerTest
                    is(dueTime2));
     }
 
+    @Test
+    public void testIntentUniqueId()
+    {
+        DateTime now = DateTime.now();
+        long longval1 = now.getMillis();
+        long longval2 = now.plusMinutes(1).getMillis();
+        int value1= (int)longval1;
+        int value2= (int)longval2;
+
+        System.out.println(Long.toBinaryString(now.getMillis()));
+        System.out.println(Long.toBinaryString(longval1));
+        System.out.println(Integer.toBinaryString((int)now.getMillis()));
+        System.out.println(Integer.toBinaryString((int)now.plusMinutes(1).getMillis()));
+        System.out.println(Integer.toBinaryString(value1));
+        System.out.println(Integer.toBinaryString(value2));
+
+        assertThat(value1, CoreMatchers.not(value2));
+    }
 }

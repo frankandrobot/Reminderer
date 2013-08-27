@@ -11,6 +11,9 @@ import com.frankandrobot.reminderer.database.TaskProvider;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.helpers.Logger;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import static com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 
 /**
@@ -19,6 +22,9 @@ import static com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 public class AlarmManager
 {
     final private static String TAG = "R:AlarmManager";
+    //a real lock object isn't needed
+    //we just need to lock across all instances calling the method
+    final private static Object lock = new Object();
 
     public enum CompareOp
     {
@@ -50,66 +56,77 @@ public class AlarmManager
                                           long dueTime,
                                           CompareOp compareOp)
     {
-        // disable the old alarm if any
-        disableAlert(context);
-
-        // get all tasks due after curTime
-        // this is potentially expensive
-        Cursor nextAlarms = getDueAlarmIds(context, dueTime, compareOp);
-        // might be NOW + 1 minute later
-
-        if (nextAlarms == null)
+        synchronized (lock)
         {
-            Log.e(TAG, "Error occurred. Couldn't query db for upcoming due tasks.");
-        }
-        else if (nextAlarms.getCount() == 0 && Logger.LOGV)
-        {
-            Log.v(TAG, "No upcoming tasks due");
-        }
-        else
-        {
-            // get the task in the first row (row pointer starts at -1)
-            nextAlarms.moveToNext();
-            int index = nextAlarms.getColumnIndex(TaskCol.TASK_DUE_DATE.colname());
-            long nextDueTime = nextAlarms.getLong(index);
+            // disable the old alarm if any
+            disableAlert(context);
 
-            if (Logger.LOGV)
+            // get all tasks due after curTime
+            // this is potentially expensive
+            Cursor nextAlarms = getDueAlarmIds(context, dueTime, compareOp);
+            // might be NOW + 1 minute later
+
+            if (nextAlarms == null)
             {
-                Log.v(TAG, "dueTime:" + nextDueTime);
-                Log.v(TAG, dumpCursor(nextAlarms));
+                Log.e(TAG, "Error occurred. Couldn't query db for upcoming due tasks.");
             }
-
-            scheduleAlarm(context, nextDueTime);
-
-            if (nextDueTime < System.currentTimeMillis())
+            else if (nextAlarms.getCount() == 0 && Logger.LOGV)
             {
-                //we're assuming in the worst case scenario, the db op
-                //took a really long time (one minute)
-                //we may have to reschedule the next due task as well
-                nextAlarms.moveToLast();
-                long secondDueTime = nextAlarms.getLong(index);
+                Log.v(TAG, "No upcoming tasks due");
+            }
+            else
+            {
+                // get the task in the first row (row pointer starts at -1)
+                nextAlarms.moveToNext();
+                int index = nextAlarms.getColumnIndex(TaskCol.TASK_DUE_DATE.colname());
+                long nextDueTime = nextAlarms.getLong(index);
 
-                if (secondDueTime > nextDueTime)
+                if (Logger.LOGV)
                 {
-                    if (Logger.LOGV) Log.v(TAG, "dueTime:" + secondDueTime);
-
-                    scheduleAlarm(context, secondDueTime);
+                    Log.v(TAG, "dueTime:" + nextDueTime);
+                    Log.v(TAG, dumpCursor(nextAlarms));
                 }
 
+                //if the db took a really long time, this may fire immediately
+                scheduleAlarm(context, nextDueTime, (int)nextDueTime);
+
+                if (nextDueTime < System.currentTimeMillis())
+                {
+                    //we're assuming in the worst case scenario, the db op
+                    //took a really long time (one minute)
+                    //we may have to reschedule the next due task as well
+                    nextAlarms.moveToLast();
+                    long secondDueTime = nextAlarms.getLong(index);
+
+                    if (secondDueTime <= System.currentTimeMillis())
+                    {
+                        if (Logger.LOGV) Log.v(TAG, "dueTime:" + secondDueTime);
+
+                        scheduleAlarm(context, secondDueTime, (int)secondDueTime);
+                    }
+
+                }
+                return nextDueTime;
             }
-            return nextDueTime;
+            return 0;
         }
-        return 0;
     }
 
-    private void scheduleAlarm(Context context, long nextDueTime)
+    /**
+     * Schedule the alarm using the AlarmManager
+     *
+     * @param context
+     * @param nextDueTime
+     * @param pendingIntentId use different IDs to register multiple intents
+     */
+    private void scheduleAlarm(Context context, long nextDueTime, int pendingIntentId)
     {
         android.app.AlarmManager am = (android.app.AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(AlarmConstants.TASK_ALARM_ALERT);
         intent.putExtra(AlarmConstants.TASK_DUETIME, nextDueTime);
         PendingIntent sender = PendingIntent.getBroadcast(context,
-                                                          0,
+                                                          pendingIntentId,
                                                           intent,
                                                           PendingIntent.FLAG_CANCEL_CURRENT);
 

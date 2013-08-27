@@ -71,9 +71,9 @@ public class TaskProvider extends ContentProvider
      */
     public final static Uri LOAD_OPEN_TASKS_URI = Uri.parse(baseUri + "loadopentasks");
     /**
-     * Convenience Uri to get a view of due tasks
+     * Convenience Uri to get the next _two_ due times
      */
-    public final static Uri LOAD_DUE_TIMES_URI = Uri.parse(baseUri + "loadduetasks");
+    public final static Uri LOAD_DUE_TIMES_URI = Uri.parse(baseUri + "loadduetimes");
 
 
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
