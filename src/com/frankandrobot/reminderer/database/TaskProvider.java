@@ -73,7 +73,7 @@ public class TaskProvider extends ContentProvider
     /**
      * Convenience Uri to get a view of due tasks
      */
-    public final static Uri LOAD_DUE_TASKS_URI = Uri.parse(baseUri + "loadduetasks");
+    public final static Uri LOAD_DUE_TIMES_URI = Uri.parse(baseUri + "loadduetasks");
 
 
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -87,7 +87,7 @@ public class TaskProvider extends ContentProvider
         addUri(REPEAT_URI, new SingleRowRepeatUriProvider(), true);
         addUri(TASK_JOIN_REPEAT_URI, new TaskJoinRepeatProvider(), false);
         addUri(LOAD_OPEN_TASKS_URI, new LoadOpenTasksProvider(), false);
-        addUri(LOAD_DUE_TASKS_URI, new LoadDueTimesProvider(), false);
+        addUri(LOAD_DUE_TIMES_URI, new LoadDueTimesProvider(), false);
     }
 
     private SQLiteOpenHelper mOpenHelper;
@@ -428,7 +428,7 @@ public class TaskProvider extends ContentProvider
             realSelection += REPEAT_NEXT_DUE_DATE + operator + "?"; //lower bound
 
             String sortLimit = (sort != null) ? sort + " LIMIT 2" : " LIMIT 2";
-            
+
             return new TaskUnionRepeatQuery().query(openHelper,
                                                     url,
                                                     realProjection,

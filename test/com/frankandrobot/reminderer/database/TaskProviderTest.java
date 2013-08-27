@@ -118,7 +118,7 @@ public class TaskProviderTest
     @Test
     public void testLoadDueTasksProvider()
     {
-        Cursor cursor = taskProvider.query(LOAD_DUE_TASKS_URI,
+        Cursor cursor = taskProvider.query(LOAD_DUE_TIMES_URI,
                                            null,
                                            CompareOp.ON_OR_AFTER.toString(),
                                            new String[]{String.valueOf(now.plusMinutes(5).getMillis()),
@@ -145,7 +145,7 @@ public class TaskProviderTest
         int noDeleted = taskProvider.delete(deleteUri, null, null);
         assertThat(noDeleted, is(1));
 
-        Cursor cursor = taskProvider.query(LOAD_DUE_TASKS_URI,
+        Cursor cursor = taskProvider.query(LOAD_DUE_TIMES_URI,
                                            null,
                                            CompareOp.ON_OR_AFTER.toString(),
                                            new String[]{String.valueOf(now.plusMinutes(5).getMillis()),

@@ -144,7 +144,7 @@ public class AlarmManager
     private Cursor getDueAlarmIds(Context context, long dueTime, CompareOp compareOp, long endTime)
     {
         return context.getContentResolver().query(
-                TaskProvider.LOAD_DUE_TASKS_URI,
+                TaskProvider.LOAD_DUE_TIMES_URI,
                 null,
                 compareOp.toString(),
                 new String[]{Long.toString(dueTime), Long.toString(endTime)},
