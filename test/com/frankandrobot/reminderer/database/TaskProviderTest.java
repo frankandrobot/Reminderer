@@ -1,6 +1,7 @@
 package com.frankandrobot.reminderer.database;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
@@ -23,6 +24,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowContentResolver;
 
 import static com.frankandrobot.reminderer.database.TaskProvider.*;
+import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.*;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.*;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -176,8 +178,36 @@ public class TaskProviderTest
     }
 
     @Test
-    public void testConvertArrayToString() throws Exception
+    public void testRepeatUriProviderInsert() throws Exception
     {
+        ContentValues values = new ContentValues();
+        values.put(REPEAT_NEXT_DUE_DATE.colname(), now.plusHours(1).getMillis());
+        values.put(REPEAT_TASK_ID_FK.colname(), 3);
+
+        taskProvider.insert(TaskProvider.REPEAT_URI, values);
+
+        Cursor cursor = taskProvider.query(TaskProvider.LOAD_OPEN_TASKS_URI, null, null, null, null);
+
+        assert(cursor != null);
+
+        boolean newRowFound = false;
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast())
+        {
+            long taskId = cursor.getLong(cursor.getColumnIndex(TASK_ID.colname()));
+            long nextDueDate = 0;
+            int nextDueDateIndex = cursor.getColumnIndex(TASK_DUE_DATE.colname());
+            if (!cursor.isNull(nextDueDateIndex))
+                nextDueDate = cursor.getLong(nextDueDateIndex);
+            if (taskId == 3 && nextDueDate == now.plusHours(1).getMillis())
+            {
+                newRowFound = true;
+                //break;
+            }
+            cursor.moveToNext();
+        }
+
+        assertThat(newRowFound, is(true));
 
     }
 
