@@ -29,4 +29,6 @@ public class AlarmConstants
      * the result of a time or timezone change
      */
     final static int STALE_WINDOW = 60 * 30;
+
+    public static final String GET_NEXT_ALARM_SERVICE = "com.frankandrobot.reminderer.GET_NEXT_ALARM_SERVICE";
 }

@@ -170,63 +170,67 @@ public class Task extends DataStructure
         }
         else
         {
-            //due date is in future so return that
-            if (get(Task_Parser_Calendar.dueDate).getDate().getTime() >= System.currentTimeMillis())
+            long nextDueDate = calculateNextDueDate(Type.toType(get(Task_Int.repeatsType)),
+                                                    get(Task_Parser_Calendar.dueDate).getDate().getTime());
+            set(Task_Alarm_Calendar.nextDueDate, nextDueDate);
+            return nextDueDate;
+        }
+    }
+
+    static public long calculateNextDueDate(Type repeatType, long currentDueDate)
+    {
+        //due date is in future so return that
+        if (currentDueDate >= System.currentTimeMillis())
+        {
+            return currentDueDate;
+        }
+        else
+        {
+            DateTime nextDueDate = new DateTime(currentDueDate);
+
+            LocalDate dueDate = null;
+            LocalDate today = null;
+
+            if (repeatType != Type.HOUR)
             {
-                set(Task_Alarm_Calendar.nextDueDate,
-                    get(Task_Parser_Calendar.dueDate).getDate().getTime());
-                return get(Task_Parser_Calendar.dueDate).getDate().getTime();
+                dueDate = new LocalDate(currentDueDate);
+                today = LocalDate.now();
             }
-            else
+
+            switch (repeatType)
             {
-                DateTime nextDueDate = new DateTime(get(Task_Parser_Calendar.dueDate).getDate());
-
-                LocalDate dueDate = null;
-                LocalDate today = null;
-
-                if (Type.toType(get(Task_Int.repeatsType)) != Type.HOUR)
-                {
-                    dueDate = new LocalDate(get(Task_Parser_Calendar.dueDate).getDate());
-                    today = LocalDate.now();
-                }
-
-                switch (Type.toType(get(Task_Int.repeatsType)))
-                {
-                    case HOUR:
-                        int hours = Hours.hoursBetween(nextDueDate, new DateTime()).getHours();
-                        nextDueDate = nextDueDate.plusHours(hours);
-                        if (nextDueDate.isBefore(System.currentTimeMillis()))
-                            nextDueDate = nextDueDate.plusHours(1);
-                        break;
-                    case DAY:
-                        int days = Days.daysBetween(dueDate, today).getDays();
-                        nextDueDate = nextDueDate.plusDays(days);
-                        if (nextDueDate.isBefore(System.currentTimeMillis()))
-                            nextDueDate = nextDueDate.plusDays(1);
-                        break;
-                    case WEEK:
-                        int weeks = Weeks.weeksBetween(dueDate, today).getWeeks();
-                        nextDueDate = nextDueDate.plusWeeks(weeks);
-                        if (nextDueDate.isBefore(System.currentTimeMillis()))
-                            nextDueDate = nextDueDate.plusWeeks(1);
-                        break;
-                    case MONTH:
-                        int months = Months.monthsBetween(dueDate, today).getMonths();
-                        nextDueDate = nextDueDate.plusMonths(months);
-                        if (nextDueDate.isBefore(System.currentTimeMillis()))
-                            nextDueDate = nextDueDate.plusMonths(1);
-                        break;
-                    case YEAR:
-                        int years = Years.yearsBetween(dueDate, today).getYears();
-                        nextDueDate = nextDueDate.plusYears(years);
-                        if (nextDueDate.isBefore(System.currentTimeMillis()))
-                            nextDueDate = nextDueDate.plusYears(1);
-                        break;
-                }
-
-                set(Task_Alarm_Calendar.nextDueDate, nextDueDate.getMillis());
-                return nextDueDate.getMillis();
+                case HOUR:
+                    int hours = Hours.hoursBetween(nextDueDate, new DateTime()).getHours();
+                    nextDueDate = nextDueDate.plusHours(hours);
+                    if (nextDueDate.isBefore(System.currentTimeMillis()))
+                        nextDueDate = nextDueDate.plusHours(1);
+                    break;
+                case DAY:
+                    int days = Days.daysBetween(dueDate, today).getDays();
+                    nextDueDate = nextDueDate.plusDays(days);
+                    if (nextDueDate.isBefore(System.currentTimeMillis()))
+                        nextDueDate = nextDueDate.plusDays(1);
+                    break;
+                case WEEK:
+                    int weeks = Weeks.weeksBetween(dueDate, today).getWeeks();
+                    nextDueDate = nextDueDate.plusWeeks(weeks);
+                    if (nextDueDate.isBefore(System.currentTimeMillis()))
+                        nextDueDate = nextDueDate.plusWeeks(1);
+                    break;
+                case MONTH:
+                    int months = Months.monthsBetween(dueDate, today).getMonths();
+                    nextDueDate = nextDueDate.plusMonths(months);
+                    if (nextDueDate.isBefore(System.currentTimeMillis()))
+                        nextDueDate = nextDueDate.plusMonths(1);
+                    break;
+                case YEAR:
+                    int years = Years.yearsBetween(dueDate, today).getYears();
+                    nextDueDate = nextDueDate.plusYears(years);
+                    if (nextDueDate.isBefore(System.currentTimeMillis()))
+                        nextDueDate = nextDueDate.plusYears(1);
+                    break;
             }
+            return nextDueDate.getMillis();
         }
     }
 

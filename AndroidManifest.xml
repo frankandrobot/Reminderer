@@ -67,6 +67,13 @@
             </intent-filter>
         </service>
 
+        <service android:name=".alarm.AlarmManager$GetNextAlarm"
+                 android:exported="false">
+            <intent-filter>
+                <action android:name="com.frankandrobot.reminderer.GET_NEXT_ALARM_SERVICE" />
+            </intent-filter>
+        </service>
+
         <service android:name=".database.TaskDAOService" >
         </service>
         

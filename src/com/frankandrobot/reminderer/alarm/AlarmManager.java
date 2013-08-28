@@ -1,20 +1,28 @@
 package com.frankandrobot.reminderer.alarm;
 
+import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ContentProvider;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.database.TaskProvider;
+import com.frankandrobot.reminderer.database.TaskTable;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
+import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
+import com.frankandrobot.reminderer.parser.GrammarRule;
 
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
+import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
+import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.*;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskCol;
+import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.*;
+import static com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.*;
 
 /**
  * Convenience methods used by {@link TaskDatabaseFacade}
@@ -78,7 +86,7 @@ public class AlarmManager
             {
                 // get the task in the first row (row pointer starts at -1)
                 nextAlarms.moveToNext();
-                int index = nextAlarms.getColumnIndex(TaskCol.TASK_DUE_DATE.colname());
+                int index = nextAlarms.getColumnIndex(TASK_DUE_DATE.colname());
                 long nextDueTime = nextAlarms.getLong(index);
 
                 if (Logger.LOGV)
@@ -90,7 +98,7 @@ public class AlarmManager
                 //if the db took a really long time, this may fire immediately
                 scheduleAlarm(context, nextDueTime, (int)nextDueTime);
 
-                if (nextDueTime < System.currentTimeMillis())
+                if (nextDueTime <= System.currentTimeMillis())
                 {
                     //we're assuming in the worst case scenario, the db op
                     //took a really long time (one minute)
@@ -163,7 +171,7 @@ public class AlarmManager
                 null,
                 compareOp.toString(),
                 new String[]{Long.toString(dueTime)},
-                TaskCol.TASK_DUE_DATE.colname());
+                TASK_DUE_DATE.colname());
     }
 
     /**
@@ -177,7 +185,7 @@ public class AlarmManager
         {
             // save row position
             int origPos = cursor.getPosition();
-            int index = cursor.getColumnIndex(TaskCol.TASK_DUE_DATE.colname());
+            int index = cursor.getColumnIndex(TASK_DUE_DATE.colname());
             cursor.moveToFirst();
             String row = "*****Cursor*****\n";
             while (cursor.moveToNext())
@@ -200,6 +208,77 @@ public class AlarmManager
             new AlarmManager().findAndEnableNextTasksDue(context,
                                                          System.currentTimeMillis(),
                                                          CompareOp.ON_OR_AFTER);
+        }
+    }
+
+    public static class GetNextAlarm extends IntentService
+    {
+        public GetNextAlarm(String name)
+        {
+            super(name);
+        }
+
+        @Override
+        protected void onHandleIntent(Intent intent)
+        {
+            final long dueTime = intent.getLongExtra("dueTime", 0);
+            if (dueTime > 0)
+            {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run()
+                    {
+                        //ensure this code is called only one at a time
+                        synchronized (lock)
+                        {
+                            getNextAlarm(dueTime);
+                        }
+                    }
+                }).start();
+            }
+
+        }
+
+        private void getNextAlarm(long dueTime)
+        {
+            //first calculate the next alarm due so we don't fall behind
+            long nextAlarmDate = new AlarmManager().findAndEnableNextTasksDue(getApplicationContext(),
+                                                                              dueTime,
+                                                                              CompareOp.AFTER);
+
+            //get repeating tasks (if any) with this due time and calculate next repeating time
+            ContentResolver resolver = getContentResolver();
+            Cursor cursor = resolver.query(TaskProvider.TASK_JOIN_REPEAT_URI,
+                    new TaskTable().getColumns(TASK_ID,
+                                               TASK_REPEAT_TYPE,
+                                               REPEAT_NEXT_DUE_DATE),
+                    REPEAT_NEXT_DUE_DATE+"="+dueTime,
+                    null,
+                    null);
+
+            boolean isRecalculateNextAlarm = false;
+            if (cursor != null && cursor.getCount() > 0)
+            {
+                cursor.moveToFirst();
+                while(!cursor.isAfterLast())
+                {
+                    long taskId = cursor.getLong(0);
+                    Type repeatType = Type.toType(cursor.getInt(1));
+                    long dueDate = cursor.getLong(2);
+                    long nextDueDate = Task.calculateNextDueDate(repeatType, dueDate);
+                    isRecalculateNextAlarm = isRecalculateNextAlarm || nextDueDate < nextAlarmDate;
+                    ContentValues values = new ContentValues();
+                    values.put(REPEAT_TASK_ID_FK.colname(), taskId);
+                    values.put(REPEAT_NEXT_DUE_DATE.colname(), nextDueDate);
+                    resolver.insert(TaskProvider.REPEAT_URI, values);
+                }
+            }
+
+            if (isRecalculateNextAlarm)
+                new AlarmManager().findAndEnableNextTasksDue(getApplicationContext(),
+                                                             dueTime,
+                                                             CompareOp.AFTER);
+
         }
     }
 }

@@ -60,7 +60,13 @@ public class TaskProvider extends ContentProvider
     public final static String AUTHORITY_NAME = "com.frankandrobot.reminderer.dbprovider";
     private final static String baseUri = "content://" + AUTHORITY_NAME + "/";
 
+    /**
+     * Gives access to task table
+     */
     public final static Uri TASKS_URI = Uri.parse(baseUri + TASK_TABLE);
+    /**
+     * Gives access to repeatable table
+     */
     public final static Uri REPEAT_URI = Uri.parse(baseUri + REPEATABLE_TABLE);
     /**
      * Provides a view that is a join of the task and repeat table
@@ -75,7 +81,6 @@ public class TaskProvider extends ContentProvider
      */
     public final static Uri LOAD_DUE_TIMES_URI = Uri.parse(baseUri + "loadduetimes");
 
-
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     private static final int TASKS_URI_ID = 0;
     private static HashMap<Integer, UriProvider> hmQueries = new HashMap<Integer, UriProvider>();
@@ -84,6 +89,7 @@ public class TaskProvider extends ContentProvider
     static
     {
         addUri(TASKS_URI, new TaskUriProvider(), false);
+        addUri(REPEAT_URI, new RepeatUriProvider(), false);
         addUri(REPEAT_URI, new SingleRowRepeatUriProvider(), true);
         addUri(TASK_JOIN_REPEAT_URI, new TaskJoinRepeatProvider(), false);
         addUri(LOAD_OPEN_TASKS_URI, new LoadOpenTasksProvider(), false);
@@ -191,39 +197,12 @@ public class TaskProvider extends ContentProvider
     @Override
     public Uri insert(Uri url, ContentValues initialValues)
     {
-        if (uriMatcher.match(url) != TASKS_URI_ID)
-        {
-            throw new IllegalArgumentException("Cannot insert into URL: " + url);
-        }
-
         if (Logger.LOGD) Log.d(TAG, "Inserting values " + url.toString());
 
-        SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        UriProvider uriProvider = hmQueries.get(uriMatcher.match(url));
 
-        long taskId = db.insert(TASK_TABLE,
-                                null,
-                                Task.getTaskValuesFromInitial(initialValues));
+        Uri newUrl = uriProvider.insert(mOpenHelper, url, initialValues);
 
-        if (taskId < 0)
-        {
-            throw new SQLException("Failed to insert row into " + url);
-        }
-
-        if (initialValues.containsKey(TASK_REPEAT_TYPE.colname()) && initialValues.getAsInteger(TASK_REPEAT_TYPE.colname()) != 0)
-        {
-            ContentValues repeatValues = Task.getRepeatValuesFromInitial(initialValues);
-            repeatValues.put(REPEAT_TASK_ID_FK.colname(), taskId);
-            long repeatId = db.insert(REPEATABLE_TABLE, null, repeatValues);
-
-            if (repeatId < 0)
-            {
-                throw new SQLException("Failed to insert row into " + url);
-            }
-        }
-
-        if (Logger.LOGD) Log.d(TAG, "Added task rowId = " + taskId);
-
-        Uri newUrl = ContentUris.withAppendedId(TASKS_URI, taskId);
         getContext().getContentResolver().notifyChange(newUrl, null);
 
         return newUrl;
@@ -258,6 +237,10 @@ public class TaskProvider extends ContentProvider
 
     abstract static private class UriProvider
     {
+        public Uri insert(SQLiteOpenHelper openHelper, Uri url, ContentValues initialValues)
+        {
+            throw new UnsupportedOperationException("You shouldn't be calling this");
+        }
 
         public Cursor query(SQLiteOpenHelper openHelper,
                             Uri url,
@@ -280,6 +263,38 @@ public class TaskProvider extends ContentProvider
 
     static private class TaskUriProvider extends UriProvider
     {
+        @Override
+        public Uri insert(SQLiteOpenHelper openHelper, Uri url, ContentValues initialValues)
+        {
+            SQLiteDatabase db = openHelper.getWritableDatabase();
+
+            long taskId = db.insert(TASK_TABLE,
+                                    null,
+                                    Task.getTaskValuesFromInitial(initialValues));
+
+            if (taskId < 0)
+            {
+                throw new SQLException("Failed to insert row into " + url);
+            }
+
+            if (initialValues.containsKey(TASK_REPEAT_TYPE.colname()) && initialValues.getAsInteger(TASK_REPEAT_TYPE.colname()) != 0)
+            {
+                ContentValues repeatValues = Task.getRepeatValuesFromInitial(initialValues);
+                repeatValues.put(REPEAT_TASK_ID_FK.colname(), taskId);
+                long repeatId = db.insert(REPEATABLE_TABLE, null, repeatValues);
+
+                if (repeatId < 0)
+                {
+                    throw new SQLException("Failed to insert row into " + url);
+                }
+            }
+
+            if (Logger.LOGD) Log.d(TAG, "Added task rowId = " + taskId);
+
+            Uri newUrl = ContentUris.withAppendedId(TASKS_URI, taskId);
+
+            return newUrl;
+        }
 
         @Override
         public Cursor query(SQLiteOpenHelper openHelper,
@@ -542,6 +557,50 @@ public class TaskProvider extends ContentProvider
                     newSelectionArgs[len++] = selectionArg;
             }
             return db.rawQuery(rawQuery, newSelectionArgs);
+        }
+    }
+
+    static class RepeatUriProvider extends UriProvider
+    {
+        @Override
+        public Uri insert(SQLiteOpenHelper openHelper, Uri url, ContentValues initialValues)
+        {
+            SQLiteDatabase db = openHelper.getWritableDatabase();
+
+            long repeatId = db.insert(REPEATABLE_TABLE,
+                                      null,
+                                      initialValues);
+
+            if (repeatId < 0)
+            {
+                throw new SQLException("Failed to insert row into " + url);
+            }
+
+            if (Logger.LOGD) Log.d(TAG, "Added repeatable repeatId = " + repeatId);
+
+            Uri newUrl = ContentUris.withAppendedId(REPEAT_URI, repeatId);
+
+            return newUrl;
+        }
+
+        @Override
+        public Cursor query(SQLiteOpenHelper openHelper,
+                            Uri url,
+                            String[] projectionIn,
+                            String selection,
+                            String[] selectionArgs,
+                            String sort)
+        {
+            SQLiteDatabase db = openHelper.getReadableDatabase();
+            SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+            qb.setTables(REPEATABLE_TABLE);
+            return qb.query(db,
+                    projectionIn,
+                    selection,
+                    selectionArgs,
+                    null,
+                    null,
+                    sort);
         }
     }
 
