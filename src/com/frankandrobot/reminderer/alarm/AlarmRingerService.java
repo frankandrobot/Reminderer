@@ -51,7 +51,7 @@ public class AlarmRingerService extends Service
     @Override
     public void onCreate()
     {
-        AlarmAlertWakeLock.getInstance().acquireCpuWakeLock(this);
+        AlarmAlertWakeLock.getInstance().acquireCpuWakeLock(this, 0);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class AlarmRingerService extends Service
         stopAlarmTimer.cancel();
         stopAlarmTimer = null;
 
-        AlarmAlertWakeLock.getInstance().releaseCpuLock();
+        AlarmAlertWakeLock.getInstance().releaseCpuLock(0);
     }
 
     @Override

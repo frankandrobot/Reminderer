@@ -55,12 +55,13 @@ public class AlarmReceiver extends BroadcastReceiver
                                         | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
             context.startActivity(alarmAlert);
 
+            //grab wake locks---one for each service
+            AlarmAlertWakeLock.getInstance().acquireCpuWakeLock(context, 0);
+            AlarmAlertWakeLock.getInstance().acquireCpuWakeLock(context, 1);
+
             // Play the alarm alert and vibrate the device.
             Intent playAlarm = new Intent(AlarmConstants.TASK_ALARM_ALERT);
             context.startService(playAlarm);
-
-            //grab a wake lock so the service can play the alarm
-            AlarmAlertWakeLock.getInstance().acquireCpuWakeLock(context);
 
             //get the next alarm
             Intent getNextAlarm = new Intent(AlarmConstants.GET_NEXT_ALARM_SERVICE);

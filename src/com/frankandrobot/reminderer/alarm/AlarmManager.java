@@ -231,7 +231,14 @@ public class AlarmManager
                         //ensure this code is called only one at a time
                         synchronized (lock)
                         {
-                            getNextAlarm(dueTime);
+                            try
+                            {
+                                getNextAlarm(dueTime);
+                            }
+                            finally
+                            {
+                                AlarmAlertWakeLock.getInstance().releaseCpuLock(1);
+                            }
                         }
                     }
                 }).start();
