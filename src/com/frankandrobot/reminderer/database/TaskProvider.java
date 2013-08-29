@@ -443,7 +443,7 @@ public class TaskProvider extends ContentProvider
             realSelection += " AND ";
             realSelection += REPEAT_NEXT_DUE_DATE + operator + "?"; //lower bound
 
-            String sortLimit = (sort != null) ? sort + " LIMIT 2" : " LIMIT 2";
+            String sortLimit = (sort != null) ? sort + " LIMIT 10" : " LIMIT 10";
 
             return new TaskUnionRepeatQuery().query(openHelper,
                                                     url,
