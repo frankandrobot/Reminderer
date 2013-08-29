@@ -213,6 +213,8 @@ public class AlarmManager
 
     public static class GetNextAlarm extends IntentService
     {
+        public GetNextAlarm() {super("GetNextAlarm"); }
+
         public GetNextAlarm(String name)
         {
             super(name);
