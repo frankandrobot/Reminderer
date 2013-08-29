@@ -12,11 +12,12 @@
  + As per the docs, receivers are designed for short operations.
  + However, the AlarmReceiver calls ~findNextDueAlarm~, which is now a potentially
    heavy db operation
-** TODO Create a service to call findNextDueAlarm
+** DONE Create a service to call findNextDueAlarm
  + the catch is that the phone might go back to sleep before we do our work
    so we need to grab a wake lock
-*** TODO Grab a wake lock in the service and make sure to let it go
-*** TODO Create an Async task to findNextDueAlarm
+*** DONE Grab a wake lock in the service and make sure to let it go
+*** DONE Create an Async task to findNextDueAlarm
+** TODO save new repeating tasks with batch operation
 * Testing
 ** TODO Get Guice working!
  + Retest alarm manager using test-defined NOW, not the actual current time
