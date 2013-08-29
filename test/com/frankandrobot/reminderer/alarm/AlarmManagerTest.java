@@ -135,7 +135,7 @@ public class AlarmManagerTest
         addTask("task4", now.minusDays(1), Type.WEEK, false); //due date in 1 week
         addTask("task5", now.plusMinutes(10), null, true); //disabled
 
-        new GetNextAlarm("test").getNextAlarm(now.plusMinutes(5).getMillis());
+        new GetNextAlarm().getNextAlarm(now.plusMinutes(5).getMillis(), false);
 
         //this should calculate the next occurrance of task3
         Cursor cursor = taskProvider.query(TaskProvider.TASK_JOIN_REPEAT_URI,
