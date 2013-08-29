@@ -115,7 +115,7 @@ final public class TaskTable
     static class TaskTableHelper extends SQLiteOpenHelper
     {
         private static final String DATABASE_NAME = "reminderer.db";
-        private static final int DATABASE_VERSION = 11;
+        private static final int DATABASE_VERSION = 1;
         private static final String TAG = "R:TaskHelper";
 
         public TaskTableHelper(Context context)
@@ -159,9 +159,17 @@ final public class TaskTable
                                    + " to " + currentVersion
                                    + ", which will destroy all old data");
 
-            db.execSQL("DROP TABLE IF EXISTS " + TASK_TABLE);
-            db.execSQL("DROP TABLE IF EXISTS " + REPEATABLE_TABLE);
+            db.execSQL("ALTER TABLE " + TASK_TABLE + " RENAME TO table1");
+            db.execSQL("ALTER TABLE " + REPEATABLE_TABLE + " RENAME TO table1");
+
             onCreate(db);
+
+            //copy old data into new
+            db.execSQL("INSERT INTO " + TASK_TABLE + " SELECT * FROM table1");
+            db.execSQL("INSERT INTO " + REPEATABLE_TABLE + " SELECT * FROM table1");
+
+            db.execSQL("DROP TABLE IF EXISTS table1");
+            db.execSQL("DROP TABLE IF EXISTS table2");
 
         }
     }
