@@ -17,3 +17,6 @@
    so we need to grab a wake lock
 *** TODO Grab a wake lock in the service and make sure to let it go
 *** TODO Create an Async task to findNextDueAlarm
+* Testing
+** TODO Get Guice working!
+ + Retest alarm manager using test-defined NOW, not the actual current time
