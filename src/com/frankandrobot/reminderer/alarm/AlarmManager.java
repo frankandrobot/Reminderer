@@ -246,7 +246,7 @@ public class AlarmManager
 
         }
 
-        private void getNextAlarm(long dueTime)
+        protected void getNextAlarm(long dueTime)
         {
             //first calculate the next alarm due so we don't fall behind
             long nextAlarmDate = new AlarmManager().findAndEnableNextTasksDue(getApplicationContext(),
@@ -278,6 +278,7 @@ public class AlarmManager
                     values.put(REPEAT_TASK_ID_FK.colname(), taskId);
                     values.put(REPEAT_NEXT_DUE_DATE.colname(), nextDueDate);
                     resolver.insert(TaskProvider.REPEAT_URI, values);
+                    cursor.moveToNext();
                 }
             }
 
