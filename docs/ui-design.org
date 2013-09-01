@@ -1,0 +1,15 @@
+* Features
+** TODO shake to remove completed tasks
+** TODO swipe right to complete. Swipe left to undo
+** Integrate with phones---contacts
+* UI patterns
+** TODO dashboard
+** TODO action bar
+*** TODO split action bar (different bars for different layouts)
+** TODO navtion bar
+** TODO search
+** TODO quickactions
+** TODO companion widget
+** TODO Start screen
+** TODO swipe to navigate detail to detail
+What are my typical users most likely going to want to do in my app?
