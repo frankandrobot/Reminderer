@@ -1,19 +1,26 @@
 * Code Cleanup
-** TODO Refactor PhoneBoot to use a service
+** DONE Refactor PhoneBoot to use a service
  + Receivers cannot perform long running operations!
-** TODO No receiver can call the database directly
-* Backend
+** DONE No receiver can call the database directly
+** TODO save new repeating tasks in AlarmManager$GetNextAlarm with batch operation
 ** TODO make sure db is multi-thread safe
 * UI
 ** TODO implement cartoon animation to swipe to delete
 * Bugs
 ** TODO alarm doesn't vibrate when phone set in vibrate mode
-* TODO Fix AlarmReceiver
+
+* DONE Fix AlarmReceiver
  + As per the docs, receivers are designed for short operations.
  + However, the AlarmReceiver calls ~findNextDueAlarm~, which is now a potentially
    heavy db operation
-** TODO Create a service to call findNextDueAlarm
+** DONE Create a service to call findNextDueAlarm
  + the catch is that the phone might go back to sleep before we do our work
    so we need to grab a wake lock
-*** TODO Grab a wake lock in the service and make sure to let it go
-*** TODO Create an Async task to findNextDueAlarm
+*** DONE Grab a wake lock in the service and make sure to let it go
+*** DONE Create an Async task to findNextDueAlarm
+
+* Testing
+** TODO Get Guice working!
+*** TODO Retest alarm manager using test-defined NOW, not the actual current time
+*** TODO Test case when there are multiple alarms backed up
+ + i.e, dueTime1 = 12pm, dueTime2 = 12:01pm, etc. and NOW = 12:05pm

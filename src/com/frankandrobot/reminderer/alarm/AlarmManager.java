@@ -3,8 +3,6 @@ package com.frankandrobot.reminderer.alarm;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
-import android.content.ContentProvider;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -16,11 +14,8 @@ import com.frankandrobot.reminderer.database.TaskTable;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
-import com.frankandrobot.reminderer.parser.GrammarRule;
 
-import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.*;
-import static com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.*;
 import static com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.*;
 
@@ -47,18 +42,19 @@ public class AlarmManager
     }
 
     /**
-     * Finds the next task(s) due after the given task and enables them.
+     * Finds and enables the next task(s) due after dueTime
      *
-     * Idea is that you get a Cursor containing all of the tasks due after
-     * the current time. The problem is that there may be more than one task
-     * due at the same time. So you get the task in the first row of the
-     * Cursor. The time this task is due is the next task due time.
+     * Usually, dueTime ~ NOW. However, the database op to query
+     * tasks may take too long or this method may be called with
+     * dueTime in the past (i.e., dueTime < NOW).
      *
-     * __Do NOT call this method directly.__
+     * This method handles that case by querying the next 10 distinct due times.
+     * If any of these due times is in the past, it schedules them immediately.
+     * This ensures that we never miss any alarms.
      *
      * @param context the context
      * @param dueTime find tasks after dueTime
-     * @param compareOp one of =, >, or >=
+     * @param compareOp one of >, or >=
      */
     public long findAndEnableNextTasksDue(Context context,
                                           long dueTime,
@@ -85,7 +81,7 @@ public class AlarmManager
             else
             {
                 // get the task in the first row (row pointer starts at -1)
-                nextAlarms.moveToNext();
+                nextAlarms.moveToFirst();
                 int index = nextAlarms.getColumnIndex(TASK_DUE_DATE.colname());
                 long nextDueTime = nextAlarms.getLong(index);
 
@@ -103,14 +99,18 @@ public class AlarmManager
                     //we're assuming in the worst case scenario, the db op
                     //took a really long time (one minute)
                     //we may have to reschedule the next due task as well
-                    nextAlarms.moveToLast();
-                    long secondDueTime = nextAlarms.getLong(index);
-
-                    if (secondDueTime <= System.currentTimeMillis())
+                    nextAlarms.moveToNext();
+                    while(!nextAlarms.isAfterLast())
                     {
-                        if (Logger.LOGV) Log.v(TAG, "dueTime:" + secondDueTime);
+                        long secondDueTime = nextAlarms.getLong(index);
 
-                        scheduleAlarm(context, secondDueTime, (int)secondDueTime);
+                        if (secondDueTime <= System.currentTimeMillis())
+                        {
+                            if (Logger.LOGV) Log.v(TAG, "dueTime:" + secondDueTime);
+
+                            scheduleAlarm(context, secondDueTime, (int)secondDueTime);
+                        }
+                        nextAlarms.moveToNext();
                     }
 
                 }
@@ -205,23 +205,79 @@ public class AlarmManager
         @Override
         public void onReceive(Context context, Intent intent)
         {
-            new AlarmManager().findAndEnableNextTasksDue(context,
-                                                         System.currentTimeMillis(),
-                                                         CompareOp.ON_OR_AFTER);
+            Intent newIntent = new Intent(AlarmConstants.GET_NEXT_ALARM_SERVICE);
+            newIntent.putExtra("dueTime", System.currentTimeMillis());
+            newIntent.putExtra("isPhoneBoot", true);
+
+            context.startService(newIntent);
         }
     }
 
+    /**
+     * Calculates the next due times for repeating alarms
+     * and adds the next alarm to the alarm manager.
+     *
+     * It either updates repeating tasks with a given due date
+     * or all expired repeating tasks
+     *
+     * Intent takes the following params:
+     * - dueTime
+     * - isPhoneBoot
+     *
+     */
     public static class GetNextAlarm extends IntentService
     {
-        public GetNextAlarm(String name)
+        final private long FUDGE_TIME = 1000*60*10; //10 minutes
+
+        public GetNextAlarm()
         {
-            super(name);
+            super("GetNextAlarm");
         }
+
+        private interface GetRepeatingAlarms
+        {
+            public Cursor query(long dueTime);
+        }
+
+        /**
+         * Gets repeating tasks due at dueTime
+         */
+        GetRepeatingAlarms querySpecificDueTime = new GetRepeatingAlarms() {
+            @Override
+            public Cursor query(long dueTime) {
+                return getContentResolver().query(TaskProvider.TASK_JOIN_REPEAT_URI,
+                                                  new TaskTable().getColumns(TASK_ID,
+                                                                             TASK_REPEAT_TYPE,
+                                                                             REPEAT_NEXT_DUE_DATE),
+                                                  REPEAT_NEXT_DUE_DATE+"="+dueTime,
+                                                  null,
+                                                  null);
+            }
+        };
+
+        /**
+         * Gets expired repeating tasks with FUDGE_TIME to account for
+         * this service taking extra long time
+         */
+        GetRepeatingAlarms queryExpiredRepeatingAlarms = new GetRepeatingAlarms() {
+            @Override
+            public Cursor query(long dueTime) {
+                return getContentResolver().query(TaskProvider.TASK_JOIN_REPEAT_URI,
+                                                  new TaskTable().getColumns(TASK_ID,
+                                                                             TASK_REPEAT_TYPE,
+                                                                             REPEAT_NEXT_DUE_DATE),
+                                                  REPEAT_NEXT_DUE_DATE+"<="+dueTime+FUDGE_TIME,
+                                                  null,
+                                                  null);
+            }
+        };
 
         @Override
         protected void onHandleIntent(Intent intent)
         {
             final long dueTime = intent.getLongExtra("dueTime", 0);
+            final boolean isPhoneBoot = intent.getBooleanExtra("isPhoneBoot", false);
+
             if (dueTime > 0)
             {
                 new Thread(new Runnable() {
@@ -233,11 +289,11 @@ public class AlarmManager
                         {
                             try
                             {
-                                getNextAlarm(dueTime);
+                                getNextAlarm(dueTime, isPhoneBoot);
                             }
                             finally
                             {
-                                AlarmAlertWakeLock.getInstance().releaseCpuLock(1);
+                                if (!isPhoneBoot) AlarmAlertWakeLock.getInstance().releaseCpuLock(1);
                             }
                         }
                     }
@@ -246,24 +302,22 @@ public class AlarmManager
 
         }
 
-        private void getNextAlarm(long dueTime)
+        protected void getNextAlarm(long dueTime, boolean isPhoneBoot)
         {
             //first calculate the next alarm due so we don't fall behind
             long nextAlarmDate = new AlarmManager().findAndEnableNextTasksDue(getApplicationContext(),
                                                                               dueTime,
                                                                               CompareOp.AFTER);
 
-            //get repeating tasks (if any) with this due time and calculate next repeating time
-            ContentResolver resolver = getContentResolver();
-            Cursor cursor = resolver.query(TaskProvider.TASK_JOIN_REPEAT_URI,
-                    new TaskTable().getColumns(TASK_ID,
-                                               TASK_REPEAT_TYPE,
-                                               REPEAT_NEXT_DUE_DATE),
-                    REPEAT_NEXT_DUE_DATE+"="+dueTime,
-                    null,
-                    null);
+            //get repeating tasks that are either expired or due at dueTime
+            GetRepeatingAlarms getRepeatingAlarms = isPhoneBoot
+                                                    ? queryExpiredRepeatingAlarms : querySpecificDueTime;
+            Cursor cursor = getRepeatingAlarms.query(dueTime);
 
             boolean isRecalculateNextAlarm = false;
+
+            //for each repeating task, find the next due date and save it to db
+            //if any of these are before current alarm, recalculate the next alarm due
             if (cursor != null && cursor.getCount() > 0)
             {
                 cursor.moveToFirst();
@@ -274,17 +328,28 @@ public class AlarmManager
                     long dueDate = cursor.getLong(2);
                     long nextDueDate = Task.calculateNextDueDate(repeatType, dueDate);
                     isRecalculateNextAlarm = isRecalculateNextAlarm || nextDueDate < nextAlarmDate;
-                    ContentValues values = new ContentValues();
-                    values.put(REPEAT_TASK_ID_FK.colname(), taskId);
-                    values.put(REPEAT_NEXT_DUE_DATE.colname(), nextDueDate);
-                    resolver.insert(TaskProvider.REPEAT_URI, values);
+                    //does this time exist in the db already?
+                    Cursor dupCursor = getContentResolver().query(TaskProvider.REPEAT_URI,
+                                                                  new String[]{REPEAT_ID.colname()},
+                                                                  REPEAT_TASK_ID_FK+"="+taskId+
+                                                                  " AND "+REPEAT_NEXT_DUE_DATE+"="+nextDueDate,
+                                                                  null,
+                                                                  null);
+                    if (dupCursor != null && dupCursor.getCount() == 0)
+                    {
+                        ContentValues values = new ContentValues();
+                        values.put(REPEAT_TASK_ID_FK.colname(), taskId);
+                        values.put(REPEAT_NEXT_DUE_DATE.colname(), nextDueDate);
+                        getContentResolver().insert(TaskProvider.REPEAT_URI, values);
+                    }
+                    cursor.moveToNext();
                 }
             }
 
             if (isRecalculateNextAlarm)
                 new AlarmManager().findAndEnableNextTasksDue(getApplicationContext(),
                                                              dueTime,
-                                                             CompareOp.AFTER);
+                                                             isPhoneBoot ? CompareOp.ON_OR_AFTER : CompareOp.AFTER);
 
         }
     }
