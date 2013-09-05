@@ -18,6 +18,7 @@ final public class TaskTable
 {
     public final static String TASK_TABLE = "task";
     public final static String REPEATABLE_TABLE = "repeatable";
+    public final static String FOLDER_TABLE = "folder";
 
     private HashMap<Class<? extends Enum>, EnumSet> hmColumns = new HashMap<Class<? extends Enum>, EnumSet>();
 
@@ -82,7 +83,8 @@ final public class TaskTable
         , TASK_DESC
         , TASK_DUE_DATE
         , TASK_REPEAT_TYPE
-        , TASK_IS_COMPLETE;
+        , TASK_IS_COMPLETE
+        , TASK_FOLDER_ID_PK;
 
         private String colname;
         TaskCol() {}
@@ -104,6 +106,15 @@ final public class TaskTable
         REPEAT_ID
         ,REPEAT_TASK_ID_FK
         ,REPEAT_NEXT_DUE_DATE;
+
+        @Override
+        public String colname() { return name(); }
+    }
+
+    public enum FolderCol implements Column
+    {
+        FOLDER_ID
+        ,FOLDER_NAME;
 
         @Override
         public String colname() { return name(); }
@@ -135,7 +146,8 @@ final public class TaskTable
             dbCreateString += TaskCol.TASK_DESC + " TEXT NOT NULL, ";
             dbCreateString += TaskCol.TASK_DUE_DATE + " INTEGER, ";
             dbCreateString += TaskCol.TASK_REPEAT_TYPE + " INTEGER, ";
-            dbCreateString += TaskCol.TASK_IS_COMPLETE + " INTEGER";
+            dbCreateString += TaskCol.TASK_IS_COMPLETE + " INTEGER, ";
+            dbCreateString += TaskCol.TASK_FOLDER_ID_PK + " INTEGER NOT NULL DEFAULT 1";
             dbCreateString += ");";
             db.execSQL(dbCreateString);
 
@@ -146,6 +158,31 @@ final public class TaskTable
             dbCreateString += RepeatsCol.REPEAT_TASK_ID_FK + " INTEGER, ";
             dbCreateString += RepeatsCol.REPEAT_NEXT_DUE_DATE + " INTEGER ";
             dbCreateString += ");";
+            db.execSQL(dbCreateString);
+
+            //create folder table
+            dbCreateString = "";
+            dbCreateString += "CREATE TABLE " + FOLDER_TABLE;
+            dbCreateString += "(";
+            dbCreateString += FolderCol.FOLDER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,";
+            dbCreateString += FolderCol.FOLDER_NAME + " TEXT NOT NULL ";
+            dbCreateString += ");";
+            db.execSQL(dbCreateString);
+
+            //create default folders
+            dbCreateString = "";
+            dbCreateString += "INSERT INTO " + FOLDER_TABLE;
+            dbCreateString += "("+FolderCol.FOLDER_NAME+") ";
+            dbCreateString += " VALUES ";
+            dbCreateString += "('Inbox'); ";
+            dbCreateString += "INSERT INTO " + FOLDER_TABLE;
+            dbCreateString += "("+FolderCol.FOLDER_NAME+") ";
+            dbCreateString += " VALUES ";
+            dbCreateString += "('Work'); ";
+            dbCreateString += "INSERT INTO " + FOLDER_TABLE;
+            dbCreateString += "("+FolderCol.FOLDER_NAME+") ";
+            dbCreateString += " VALUES ";
+            dbCreateString += "('Personal'); ";
 
             db.execSQL(dbCreateString);
         }
