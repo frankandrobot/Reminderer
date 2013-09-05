@@ -1,8 +1,10 @@
 package com.frankandrobot.reminderer.database;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.datastructures.Task;
@@ -13,6 +15,13 @@ import java.util.HashMap;
 
 /**
  * Columns for the {@link Task} model
+ *
+ * To add a new column,
+ *
+ * 1. add field to {@link Task} datastructure
+ * 2. update Task(Cursor)
+ * 3. update Task#getContentValuesForInsert
+ * 4. update Task#get*FromInitial
  */
 final public class TaskTable
 {
@@ -170,21 +179,14 @@ final public class TaskTable
             db.execSQL(dbCreateString);
 
             //create default folders
-            dbCreateString = "";
-            dbCreateString += "INSERT INTO " + FOLDER_TABLE;
-            dbCreateString += "("+FolderCol.FOLDER_NAME+") ";
-            dbCreateString += " VALUES ";
-            dbCreateString += "('Inbox'); ";
-            dbCreateString += "INSERT INTO " + FOLDER_TABLE;
-            dbCreateString += "("+FolderCol.FOLDER_NAME+") ";
-            dbCreateString += " VALUES ";
-            dbCreateString += "('Work'); ";
-            dbCreateString += "INSERT INTO " + FOLDER_TABLE;
-            dbCreateString += "("+FolderCol.FOLDER_NAME+") ";
-            dbCreateString += " VALUES ";
-            dbCreateString += "('Personal'); ";
+            ContentValues values = new ContentValues();
 
-            db.execSQL(dbCreateString);
+            values.put(FolderCol.FOLDER_NAME.colname(), "Inbox");
+            db.insert(FOLDER_TABLE, null, values);
+            values.put(FolderCol.FOLDER_NAME.colname(), "Personal");
+            db.insert(FOLDER_TABLE, null, values);
+            values.put(FolderCol.FOLDER_NAME.colname(), "Work");
+            db.insert(FOLDER_TABLE, null, values);
         }
 
         @Override
@@ -207,6 +209,8 @@ final public class TaskTable
 
             db.execSQL("DROP TABLE IF EXISTS table1");
             db.execSQL("DROP TABLE IF EXISTS table2");
+
+            db.execSQL("DROP TABLE IF EXISTS "+FOLDER_TABLE);
 
         }
     }

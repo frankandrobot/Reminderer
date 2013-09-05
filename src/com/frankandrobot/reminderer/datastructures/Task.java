@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 
 import com.frankandrobot.reminderer.database.TaskTable.Column;
+import com.frankandrobot.reminderer.database.TaskTable.FolderCol;
 import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken;
@@ -39,7 +40,8 @@ public class Task extends DataStructure
     {
         id(TaskCol.TASK_ID)
         ,repeatId(RepeatsCol.REPEAT_ID)
-        ,taskId_fk(RepeatsCol.REPEAT_TASK_ID_FK);
+        ,taskId_fk(RepeatsCol.REPEAT_TASK_ID_FK)
+        ,folderId_fk(TaskCol.TASK_FOLDER_ID_PK);
 
         Task_Ids(Column colname) { this.colname = colname.colname(); type = Long.class; }
         public String colname;
@@ -116,6 +118,11 @@ public class Task extends DataStructure
         init();
     }
 
+    /**
+     * Create a task from a cursor
+     *
+     * @param cursor
+     */
     public Task(Cursor cursor)
     {
         init();
@@ -130,6 +137,10 @@ public class Task extends DataStructure
         if (checkColumn(Task_Ids.taskId_fk, cursor))
         set(Task_Ids.taskId_fk,
             cursor.getLong(cursor.getColumnIndex(Task_Ids.taskId_fk.colname)));
+
+        if (checkColumn(Task_Ids.folderId_fk, cursor))
+            set(Task_Ids.folderId_fk,
+                cursor.getLong(cursor.getColumnIndex(Task_Ids.folderId_fk.colname)));
 
         if (checkColumn(Task_String.desc, cursor))
         set(Task_String.desc,
