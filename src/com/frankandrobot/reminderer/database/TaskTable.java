@@ -135,7 +135,7 @@ final public class TaskTable
     static class TaskTableHelper extends SQLiteOpenHelper
     {
         private static final String DATABASE_NAME = "reminderer.db";
-        private static final int DATABASE_VERSION = 1;
+        private static final int DATABASE_VERSION = 2;
         private static final String TAG = "R:TaskHelper";
 
         public TaskTableHelper(Context context)
