@@ -6,6 +6,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.frankandrobot.reminderer.R.id;
+import com.frankandrobot.reminderer.ui.activities.AddTaskActivity;
 import com.frankandrobot.reminderer.database.TaskProvider;
 import com.frankandrobot.reminderer.database.TaskTable;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;

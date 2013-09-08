@@ -5,20 +5,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-    <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/add_new_task"
-            android:id="@+id/add_new_button"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"/>
-
     <fragment
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:name="com.frankandrobot.reminderer.widget.main.MainTaskListFragment"
+            android:name="com.frankandrobot.reminderer.ui.fragments.OpenTaskListFragment"
             android:id="@+id/fragment"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:layout_below="@+id/add_new_button"/>
+            tools:layout="@layout/androidstudio_listview"/>
 </RelativeLayout>

@@ -17,7 +17,7 @@ import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.LoaderBuilder;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
-import com.frankandrobot.reminderer.widget.main.TaskCursorAdapter;
+import com.frankandrobot.reminderer.ui.adapters.TaskCursorAdapter;
 
 public class AlarmDueListFragment extends ListFragment implements
                                                        TaskLoaderListener<Cursor>

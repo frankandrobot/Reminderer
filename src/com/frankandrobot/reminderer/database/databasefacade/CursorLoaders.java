@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.frankandrobot.reminderer.database.TaskProvider;
 import com.frankandrobot.reminderer.database.TaskTable;
+import com.frankandrobot.reminderer.database.TaskTable.FolderCol;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Boolean;
@@ -97,6 +98,18 @@ abstract public class CursorLoaders
             }
 
             return null;
+        }
+    }
+
+    static class AllFoldersLoader extends CursorLoader
+    {
+        public AllFoldersLoader(Context context)
+        {
+            super(context);
+            this.setUri(TaskProvider.FOLDERS_URI);
+            this.setProjection(table.getColumns(FolderCol.FOLDER_ID,
+                                                FolderCol.FOLDER_NAME));
+            this.setSortOrder(FolderCol.FOLDER_ID.colname());
         }
     }
 }

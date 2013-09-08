@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.widget.main;
+package com.frankandrobot.reminderer.ui.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -24,10 +24,9 @@ import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.LoaderBuilder;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.helpers.Logger;
-import com.frankandrobot.reminderer.parser.GrammarRule;
-import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener;
-import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener.IFlingListener;
-import com.frankandrobot.reminderer.widget.main.MainTaskListFragment.MainTaskViewHolder;
+import com.frankandrobot.reminderer.ui.gestures.LeftFlingListener;
+import com.frankandrobot.reminderer.ui.gestures.LeftFlingListener.IFlingListener;
+import com.frankandrobot.reminderer.ui.fragments.OpenTaskListFragment.MainTaskViewHolder;
 
 import java.util.Calendar;
 
@@ -135,7 +134,7 @@ public class TaskCursorAdapter extends SimpleCursorAdapter
         if (rowView == null)
         {
             LayoutInflater inflater = LayoutInflater.from(mContext);
-            rowView = inflater.inflate(R.layout.main_screen_row, parent, false);
+            rowView = inflater.inflate(R.layout.tasks_row, parent, false);
             MainTaskViewHolder viewHolder = new MainTaskViewHolder();
             viewHolder.taskDesc = (TextView)rowView.findViewById(id.task_desc_textview);
             viewHolder.taskDueDate = (TextView)rowView.findViewById((id.task_due_date_textview));
@@ -220,10 +219,10 @@ public class TaskCursorAdapter extends SimpleCursorAdapter
         public void onLoaderReset(Loader<Cursor> loader) {}
     }
 
-    static public class MainTaskCursorAdapter extends TaskCursorAdapter
+    static public class OpenTaskCursorAdapter extends TaskCursorAdapter
     {
 
-        public MainTaskCursorAdapter(Context context,
+        public OpenTaskCursorAdapter(Context context,
                                      ListFragment listFragment,
                                      TaskDatabaseFacade taskDatabaseFacade)
         {

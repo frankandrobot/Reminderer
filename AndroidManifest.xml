@@ -26,18 +26,29 @@
         <!-- Using exported=false prevents other apps from using the database -->
 
         <activity
-            android:name=".AddTaskActivity"
+            android:name=".ui.activities.AddTaskActivity"
             android:label="Add Task Activity">
         </activity>
         <activity
-            android:name=".RemindererActivity"
+            android:name=".ui.activities.OpenTasksActivity"
             android:label="@string/app_name"
-            android:theme="@style/Theme.AppCompat.Light" >
+            android:theme="@style/Theme.AppCompat.Light"
+            android:parentActivityName="com.frankandrobot.reminderer.ui.activities.FoldersActivity">
+            <!-- Parent activity meta-data to support API level 7+ -->
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="com.frankandrobot.reminderer.ui.activities.FoldersActivity" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+                android:name=".ui.activities.FoldersActivity"
+                android:label="@string/app_name"
+                android:theme="@style/Theme.AppCompat.Light" >
         </activity>
         <activity
                 android:name=".alarm.AlarmActivity"

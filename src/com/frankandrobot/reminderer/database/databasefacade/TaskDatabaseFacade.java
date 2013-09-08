@@ -16,6 +16,7 @@ import com.frankandrobot.reminderer.alarm.AlarmManager.CompareOp;
 import com.frankandrobot.reminderer.database.TaskProvider;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.AllDueOpenTasksLoader;
+import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.AllFoldersLoader;
 import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.AllOpenTasksLoader;
 import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.CompleteTaskLoader;
 import com.frankandrobot.reminderer.datastructures.Task;
@@ -39,6 +40,7 @@ public class TaskDatabaseFacade
     final static public int CURSOR_LOAD_ALL_OPEN_TASKS_ID = 3;
     final static public int CURSOR_COMPLETE_TASK_ID = 4;
     final static public int CURSOR_LOAD_ALL_DUE_TASKS_ID = 5;
+    final static public int CURSOR_LOAD_FOLDERS_ID = 6;
 
     private Context context;
     private TaskLoaderListener<Cursor> loaderListener;
@@ -203,6 +205,8 @@ public class TaskDatabaseFacade
                 case CURSOR_LOAD_ALL_DUE_TASKS_ID:
                     long dueTime = args.getLong("dueTime", 0);
                     return new AllDueOpenTasksLoader(context, dueTime);
+                case CURSOR_LOAD_FOLDERS_ID:
+                    return new AllFoldersLoader(context);
             }
             return null;
         }

@@ -122,11 +122,14 @@ final public class TaskTable
 
     public enum FolderCol implements Column
     {
-        FOLDER_ID
+        FOLDER_ID("_id")
         ,FOLDER_NAME;
 
+        private String colname;
+        FolderCol() {}
+        FolderCol(String value) { this.colname = value; }
         @Override
-        public String colname() { return name(); }
+        public String colname() { return colname == null ? name() : colname; }
     }
 
     /**
@@ -135,7 +138,7 @@ final public class TaskTable
     static class TaskTableHelper extends SQLiteOpenHelper
     {
         private static final String DATABASE_NAME = "reminderer.db";
-        private static final int DATABASE_VERSION = 2;
+        private static final int DATABASE_VERSION = 3;
         private static final String TAG = "R:TaskHelper";
 
         public TaskTableHelper(Context context)

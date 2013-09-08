@@ -35,6 +35,7 @@ import com.frankandrobot.reminderer.helpers.Logger;
 
 import java.util.HashMap;
 
+import static com.frankandrobot.reminderer.database.TaskTable.FOLDER_TABLE;
 import static com.frankandrobot.reminderer.database.TaskTable.REPEATABLE_TABLE;
 import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.REPEAT_ID;
 import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.REPEAT_NEXT_DUE_DATE;
@@ -80,6 +81,10 @@ public class TaskProvider extends ContentProvider
      * Convenience Uri to get the next _two_ due times
      */
     public final static Uri LOAD_DUE_TIMES_URI = Uri.parse(baseUri + "loadduetimes");
+    /**
+     * Gives access to the folders table
+     */
+    public final static Uri FOLDERS_URI = Uri.parse(baseUri + "folders");
 
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     private static final int TASKS_URI_ID = 0;
@@ -94,6 +99,7 @@ public class TaskProvider extends ContentProvider
         addUri(TASK_JOIN_REPEAT_URI, new TaskJoinRepeatProvider(), false);
         addUri(LOAD_OPEN_TASKS_URI, new LoadOpenTasksProvider(), false);
         addUri(LOAD_DUE_TIMES_URI, new LoadDueTimesProvider(), false);
+        addUri(FOLDERS_URI, new FoldersUriProvider(), false);
     }
 
     private SQLiteOpenHelper mOpenHelper;
@@ -621,6 +627,28 @@ public class TaskProvider extends ContentProvider
                 where = REPEAT_ID+"="+rowId + " AND (" + where + ")";
             }
             return db.delete(REPEATABLE_TABLE, where, whereArgs);
+        }
+    }
+
+    static class FoldersUriProvider extends UriProvider
+    {
+        public Cursor query(SQLiteOpenHelper openHelper,
+                            Uri url,
+                            String[] projectionIn,
+                            String selection,
+                            String[] selectionArgs,
+                            String sort)
+        {
+            SQLiteDatabase db = openHelper.getReadableDatabase();
+            SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+            qb.setTables(FOLDER_TABLE);
+            return qb.query(db,
+                            projectionIn,
+                            selection,
+                            selectionArgs,
+                            null,
+                            null,
+                            sort);
         }
     }
 }

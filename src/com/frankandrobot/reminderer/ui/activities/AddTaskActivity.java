@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer;
+package com.frankandrobot.reminderer.ui.activities;
 
 import android.content.ContentProviderResult;
 import android.os.Bundle;
@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.frankandrobot.reminderer.R;
 import com.frankandrobot.reminderer.database.TaskDAOService;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.datastructures.Task;

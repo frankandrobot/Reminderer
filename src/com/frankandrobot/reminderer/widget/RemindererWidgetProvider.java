@@ -1,6 +1,6 @@
 package com.frankandrobot.reminderer.widget;
 
-import com.frankandrobot.reminderer.AddTaskActivity;
+import com.frankandrobot.reminderer.ui.activities.AddTaskActivity;
 import com.frankandrobot.reminderer.R;
 
 import android.app.PendingIntent;

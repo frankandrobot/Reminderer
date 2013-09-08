@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.widget.main;
+package com.frankandrobot.reminderer.ui.fragments;
 
 import android.database.Cursor;
 import android.os.Bundle;
@@ -11,13 +11,13 @@ import android.widget.TextView;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.helpers.Logger;
-import com.frankandrobot.reminderer.widget.gestures.LeftFlingListener;
-import com.frankandrobot.reminderer.widget.main.TaskCursorAdapter.MainTaskCursorAdapter;
+import com.frankandrobot.reminderer.ui.adapters.TaskCursorAdapter.OpenTaskCursorAdapter;
+import com.frankandrobot.reminderer.ui.gestures.LeftFlingListener;
 
-public class MainTaskListFragment extends ListFragment implements
+public class OpenTaskListFragment extends ListFragment implements
                                                        TaskLoaderListener<Cursor>
 {
-    final static private String TAG = "R:MainTaskList";
+    final static private String TAG = "R:"+OpenTaskListFragment.class.getSimpleName();
 
     private SimpleCursorAdapter adapter;
     private TaskDatabaseFacade taskDatabaseFacade;
@@ -29,7 +29,7 @@ public class MainTaskListFragment extends ListFragment implements
 
         taskDatabaseFacade = new TaskDatabaseFacade(this.getActivity());
 
-        adapter = new MainTaskCursorAdapter(getActivity(),
+        adapter = new OpenTaskCursorAdapter(getActivity(),
                                             this,
                                             taskDatabaseFacade);
 

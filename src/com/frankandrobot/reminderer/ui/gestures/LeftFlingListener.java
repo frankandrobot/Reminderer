@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.widget.gestures;
+package com.frankandrobot.reminderer.ui.gestures;
 
 import android.support.v4.app.ListFragment;
 import android.view.MotionEvent;
