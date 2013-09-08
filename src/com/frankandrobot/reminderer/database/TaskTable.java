@@ -128,6 +128,12 @@ final public class TaskTable
         private String colname;
         FolderCol() {}
         FolderCol(String value) { this.colname = value; }
+        /**
+         * @deprecated use {@link #colname}
+         * @return string
+         */
+        @Override
+        public String toString() { return colname == null ? super.toString() : colname; }
         @Override
         public String colname() { return colname == null ? name() : colname; }
     }
@@ -138,7 +144,7 @@ final public class TaskTable
     static class TaskTableHelper extends SQLiteOpenHelper
     {
         private static final String DATABASE_NAME = "reminderer.db";
-        private static final int DATABASE_VERSION = 3;
+        private static final int DATABASE_VERSION = 4;
         private static final String TAG = "R:TaskHelper";
 
         public TaskTableHelper(Context context)
@@ -202,20 +208,18 @@ final public class TaskTable
                                    + ", which will destroy all old data");
 
             //drop old tables
-            db.execSQL("DROP TABLE IF EXISTS table1");
-            db.execSQL("DROP TABLE IF EXISTS table2");
             db.execSQL("DROP TABLE IF EXISTS "+FOLDER_TABLE);
 
             //backup data
             db.execSQL("ALTER TABLE " + TASK_TABLE + " RENAME TO table1");
-            db.execSQL("ALTER TABLE " + REPEATABLE_TABLE + " RENAME TO table1");
+            db.execSQL("ALTER TABLE " + REPEATABLE_TABLE + " RENAME TO table2");
 
             //create tables
             onCreate(db);
 
             //copy old data into new
             db.execSQL("INSERT INTO " + TASK_TABLE + " SELECT * FROM table1");
-            db.execSQL("INSERT INTO " + REPEATABLE_TABLE + " SELECT * FROM table1");
+            db.execSQL("INSERT INTO " + REPEATABLE_TABLE + " SELECT * FROM table2");
 
             //drop temp tables
             db.execSQL("DROP TABLE IF EXISTS table1");

@@ -12,5 +12,6 @@
             android:id="@+id/fragment"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            tools:layout="@layout/androidstudio_listview"/>
+            tools:layout="@layout/androidstudio_listview"
+            android:layout_alignParentTop="true"/>
 </RelativeLayout>
