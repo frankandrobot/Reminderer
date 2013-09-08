@@ -201,19 +201,26 @@ final public class TaskTable
                                    + " to " + currentVersion
                                    + ", which will destroy all old data");
 
+            //drop old tables
+            db.execSQL("DROP TABLE IF EXISTS table1");
+            db.execSQL("DROP TABLE IF EXISTS table2");
+            db.execSQL("DROP TABLE IF EXISTS "+FOLDER_TABLE);
+
+            //backup data
             db.execSQL("ALTER TABLE " + TASK_TABLE + " RENAME TO table1");
             db.execSQL("ALTER TABLE " + REPEATABLE_TABLE + " RENAME TO table1");
 
+            //create tables
             onCreate(db);
 
             //copy old data into new
             db.execSQL("INSERT INTO " + TASK_TABLE + " SELECT * FROM table1");
             db.execSQL("INSERT INTO " + REPEATABLE_TABLE + " SELECT * FROM table1");
 
+            //drop temp tables
             db.execSQL("DROP TABLE IF EXISTS table1");
             db.execSQL("DROP TABLE IF EXISTS table2");
 
-            db.execSQL("DROP TABLE IF EXISTS "+FOLDER_TABLE);
 
         }
     }

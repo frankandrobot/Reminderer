@@ -3,6 +3,7 @@ package com.frankandrobot.reminderer.ui.activities;
 import android.app.ActionBar;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,18 +27,7 @@ public class OpenTasksActivity extends ActionBarActivity
         setContentView(R.layout.tasks);
 
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP);
-
-        Button addNew = (Button) findViewById(id.add_new_button);
-        addNew.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view)
-            {
-                Intent intent = new Intent(OpenTasksActivity.this,
-                                           AddTaskActivity.class);
-                startActivity(intent);
-            }
-        });
+        actionBar.setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
@@ -53,13 +43,16 @@ public class OpenTasksActivity extends ActionBarActivity
     {
         switch (item.getItemId())
         {
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
             case R.id.action_addtask:
                 addTask();
                 return true;
             case R.id.action_addtask_mic:
                 return true;
             default:
-                return true;
+                return super.onOptionsItemSelected(item);
         }
     }
 
