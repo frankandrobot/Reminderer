@@ -85,9 +85,9 @@ public class TaskDatabaseFacade
             return this;
         }
 
-        public LoaderBuilder setFolderId(String folderId)
+        public LoaderBuilder setFolderId(long folderId)
         {
-            this.folderId = Long.valueOf(folderId);
+            this.folderId = folderId;
             return this;
         }
     }
@@ -218,8 +218,8 @@ public class TaskDatabaseFacade
                 case CURSOR_LOAD_ALL_FOLDERS_ID:
                     return new AllFoldersLoader(context);
                 case CURSOR_LOAD_FOLDER_ID:
-                    String folderId = args.getString("folderId");
-                    return new FolderLoader(context, folderId);
+                    long folderId = args.getLong("folderId");
+                    return new FolderLoader(context, String.valueOf(folderId));
             }
             return null;
         }

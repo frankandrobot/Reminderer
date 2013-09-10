@@ -30,7 +30,8 @@ public class IndividualFolderActivity extends ActionBarActivity
         IndividualFolderListFragment fragment = (IndividualFolderListFragment)
                                                         getSupportFragmentManager()
                                                         .findFragmentById(R.id.individual_folder_list_fragment);
-        fragment.setFolderId(savedInstanceState.getString("folderId"));
+        long folderId = getIntent().getLongExtra("folderId", -1);
+        fragment.setFolderId(folderId);
     }
 
     @Override

@@ -10,11 +10,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.frankandrobot.reminderer.R;
+import com.frankandrobot.reminderer.R.id;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.LoaderBuilder;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.helpers.Logger;
-import com.frankandrobot.reminderer.ui.adapters.SimpleTaskCursorAdapter;
 import com.frankandrobot.reminderer.ui.adapters.SimpleTaskCursorAdapter.TaskCursorAdapter;
 
 public class IndividualFolderListFragment extends ListFragment implements
@@ -26,11 +27,9 @@ public class IndividualFolderListFragment extends ListFragment implements
     private TaskDatabaseFacade taskDatabaseFacade;
 
     @Override
-    public View onCreateView(LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState)
+    public void onCreate(Bundle savedInstanceState)
     {
-        View view = super.onCreateView(inflater, container, savedInstanceState);
+        super.onCreate(savedInstanceState);
 
         taskDatabaseFacade = new TaskDatabaseFacade(this.getActivity());
 
@@ -39,9 +38,14 @@ public class IndividualFolderListFragment extends ListFragment implements
                                         taskDatabaseFacade);
 
         setListAdapter(adapter);
-        setListShown(false);
+    }
 
-        return view;
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState)
+    {
+        super.onActivityCreated(savedInstanceState);
+
+        setListShown(false);
     }
 
     @Override
@@ -59,7 +63,7 @@ public class IndividualFolderListFragment extends ListFragment implements
         adapter.swapCursor(null);
     }
 
-    public void setFolderId(String folderId)
+    public void setFolderId(long folderId)
     {
         LoaderBuilder builder = new LoaderBuilder();
         builder.setLoaderId(TaskDatabaseFacade.CURSOR_LOAD_FOLDER_ID)
