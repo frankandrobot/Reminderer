@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.helpers.Logger;
+import com.frankandrobot.reminderer.ui.activities.AlarmActivity;
 
 import java.text.SimpleDateFormat;
 

@@ -112,4 +112,15 @@ abstract public class CursorLoaders
             this.setSortOrder(FolderCol.FOLDER_ID.colname());
         }
     }
+
+    static class FolderLoader extends CursorLoader
+    {
+        public FolderLoader(Context context, String folderId)
+        {
+            super(context);
+            this.setUri(TaskProvider.LOAD_OPEN_TASKS_URI);
+            this.setSelection(TaskCol.TASK_FOLDER_ID_PK+"=?");
+            this.setSelectionArgs(new String[]{folderId});
+        }
+    }
 }

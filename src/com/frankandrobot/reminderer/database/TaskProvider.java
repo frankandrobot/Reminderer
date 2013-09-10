@@ -364,9 +364,6 @@ public class TaskProvider extends ContentProvider
          * Uses the TaskUnionRepeatQuery class to return a view showing open tasks.
          *
          * @param projectionIn don't pass this in
-         * @param selection don't pass this in
-         * @param selectionArgs don't pass this in
-         * @param sort don't pass this in
          */
         @Override
         public Cursor query(SQLiteOpenHelper openHelper,
@@ -376,7 +373,7 @@ public class TaskProvider extends ContentProvider
                             String[] selectionArgs,
                             String sort)
         {
-            if (projectionIn != null || selection != null || selectionArgs != null || sort != null)
+            if (projectionIn != null)
                 throw new IllegalArgumentException("This query does not support any params");
 
             String[] realProjection = new TaskTable().getColumns(
@@ -394,14 +391,18 @@ public class TaskProvider extends ContentProvider
                     REPEAT_ID
             );
 
-            String realSelection = TASK_IS_COMPLETE + "=0";
-            String realOrder = TASK_DUE_DATE+","+TASK_ID;
+            String realSelection = selection == null
+                                           ? TASK_IS_COMPLETE+"=0"
+                                           : selection+","+TASK_IS_COMPLETE+"=0";
+            String realOrder = sort == null
+                                       ? TASK_DUE_DATE+","+TASK_ID
+                                       : sort;
 
             return new TaskUnionRepeatQuery().query(openHelper,
                                                     url,
                                                     realProjection,
                                                     realSelection,
-                                                    null,
+                                                    selectionArgs,
                                                     realOrder);
         }
     }

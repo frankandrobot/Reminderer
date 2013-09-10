@@ -2,6 +2,7 @@
 ** DONE Refactor PhoneBoot to use a service
  + Receivers cannot perform long running operations!
 ** DONE No receiver can call the database directly
+** TODO use enums in TaskDatabaseFacade
 ** TODO save new repeating tasks in AlarmManager$GetNextAlarm with batch operation
 ** TODO make sure db is multi-thread safe
 * UI

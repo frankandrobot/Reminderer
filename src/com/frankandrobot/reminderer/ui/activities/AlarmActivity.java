@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.alarm;
+package com.frankandrobot.reminderer.ui.activities;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -14,7 +14,9 @@ import android.widget.Button;
 
 import com.frankandrobot.reminderer.R;
 import com.frankandrobot.reminderer.R.id;
+import com.frankandrobot.reminderer.alarm.AlarmConstants;
 import com.frankandrobot.reminderer.helpers.Logger;
+import com.frankandrobot.reminderer.ui.fragments.DueTasksListFragment;
 
 /**
  * Alarm Clock alarm alert: pops visible indicator and plays alarm
@@ -84,7 +86,7 @@ public class AlarmActivity extends FragmentActivity
 
     private void setDueTime(long dueTime)
     {
-        AlarmDueListFragment fragment = (AlarmDueListFragment) getSupportFragmentManager()
+        DueTasksListFragment fragment = (DueTasksListFragment) getSupportFragmentManager()
                                                              .findFragmentById(R.id.alarm_duelist);
         fragment.setDueTime(dueTime);
 

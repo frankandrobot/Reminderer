@@ -46,12 +46,17 @@
             </intent-filter>
         </activity>
         <activity
-                android:name=".ui.activities.FoldersActivity"
+                android:name=".ui.activities.AllFoldersActivity"
                 android:label="@string/app_name"
                 android:theme="@style/Theme.AppCompat.Light" >
         </activity>
         <activity
-                android:name=".alarm.AlarmActivity"
+                android:name=".ui.activities.IndividualFolderActivity"
+                android:label="@string/app_name"
+                android:theme="@style/Theme.AppCompat.Light" >
+        </activity>
+        <activity
+                android:name=".ui.activities.AlarmActivity"
                 android:label="@string/app_name"
                 android:excludeFromRecents="true"
                 android:launchMode="singleInstance"

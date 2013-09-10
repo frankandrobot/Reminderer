@@ -19,6 +19,7 @@ import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.AllDue
 import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.AllFoldersLoader;
 import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.AllOpenTasksLoader;
 import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.CompleteTaskLoader;
+import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.FolderLoader;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
 
@@ -40,7 +41,8 @@ public class TaskDatabaseFacade
     final static public int CURSOR_LOAD_ALL_OPEN_TASKS_ID = 3;
     final static public int CURSOR_COMPLETE_TASK_ID = 4;
     final static public int CURSOR_LOAD_ALL_DUE_TASKS_ID = 5;
-    final static public int CURSOR_LOAD_FOLDERS_ID = 6;
+    final static public int CURSOR_LOAD_ALL_FOLDERS_ID = 6;
+    final static public int CURSOR_LOAD_FOLDER_ID = 7;
 
     private Context context;
     private TaskLoaderListener<Cursor> loaderListener;
@@ -57,6 +59,7 @@ public class TaskDatabaseFacade
         private long dueTime;
         private long taskId;
         private long repeatId;
+        private long folderId;
 
         public LoaderBuilder setLoaderId(int loaderId)
         {
@@ -79,6 +82,12 @@ public class TaskDatabaseFacade
         public LoaderBuilder setRepeatId(long repeatId)
         {
             this.repeatId = repeatId;
+            return this;
+        }
+
+        public LoaderBuilder setFolderId(String folderId)
+        {
+            this.folderId = Long.valueOf(folderId);
             return this;
         }
     }
@@ -171,6 +180,7 @@ public class TaskDatabaseFacade
         args.putLong("dueTime", builder.dueTime);
         args.putLong("taskId", builder.taskId);
         args.putLong("repeatId", builder.repeatId);
+        args.putLong("folderId", builder.folderId);
 
         if (activity instanceof FragmentActivity)
         {
@@ -205,8 +215,11 @@ public class TaskDatabaseFacade
                 case CURSOR_LOAD_ALL_DUE_TASKS_ID:
                     long dueTime = args.getLong("dueTime", 0);
                     return new AllDueOpenTasksLoader(context, dueTime);
-                case CURSOR_LOAD_FOLDERS_ID:
+                case CURSOR_LOAD_ALL_FOLDERS_ID:
                     return new AllFoldersLoader(context);
+                case CURSOR_LOAD_FOLDER_ID:
+                    String folderId = args.getString("folderId");
+                    return new FolderLoader(context, folderId);
             }
             return null;
         }

@@ -1,4 +1,4 @@
-package com.frankandrobot.reminderer.alarm;
+package com.frankandrobot.reminderer.ui.fragments;
 
 import android.R;
 import android.app.NotificationManager;
@@ -17,9 +17,9 @@ import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.LoaderBuilder;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
-import com.frankandrobot.reminderer.ui.adapters.TaskCursorAdapter;
+import com.frankandrobot.reminderer.ui.adapters.SimpleTaskCursorAdapter;
 
-public class AlarmDueListFragment extends ListFragment implements
+public class DueTasksListFragment extends ListFragment implements
                                                        TaskLoaderListener<Cursor>
 {
     private SimpleCursorAdapter adapter;
@@ -34,7 +34,7 @@ public class AlarmDueListFragment extends ListFragment implements
 
         taskDatabaseFacade = new TaskDatabaseFacade(this.getActivity());
 
-        adapter = new TaskCursorAdapter(getActivity(),
+        adapter = new SimpleTaskCursorAdapter(getActivity(),
                                         this,
                                         taskDatabaseFacade);
 

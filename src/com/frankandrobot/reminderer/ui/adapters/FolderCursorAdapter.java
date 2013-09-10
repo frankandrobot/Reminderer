@@ -1,11 +1,13 @@
 package com.frankandrobot.reminderer.ui.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.support.v4.app.ListFragment;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -13,7 +15,9 @@ import com.frankandrobot.reminderer.R;
 import com.frankandrobot.reminderer.R.id;
 import com.frankandrobot.reminderer.database.TaskTable;
 import com.frankandrobot.reminderer.database.TaskTable.FolderCol;
+import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
+import com.frankandrobot.reminderer.ui.activities.IndividualFolderActivity;
 
 /**
  * Adapter that converts cursors to these rows:
@@ -29,8 +33,9 @@ public class FolderCursorAdapter extends SimpleCursorAdapter
 
     protected ListFragment listFragment;
     protected TaskDatabaseFacade taskDatabaseFacade;
+    protected OnClickListener onClickListener;
 
-    public FolderCursorAdapter(Context context,
+    public FolderCursorAdapter(final Context context,
                                ListFragment listFragment,
                                TaskDatabaseFacade taskDatabaseFacade)
     {
@@ -43,6 +48,16 @@ public class FolderCursorAdapter extends SimpleCursorAdapter
 
         this.listFragment = listFragment;
         this.taskDatabaseFacade = taskDatabaseFacade;
+
+        onClickListener = new OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                Intent intent = new Intent(context, IndividualFolderActivity.class);
+                context.startActivity(intent);
+            }
+        };
     }
 
 
@@ -77,7 +92,7 @@ public class FolderCursorAdapter extends SimpleCursorAdapter
         if (rowView == null)
         {
             LayoutInflater inflater = LayoutInflater.from(mContext);
-            rowView = inflater.inflate(R.layout.folder_row, parent, false);
+            rowView = inflater.inflate(R.layout.all_folders_row, parent, false);
             ViewHolder viewHolder = new ViewHolder();
             viewHolder.folderName = (TextView)rowView.findViewById(id.folder_name);
             rowView.setTag(viewHolder);
@@ -87,6 +102,9 @@ public class FolderCursorAdapter extends SimpleCursorAdapter
         {
             ViewHolder viewHolder = (ViewHolder) rowView.getTag();
             viewHolder.folderName.setText(getCursor().getString(getCursor().getColumnIndex(FolderCol.FOLDER_NAME.colname())));
+            viewHolder.folderId = getCursor()
+                                  .getLong(getCursor().getColumnIndex(TaskCol.TASK_FOLDER_ID_PK.colname()));
+            rowView.setOnClickListener(onClickListener);
         }
 
         return rowView;
@@ -95,5 +113,6 @@ public class FolderCursorAdapter extends SimpleCursorAdapter
     static class ViewHolder
     {
         TextView folderName;
+        long folderId;
     }
 }

@@ -6,18 +6,17 @@ import android.support.v4.app.ListFragment;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.util.Log;
-import android.widget.TextView;
 
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
+import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.LoaderBuilder;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.ui.adapters.SimpleTaskCursorAdapter.TaskCursorAdapter;
-import com.frankandrobot.reminderer.ui.gestures.LeftFlingListener;
 
-public class OpenTaskListFragment extends ListFragment implements
+public class IndividualFolderListFragment extends ListFragment implements
                                                        TaskLoaderListener<Cursor>
 {
-    final static private String TAG = "R:"+OpenTaskListFragment.class.getSimpleName();
+    final static private String TAG = "R:"+IndividualFolderListFragment.class.getSimpleName();
 
     private SimpleCursorAdapter adapter;
     private TaskDatabaseFacade taskDatabaseFacade;
@@ -30,13 +29,13 @@ public class OpenTaskListFragment extends ListFragment implements
         taskDatabaseFacade = new TaskDatabaseFacade(this.getActivity());
 
         adapter = new TaskCursorAdapter(getActivity(),
-                                            this,
-                                            taskDatabaseFacade);
+                                        this,
+                                        taskDatabaseFacade);
 
         setListAdapter(adapter);
         setListShown(false);
 
-        taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_OPEN_TASKS_ID,
+        taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_FOLDERS_ID,
                                 this,
                                 this);
     }
@@ -56,11 +55,11 @@ public class OpenTaskListFragment extends ListFragment implements
         adapter.swapCursor(null);
     }
 
-    static public class MainTaskViewHolder
+    public void setFolderId(String folderId)
     {
-        public TextView taskDesc;
-        public TextView taskDueDate;
-        public LeftFlingListener touchListener;
+        LoaderBuilder builder = new LoaderBuilder();
+        builder.setLoaderId(TaskDatabaseFacade.CURSOR_LOAD_FOLDER_ID)
+                .setFolderId(folderId);
+        taskDatabaseFacade.load(builder, this, this);
     }
-
 }

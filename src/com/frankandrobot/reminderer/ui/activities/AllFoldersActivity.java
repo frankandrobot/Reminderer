@@ -10,7 +10,7 @@ import android.view.MenuItem;
 
 import com.frankandrobot.reminderer.R;
 
-public class FoldersActivity extends ActionBarActivity
+public class AllFoldersActivity extends ActionBarActivity
 {
     /**
      * Called when the activity is first created.
@@ -19,7 +19,7 @@ public class FoldersActivity extends ActionBarActivity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.folders);
+        setContentView(R.layout.all_folders);
 
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP);
@@ -50,7 +50,7 @@ public class FoldersActivity extends ActionBarActivity
 
     private void addTask()
     {
-        Intent intent = new Intent(FoldersActivity.this,
+        Intent intent = new Intent(AllFoldersActivity.this,
                                    AddTaskActivity.class);
         startActivity(intent);
     }

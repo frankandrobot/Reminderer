@@ -45,7 +45,7 @@
     <fragment
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:name="com.frankandrobot.reminderer.alarm.AlarmDueListFragment"
+            android:name="com.frankandrobot.reminderer.ui.fragments.DueTasksListFragment"
             android:id="@+id/alarm_duelist"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="75dp"

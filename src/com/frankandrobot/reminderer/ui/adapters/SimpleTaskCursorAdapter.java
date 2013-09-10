@@ -33,29 +33,24 @@ import java.util.Calendar;
 import static com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken;
 
 /**
- * Adapter that converts cursors to these rows:
- *
- * ++++++++
- * TaskDesc
- * dueDate
- * ++++++++
+ * Adapter that's used to display task rows.
  *
  * Also adds a {@link LeftFlingListener} to complete tasks.
  *
  */
-public class TaskCursorAdapter extends SimpleCursorAdapter
+public class SimpleTaskCursorAdapter extends SimpleCursorAdapter
         implements IFlingListener
 {
-    final static protected String TAG = "R:"+TaskCursorAdapter.class.getSimpleName();
+    final static protected String TAG = "R:"+SimpleTaskCursorAdapter.class.getSimpleName();
 
     protected Calendar now = Calendar.getInstance();
     protected Calendar dueCal = Calendar.getInstance();
     protected ListFragment listFragment;
     protected TaskDatabaseFacade taskDatabaseFacade;
 
-    public TaskCursorAdapter(Context context,
-                             ListFragment listFragment,
-                             TaskDatabaseFacade taskDatabaseFacade)
+    public SimpleTaskCursorAdapter(Context context,
+                                   ListFragment listFragment,
+                                   TaskDatabaseFacade taskDatabaseFacade)
     {
         super(context,
               android.R.layout.simple_list_item_1,
@@ -219,12 +214,15 @@ public class TaskCursorAdapter extends SimpleCursorAdapter
         public void onLoaderReset(Loader<Cursor> loader) {}
     }
 
-    static public class OpenTaskCursorAdapter extends TaskCursorAdapter
+    /**
+     * Marks overdue task rows differently
+     */
+    static public class TaskCursorAdapter extends SimpleTaskCursorAdapter
     {
 
-        public OpenTaskCursorAdapter(Context context,
-                                     ListFragment listFragment,
-                                     TaskDatabaseFacade taskDatabaseFacade)
+        public TaskCursorAdapter(Context context,
+                                 ListFragment listFragment,
+                                 TaskDatabaseFacade taskDatabaseFacade)
         {
             super(context, listFragment, taskDatabaseFacade);
         }
@@ -245,6 +243,4 @@ public class TaskCursorAdapter extends SimpleCursorAdapter
             }
             return row;
         }
-    }
-
-}
+    }}

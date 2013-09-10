@@ -9,20 +9,28 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.frankandrobot.reminderer.R;
+import com.frankandrobot.reminderer.R.id;
+import com.frankandrobot.reminderer.R.layout;
+import com.frankandrobot.reminderer.ui.fragments.IndividualFolderListFragment;
 
-public class OpenTasksActivity extends ActionBarActivity
+/**
+ * Use this activity to view individual folders
+ */
+public class IndividualFolderActivity extends ActionBarActivity
 {
-    /**
-     * Called when the activity is first created.
-     */
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.tasks);
+        setContentView(R.layout.individual_folder);
 
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
+
+        IndividualFolderListFragment fragment = (IndividualFolderListFragment)
+                                                        getSupportFragmentManager()
+                                                        .findFragmentById(R.id.individual_folder_list_fragment);
+        fragment.setFolderId(savedInstanceState.getString("folderId"));
     }
 
     @Override
@@ -41,10 +49,10 @@ public class OpenTasksActivity extends ActionBarActivity
             case android.R.id.home:
                 NavUtils.navigateUpFromSameTask(this);
                 return true;
-            case R.id.action_addtask:
+            case id.action_addtask:
                 addTask();
                 return true;
-            case R.id.action_addtask_mic:
+            case id.action_addtask_mic:
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -53,7 +61,7 @@ public class OpenTasksActivity extends ActionBarActivity
 
     private void addTask()
     {
-        Intent intent = new Intent(OpenTasksActivity.this,
+        Intent intent = new Intent(IndividualFolderActivity.this,
                                    AddTaskActivity.class);
         startActivity(intent);
     }

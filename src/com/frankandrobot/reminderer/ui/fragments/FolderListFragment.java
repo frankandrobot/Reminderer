@@ -6,14 +6,11 @@ import android.support.v4.app.ListFragment;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.util.Log;
-import android.widget.TextView;
 
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.ui.adapters.FolderCursorAdapter;
-import com.frankandrobot.reminderer.ui.adapters.TaskCursorAdapter.OpenTaskCursorAdapter;
-import com.frankandrobot.reminderer.ui.gestures.LeftFlingListener;
 
 public class FolderListFragment extends ListFragment implements
                                                        TaskLoaderListener<Cursor>
@@ -37,7 +34,7 @@ public class FolderListFragment extends ListFragment implements
         setListAdapter(adapter);
         setListShown(false);
 
-        taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_FOLDERS_ID,
+        taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_FOLDERS_ID,
                                 this,
                                 this);
     }
