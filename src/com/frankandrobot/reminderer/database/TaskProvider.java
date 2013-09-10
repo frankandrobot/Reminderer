@@ -43,6 +43,7 @@ import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.REPEAT_
 import static com.frankandrobot.reminderer.database.TaskTable.TASK_TABLE;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.TASK_DESC;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.TASK_DUE_DATE;
+import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.TASK_FOLDER_ID_PK;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.TASK_ID;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.TASK_IS_COMPLETE;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.TASK_REPEAT_TYPE;
@@ -383,17 +384,19 @@ public class TaskProvider extends ContentProvider
                     TASK_DUE_DATE,
                     TASK_REPEAT_TYPE,
                     null,
-                    //repeat table
+                    TASK_FOLDER_ID_PK,
+                    //task table join repeat table
                     TASK_ID,
                     TASK_DESC,
                     REPEAT_NEXT_DUE_DATE,
                     TASK_REPEAT_TYPE,
-                    REPEAT_ID
+                    REPEAT_ID,
+                    TASK_FOLDER_ID_PK
             );
 
             String realSelection = selection == null
                                            ? TASK_IS_COMPLETE+"=0"
-                                           : selection+","+TASK_IS_COMPLETE+"=0";
+                                           : selection+" AND "+TASK_IS_COMPLETE+"=0";
             String realOrder = sort == null
                                        ? TASK_DUE_DATE+","+TASK_ID
                                        : sort;
