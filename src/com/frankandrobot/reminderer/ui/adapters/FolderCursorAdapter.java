@@ -55,6 +55,7 @@ public class FolderCursorAdapter extends SimpleCursorAdapter
             public void onClick(View view)
             {
                 Intent intent = new Intent(context, IndividualFolderActivity.class);
+                intent.putExtra("folderId", ((ViewHolder) view.getTag()).folderId);
                 context.startActivity(intent);
             }
         };
@@ -103,7 +104,7 @@ public class FolderCursorAdapter extends SimpleCursorAdapter
             ViewHolder viewHolder = (ViewHolder) rowView.getTag();
             viewHolder.folderName.setText(getCursor().getString(getCursor().getColumnIndex(FolderCol.FOLDER_NAME.colname())));
             viewHolder.folderId = getCursor()
-                                  .getLong(getCursor().getColumnIndex(TaskCol.TASK_FOLDER_ID_PK.colname()));
+                                  .getLong(getCursor().getColumnIndex(FolderCol.FOLDER_ID.colname()));
             rowView.setOnClickListener(onClickListener);
         }
 

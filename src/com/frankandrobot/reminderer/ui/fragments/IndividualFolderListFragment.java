@@ -6,11 +6,15 @@ import android.support.v4.app.ListFragment;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.LoaderBuilder;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.helpers.Logger;
+import com.frankandrobot.reminderer.ui.adapters.SimpleTaskCursorAdapter;
 import com.frankandrobot.reminderer.ui.adapters.SimpleTaskCursorAdapter.TaskCursorAdapter;
 
 public class IndividualFolderListFragment extends ListFragment implements
@@ -22,9 +26,11 @@ public class IndividualFolderListFragment extends ListFragment implements
     private TaskDatabaseFacade taskDatabaseFacade;
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState)
+    public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container,
+                             Bundle savedInstanceState)
     {
-        super.onActivityCreated(savedInstanceState);
+        View view = super.onCreateView(inflater, container, savedInstanceState);
 
         taskDatabaseFacade = new TaskDatabaseFacade(this.getActivity());
 
@@ -35,9 +41,7 @@ public class IndividualFolderListFragment extends ListFragment implements
         setListAdapter(adapter);
         setListShown(false);
 
-        taskDatabaseFacade.load(TaskDatabaseFacade.CURSOR_LOAD_ALL_FOLDERS_ID,
-                                this,
-                                this);
+        return view;
     }
 
     @Override

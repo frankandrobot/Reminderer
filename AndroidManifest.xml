@@ -33,11 +33,11 @@
             android:name=".ui.activities.OpenTasksActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.AppCompat.Light"
-            android:parentActivityName="com.frankandrobot.reminderer.ui.activities.FoldersActivity">
+            android:parentActivityName=".ui.activities.AllFoldersActivity">
             <!-- Parent activity meta-data to support API level 7+ -->
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"
-                    android:value="com.frankandrobot.reminderer.ui.activities.FoldersActivity" />
+                    android:value=".ui.activities.AllFoldersActivity" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
