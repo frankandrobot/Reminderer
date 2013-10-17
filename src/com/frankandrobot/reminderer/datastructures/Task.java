@@ -197,7 +197,7 @@ public class Task extends DataStructure
         }
         else
         {
-            DateTime nextDueDate = new DateTime(currentDueDate);
+            DateTime currentDueDateTime = new DateTime(currentDueDate);
 
             LocalDate dueDate = null;
             LocalDate today = null;
@@ -208,23 +208,29 @@ public class Task extends DataStructure
                 today = LocalDate.now();
             }
 
+            DateTime nextDueDate = null;
+
             switch (repeatType)
             {
                 case HOUR:
-                    int hours = Hours.hoursBetween(nextDueDate, new DateTime()).getHours();
-                    nextDueDate = nextDueDate.plusHours(hours);
+                    int hours = Hours.hoursBetween(currentDueDateTime, new DateTime()).getHours();
+                    //get next due date that's on same day as now
+                    nextDueDate = currentDueDateTime.plusHours(hours);
+                    //if still in the past then add an hour
                     if (nextDueDate.isBefore(System.currentTimeMillis()))
                         nextDueDate = nextDueDate.plusHours(1);
                     break;
                 case DAY:
                     int days = Days.daysBetween(dueDate, today).getDays();
-                    nextDueDate = nextDueDate.plusDays(days);
+                    //get next due date that's on same day as now
+                    nextDueDate = currentDueDateTime.plusDays(days);
+                    //if still in the past then add a day
                     if (nextDueDate.isBefore(System.currentTimeMillis()))
                         nextDueDate = nextDueDate.plusDays(1);
                     break;
                 case WEEK:
                     int weeks = Weeks.weeksBetween(dueDate, today).getWeeks();
-                    nextDueDate = nextDueDate.plusWeeks(weeks);
+                    nextDueDate = currentDueDateTime.plusWeeks(weeks);
                     if (nextDueDate.isBefore(System.currentTimeMillis()))
                         nextDueDate = nextDueDate.plusWeeks(1);
                     break;
