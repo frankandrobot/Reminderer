@@ -214,11 +214,14 @@ public class AlarmManager
     }
 
     /**
-     * Calculates the next due times for repeating alarms
-     * and adds the next alarm to the alarm manager.
+     * Gets the next due alarm.
      *
-     * It either updates repeating tasks with a given due date
-     * or all expired repeating tasks
+     * This also:
+     * - Calculates the next due times for repeating alarms
+     * - adds the next alarm to the alarm manager.
+     *
+     * @note on phone boot, it updates all expired repeating tasks.
+     * Otherwise, it just updates repeating tasks that just fired.
      *
      * Intent takes the following params:
      * - dueTime
@@ -327,7 +330,12 @@ public class AlarmManager
                     Type repeatType = Type.toType(cursor.getInt(1));
                     long dueDate = cursor.getLong(2);
                     long nextDueDate = Task.calculateNextDueDate(repeatType, dueDate);
-                    isRecalculateNextAlarm = isRecalculateNextAlarm || nextDueDate < nextAlarmDate;
+                    //recall that #findAndEnableNextTasksDue returns 0 when there
+                    //are no due tasks, so automatically recalculate next alarm
+                    //when this happens
+                    isRecalculateNextAlarm = isRecalculateNextAlarm
+                                             || nextAlarmDate == 0
+                                             || nextDueDate < nextAlarmDate;
                     //does this time exist in the db already?
                     Cursor dupCursor = getContentResolver().query(TaskProvider.REPEAT_URI,
                                                                   new String[]{REPEAT_ID.colname()},
