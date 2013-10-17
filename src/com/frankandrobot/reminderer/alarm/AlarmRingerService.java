@@ -59,7 +59,7 @@ public class AlarmRingerService extends Service
     {
         stop();
 
-        stopAlarmTimer.cancel();
+        if (stopAlarmTimer != null ) stopAlarmTimer.cancel();
         stopAlarmTimer = null;
 
         AlarmAlertWakeLock.getInstance().releaseCpuLock(0);
