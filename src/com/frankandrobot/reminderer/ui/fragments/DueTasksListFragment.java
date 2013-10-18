@@ -9,6 +9,7 @@ import android.support.v4.app.ListFragment;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,11 +18,16 @@ import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.LoaderBuilder;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
+import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.ui.adapters.SimpleTaskCursorAdapter;
+
+import org.joda.time.DateTime;
 
 public class DueTasksListFragment extends ListFragment implements
                                                        TaskLoaderListener<Cursor>
 {
+    static final String TAG = "R:DueFragment";
+
     private SimpleCursorAdapter adapter;
     private TaskDatabaseFacade taskDatabaseFacade;
 
@@ -59,6 +65,8 @@ public class DueTasksListFragment extends ListFragment implements
         builder.setLoaderId(TaskDatabaseFacade.CURSOR_LOAD_ALL_DUE_TASKS_ID)
                 .setDueTime(dueTime);
         taskDatabaseFacade.load(builder, this, this);
+
+        if (Logger.LOGD) Log.d(TAG, "dueTime: " + new DateTime(dueTime));
     }
 
     @Override

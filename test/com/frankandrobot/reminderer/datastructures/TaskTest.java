@@ -22,6 +22,7 @@ import com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.Type;
 
 import org.hamcrest.core.IsNull;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeFieldType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -473,5 +474,16 @@ public class TaskTest
         assertThat(cursor.getString(cursor.getColumnIndex(TaskCol.TASK_DESC.colname())),
                    is("Insert into db2"));
 
+    }
+
+    @Test
+    public void testSecMilFieldsZeroedOut()
+    {
+        DateTime now = DateTime.now().minusMinutes(10);
+        now = now.withField(DateTimeFieldType.secondOfMinute(), 0);
+        now = now.withField(DateTimeFieldType.millisOfSecond(), 0);
+        System.out.println(now);
+        long dueTime = Task.calculateNextDueDate(Type.HOUR, now.getMillis());
+        System.out.println(new DateTime(dueTime));
     }
 }

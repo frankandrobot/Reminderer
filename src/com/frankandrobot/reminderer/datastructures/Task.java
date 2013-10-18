@@ -2,15 +2,18 @@ package com.frankandrobot.reminderer.datastructures;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.util.Log;
 
 import com.frankandrobot.reminderer.database.TaskTable.Column;
 import com.frankandrobot.reminderer.database.TaskTable.FolderCol;
 import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
+import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken;
 import com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.Type;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeFieldType;
 import org.joda.time.Days;
 import org.joda.time.Hours;
 import org.joda.time.LocalDate;
@@ -36,6 +39,8 @@ import org.joda.time.Years;
  */
 public class Task extends DataStructure
 {
+    static final String TAG = "R:"+Task.class.getSimpleName();
+
     public enum Task_Ids implements Field<Long>, Column
     {
         id(TaskCol.TASK_ID)
@@ -219,6 +224,8 @@ public class Task extends DataStructure
                     //if still in the past then add an hour
                     if (nextDueDate.isBefore(System.currentTimeMillis()))
                         nextDueDate = nextDueDate.plusHours(1);
+
+                    nextDueDate = new DateTime().plusMinutes(1);
                     break;
                 case DAY:
                     int days = Days.daysBetween(dueDate, today).getDays();
@@ -246,6 +253,12 @@ public class Task extends DataStructure
                     if (nextDueDate.isBefore(System.currentTimeMillis()))
                         nextDueDate = nextDueDate.plusYears(1);
                     break;
+            }
+            nextDueDate = nextDueDate.withField(DateTimeFieldType.secondOfMinute(), 0);
+            nextDueDate = nextDueDate.withField(DateTimeFieldType.millisOfSecond(), 0);
+            if (Logger.LOGD)
+            {
+                Log.d(TAG, "next due date: "+nextDueDate);
             }
             return nextDueDate.getMillis();
         }

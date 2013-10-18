@@ -9,7 +9,7 @@
 ** TODO implement cartoon animation to swipe to delete
 * Bugs
 ** TODO alarm doesn't vibrate when phone set in vibrate mode
-
+** TODO don't forget to remove alarms when completing them!
 * DONE Fix AlarmReceiver
  + As per the docs, receivers are designed for short operations.
  + However, the AlarmReceiver calls ~findNextDueAlarm~, which is now a potentially

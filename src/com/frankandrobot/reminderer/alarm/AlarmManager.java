@@ -15,6 +15,8 @@ import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
 
+import org.joda.time.DateTime;
+
 import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.*;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.*;
 import static com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.*;
@@ -307,6 +309,10 @@ public class AlarmManager
 
         protected void getNextAlarm(long dueTime, boolean isPhoneBoot)
         {
+            if (Logger.LOGD)
+            {
+                Log.d(TAG, "dueTime: "+new DateTime(dueTime));
+            }
             //first calculate the next alarm due so we don't fall behind
             long nextAlarmDate = new AlarmManager().findAndEnableNextTasksDue(getApplicationContext(),
                                                                               dueTime,
@@ -351,6 +357,11 @@ public class AlarmManager
                         getContentResolver().insert(TaskProvider.REPEAT_URI, values);
                     }
                     cursor.moveToNext();
+
+                    if (Logger.LOGD)
+                    {
+                        Log.d(TAG, "next due date: "+new DateTime(nextDueDate));
+                    }
                 }
             }
 
