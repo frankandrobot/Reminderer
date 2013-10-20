@@ -30,6 +30,7 @@ public class DueTasksListFragment extends ListFragment implements
 
     private SimpleCursorAdapter adapter;
     private TaskDatabaseFacade taskDatabaseFacade;
+    private long dueTime;
 
     @Override
     public View onCreateView(LayoutInflater inflater,
@@ -49,22 +50,24 @@ public class DueTasksListFragment extends ListFragment implements
         return view;
     }
 
-/*
+    /**
+     * Called by the parent activity to set the due time
+     * @param dueTime
+     */
+    public void setDueTime(long dueTime)
+    {
+        this.dueTime = dueTime;
+    }
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState)
     {
         super.onActivityCreated(savedInstanceState);
 
-    }
-*/
-
-    public void setDueTime(long dueTime)
-    {
         //reload database
         LoaderBuilder builder = new LoaderBuilder();
         builder.setLoaderId(TaskDatabaseFacade.CURSOR_LOAD_ALL_DUE_TASKS_ID)
                 .setDueTime(dueTime);
-        taskDatabaseFacade.load(builder, this, this);
 
         if (Logger.LOGD) Log.d(TAG, "dueTime: " + new DateTime(dueTime));
     }
@@ -76,25 +79,32 @@ public class DueTasksListFragment extends ListFragment implements
 
         data.moveToFirst();
 
-        String notText = data.getString(data.getColumnIndex(TaskCol.TASK_DESC.toString()))
-                                 + ((data.getCount() > 1) ? " and others " : "");
+        if (data.getCount() == 0)
+        {
+            Log.e(TAG, "Somethin' went wrong. "+this.getClass().getSimpleName()
+                       +" fired but doesn't show any due tasks at "+new DateTime(dueTime));
+        }
+        else
+        {
+            String notText = data.getString(data.getColumnIndex(TaskCol.TASK_DESC.toString()))
+                                     + ((data.getCount() > 1) ? " and others " : "");
 
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(getActivity())
-                        .setSmallIcon(R.drawable.sym_def_app_icon)
-                        .setContentTitle("Task(s) are due")
-                        .setContentText(notText);
+            NotificationCompat.Builder mBuilder =
+                    new NotificationCompat.Builder(getActivity())
+                            .setSmallIcon(R.drawable.sym_def_app_icon)
+                            .setContentTitle("Task(s) are due")
+                            .setContentText(notText);
 
-        NotificationManager mNotificationManager = (NotificationManager)
-                                                           getActivity().getApplicationContext()
-                                                                   .getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(1, mBuilder.getNotification());
-
+            NotificationManager mNotificationManager = (NotificationManager)
+                                                               getActivity().getApplicationContext()
+                                                                       .getSystemService(Context.NOTIFICATION_SERVICE);
+            mNotificationManager.notify(1, mBuilder.getNotification());
+        }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader)
     {
-
+        adapter.swapCursor(null);
     }
 }

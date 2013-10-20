@@ -86,8 +86,9 @@ public class AlarmActivity extends FragmentActivity
 
     private void setDueTime(long dueTime)
     {
-        DueTasksListFragment fragment = (DueTasksListFragment) getSupportFragmentManager()
-                                                             .findFragmentById(R.id.alarm_duelist_fragment);
+        DueTasksListFragment fragment = (DueTasksListFragment)
+                                                getSupportFragmentManager()
+                                                .findFragmentById(R.id.alarm_duelist_fragment);
         fragment.setDueTime(dueTime);
 
     }
