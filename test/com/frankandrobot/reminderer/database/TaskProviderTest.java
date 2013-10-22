@@ -6,7 +6,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 
-import com.frankandrobot.reminderer.alarm.AlarmManager.CompareOp;
+import com.frankandrobot.reminderer.database.TaskProvider.CompareOp;
+import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.AddTask;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Boolean;
@@ -178,7 +179,7 @@ public class TaskProviderTest
     }
 
     @Test
-    public void testRepeatUriProviderInsert() throws Exception
+    public void testRepeatUriProviderInsert1() throws Exception
     {
         ContentValues values = new ContentValues();
         values.put(REPEAT_NEXT_DUE_DATE.colname(), now.plusHours(1).getMillis());
@@ -203,6 +204,57 @@ public class TaskProviderTest
             {
                 newRowFound = true;
                 //break;
+            }
+            cursor.moveToNext();
+        }
+
+        assertThat(newRowFound, is(true));
+
+    }
+
+    @Test
+    public void testRepeatUriProviderInsert2() throws Exception
+    {
+        DateTime now = DateTime.now().minusMinutes(30);
+        addTask("Repeat", now, Type.HOUR, false);
+
+        Cursor cTask = taskProvider.query(TaskProvider.LOAD_OPEN_TASKS_URI, null, null, null, null);
+        assert(cTask != null);
+        cTask.moveToFirst();
+        long taskId = cTask.getLong(cTask.getColumnIndex(TaskCol.TASK_ID.colname()));
+
+        long nextDueTime = Task.calculateNextDueDate(Type.HOUR, now.getMillis());
+        System.out.println("nextDueTime:"+new DateTime(nextDueTime));
+
+        ContentValues values = new ContentValues();
+        values.put(REPEAT_NEXT_DUE_DATE.colname(), nextDueTime);
+        values.put(REPEAT_TASK_ID_FK.colname(), taskId);
+
+        taskProvider.insert(TaskProvider.REPEAT_URI, values);
+
+        Cursor cursor = taskProvider.query(TaskProvider.LOAD_DUE_TIMES_URI,
+                                           null,
+                                           CompareOp.ON_OR_AFTER.toString(),
+                                           new String[]{Long.toString(nextDueTime)},
+                                           TASK_DUE_DATE.colname());
+        assert(cursor != null);
+
+        boolean newRowFound = false;
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast())
+        {
+            long mtaskId = cursor.getLong(cursor.getColumnIndex(TASK_ID.colname()));
+            if (mtaskId == taskId)
+            {
+                newRowFound = true;
+                long nextDueDate = cursor.getLong(cursor.getColumnIndex(TASK_DUE_DATE.colname()));
+                assertThat(nextDueDate, is(nextDueTime));
+                for(int i=0; i<cursor.getColumnCount(); i++)
+                    if (!cursor.getColumnName(i).equals(TASK_DUE_DATE.colname().toLowerCase()))
+                        System.out.print(cursor.getColumnName(i)+":"+cursor.getString(i)+" ");
+                    else
+                        System.out.print(cursor.getColumnName(i)+":"+new DateTime(cursor.getLong(i))+" ");
+                break;
             }
             cursor.moveToNext();
         }
