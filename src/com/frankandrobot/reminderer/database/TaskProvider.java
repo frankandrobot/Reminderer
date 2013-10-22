@@ -29,7 +29,6 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.frankandrobot.reminderer.alarm.AlarmManager;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
 
@@ -86,6 +85,10 @@ public class TaskProvider extends ContentProvider
      * Gives access to the folders table
      */
     public final static Uri FOLDERS_URI = Uri.parse(baseUri + "folders");
+    /**
+     * Provides a view that is the union of the task and the task/repeat join view
+     */
+    public final static Uri TASK_UNION_REPEAT_URI = Uri.parse(baseUri + "taskunionrepeat");
 
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     private static final int TASKS_URI_ID = 0;
@@ -101,6 +104,20 @@ public class TaskProvider extends ContentProvider
         addUri(LOAD_OPEN_TASKS_URI, new LoadOpenTasksProvider(), false);
         addUri(LOAD_DUE_TIMES_URI, new LoadDueTimesProvider(), false);
         addUri(FOLDERS_URI, new FoldersUriProvider(), false);
+        addUri(TASK_UNION_REPEAT_URI, new TaskUnionRepeatQuery(), false);
+    }
+
+    public enum CompareOp
+    {
+        AFTER(">")
+        ,ON_OR_AFTER(">=")
+        ,ON("=");
+
+        CompareOp(String val) { this.val = val; }
+        private String val;
+
+        @Override
+        public String toString() { return val; }
     }
 
     private SQLiteOpenHelper mOpenHelper;
@@ -115,7 +132,7 @@ public class TaskProvider extends ContentProvider
         hmQueries.put(uriCount++, query);
     }
 
-    public static String convertArrayToString(String[] array)
+    protected static String convertArrayToString(String[] array)
     {
         String str = "";
         for (int i = 0; i < array.length; i++)
@@ -413,7 +430,8 @@ public class TaskProvider extends ContentProvider
     /**
      * Convenience class to get a view of due times
      *
-     * Gets the next _two_ due times. Could be in a minute, in an hour, etc.
+     * @note returns no other columns except the due time
+     *
      */
     static private class LoadDueTimesProvider extends UriProvider
     {
@@ -421,7 +439,7 @@ public class TaskProvider extends ContentProvider
          * Convenience class to get a view of due tasks
 
          * @param projectionIn don't pass this in
-         * @param operator the only string this accepts is a {@link AlarmManager.CompareOp}.
+         * @param operator the only string this accepts is a {@link com.frankandrobot.reminderer.database.TaskProvider.CompareOp}.
          * @param dueTime you can pass only the due time
          * @param sort you can sort only by TASK_ID, TASK_DUE_DATE, REPEAT_NEXT_DUE_DATE
          * @return cursor
@@ -453,14 +471,12 @@ public class TaskProvider extends ContentProvider
             realSelection += " AND ";
             realSelection += REPEAT_NEXT_DUE_DATE + operator + "?"; //lower bound
 
-            String sortLimit = (sort != null) ? sort + " LIMIT 10" : " LIMIT 10";
-
             return new TaskUnionRepeatQuery().query(openHelper,
                                                     url,
                                                     realProjection,
                                                     realSelection,
                                                     dueTime,
-                                                    sortLimit);
+                                                    sort);
         }
     }
 
@@ -475,9 +491,9 @@ public class TaskProvider extends ContentProvider
      *
      * @note the repeat table is actually a join with the task table!
      */
-    static private class TaskUnionRepeatQuery extends UriProvider
+    public static class TaskUnionRepeatQuery extends UriProvider
     {
-        final static private String SEPARATOR = "###";
+        final static public String SEPARATOR = "###";
 
         /**
          * Convenience class that does a union of tasks with a join of the task and repeat tables.
@@ -487,7 +503,7 @@ public class TaskProvider extends ContentProvider
          *                     the second half to the join
          * @param selection if you use the SEPARATOR, the first half gets mapped
          *                  to the task table, the second half to the join.
-         *                  Otherwise, but receive the same selection
+         *                  Otherwise, both receive the same selection
          * @param selectionArgs is duplicated. __We should instead split it__
          * @param sort sort argument
          */

@@ -12,7 +12,6 @@ import android.support.v4.content.Loader;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.alarm.AlarmManager;
-import com.frankandrobot.reminderer.alarm.AlarmManager.CompareOp;
 import com.frankandrobot.reminderer.database.TaskProvider;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.AllDueOpenTasksLoader;
@@ -24,6 +23,8 @@ import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
 
 import java.util.LinkedList;
+
+import static com.frankandrobot.reminderer.database.TaskProvider.CompareOp;
 
 /**
  * The app-specific interface to the database.

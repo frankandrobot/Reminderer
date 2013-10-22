@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.database.TaskProvider;
+import com.frankandrobot.reminderer.database.TaskProvider.CompareOp;
 import com.frankandrobot.reminderer.database.TaskTable;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.datastructures.Task;
@@ -17,6 +18,7 @@ import com.frankandrobot.reminderer.helpers.Logger;
 
 import org.joda.time.DateTime;
 
+import static com.frankandrobot.reminderer.database.TaskProvider.CompareOp;
 import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.*;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.*;
 import static com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.*;
@@ -31,18 +33,6 @@ public class AlarmManager
     //we just need to lock across all instances calling the method
     final private static Object lock = new Object();
 
-    public enum CompareOp
-    {
-        AFTER(">")
-        ,ON_OR_AFTER(">=");
-
-        CompareOp(String val) { this.val = val; }
-        private String val;
-
-        @Override
-        public String toString() { return val; }
-    }
-
     /**
      * Finds and enables the next task(s) due after dueTime
      *
@@ -52,7 +42,9 @@ public class AlarmManager
      *
      * This method handles that case by querying the next 10 distinct due times.
      * If any of these due times is in the past, it schedules them immediately.
-     * This ensures that we never miss any alarms.
+     * This ensures that we never miss any alarms. (This is good enough because
+     * the smallest repeating interval is 1 minute, so we're giving this method
+     * a 10-minute fudge time.)
      *
      * @param context the context
      * @param dueTime find tasks after dueTime
@@ -67,9 +59,9 @@ public class AlarmManager
             // disable the old alarm if any
             disableAlert(context);
 
-            // get all tasks due after curTime
+            // get all tasks due after curTime (limited by 10)
             // this is potentially expensive
-            Cursor nextAlarms = getDueAlarmIds(context, dueTime, compareOp);
+            Cursor nextAlarms = getDueAlarmIds(context, dueTime, compareOp, 10);
             // might be NOW + 1 minute later
 
             if (nextAlarms == null)
@@ -84,8 +76,8 @@ public class AlarmManager
             {
                 // get the task in the first row (row pointer starts at -1)
                 nextAlarms.moveToFirst();
-                int index = nextAlarms.getColumnIndex(TASK_DUE_DATE.colname());
-                long nextDueTime = nextAlarms.getLong(index);
+                int dueDateColumn = nextAlarms.getColumnIndex(TASK_DUE_DATE.colname());
+                long nextDueTime = nextAlarms.getLong(dueDateColumn);
 
                 if (Logger.LOGV)
                 {
@@ -104,7 +96,7 @@ public class AlarmManager
                     nextAlarms.moveToNext();
                     while(!nextAlarms.isAfterLast())
                     {
-                        long secondDueTime = nextAlarms.getLong(index);
+                        long secondDueTime = nextAlarms.getLong(dueDateColumn);
 
                         if (secondDueTime <= System.currentTimeMillis())
                         {
@@ -161,19 +153,23 @@ public class AlarmManager
     /**
      * Gets all alarms due after, before dueTime
      *
+     *
      * @param context da contex
      * @param dueTime the time to compare
      * @param compareOp is one of >, >=
+     * @param limit the max number of alarms to return
      * @return the cursor containing the due alarms
      */
-    private Cursor getDueAlarmIds(Context context, long dueTime, CompareOp compareOp)
+    private Cursor getDueAlarmIds(Context context,
+                                  long dueTime,
+                                  CompareOp compareOp,
+                                  int limit)
     {
-        return context.getContentResolver().query(
-                TaskProvider.LOAD_DUE_TIMES_URI,
-                null,
-                compareOp.toString(),
-                new String[]{Long.toString(dueTime)},
-                TASK_DUE_DATE.colname());
+        return context.getContentResolver().query(TaskProvider.LOAD_DUE_TIMES_URI,
+                                                  null,
+                                                  compareOp.toString(),
+                                                  new String[]{Long.toString(dueTime)},
+                                                  TASK_DUE_DATE + " LIMIT " + limit);
     }
 
     /**

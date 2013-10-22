@@ -8,7 +8,6 @@ import com.frankandrobot.reminderer.database.TaskTable;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.datastructures.TaskCalendar;
-import com.frankandrobot.reminderer.parser.GrammarRule;
 
 import org.hamcrest.CoreMatchers;
 import org.joda.time.DateTime;
@@ -22,7 +21,6 @@ import static com.frankandrobot.reminderer.alarm.AlarmManager.*;
 import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.*;
 import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.*;
 import static com.frankandrobot.reminderer.datastructures.Task.*;
-import static com.frankandrobot.reminderer.parser.GrammarRule.*;
 import static com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.*;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -68,7 +66,7 @@ public class AlarmManagerTest
 
         assertThat(new AlarmManager().findAndEnableNextTasksDue(activity,
                 task1.get(Task_Parser_Calendar.dueDate).getDate().getTime(),
-                CompareOp.ON_OR_AFTER)
+                TaskProvider.CompareOp.ON_OR_AFTER)
                 ,is(task2.get(Task_Parser_Calendar.dueDate).getDate().getTime()));
     }
 
@@ -101,7 +99,7 @@ public class AlarmManagerTest
 
         long dueTime = new AlarmManager().findAndEnableNextTasksDue(activity,
                                                                     now.getMillis(),
-                                                                    CompareOp.ON_OR_AFTER);
+                                                                    TaskProvider.CompareOp.ON_OR_AFTER);
         assertThat(dueTime,
                    is(dueTime2));
     }

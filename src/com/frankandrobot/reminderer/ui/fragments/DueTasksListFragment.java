@@ -64,12 +64,14 @@ public class DueTasksListFragment extends ListFragment implements
     {
         super.onActivityCreated(savedInstanceState);
 
+        if (Logger.LOGD) Log.d(TAG, "dueTime: " + new DateTime(dueTime));
+
         //reload database
         LoaderBuilder builder = new LoaderBuilder();
         builder.setLoaderId(TaskDatabaseFacade.CURSOR_LOAD_ALL_DUE_TASKS_ID)
                 .setDueTime(dueTime);
 
-        if (Logger.LOGD) Log.d(TAG, "dueTime: " + new DateTime(dueTime));
+        taskDatabaseFacade.load(builder, this, this);
     }
 
     @Override

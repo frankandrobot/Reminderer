@@ -10,6 +10,7 @@
 * Bugs
 ** TODO alarm doesn't vibrate when phone set in vibrate mode
 ** TODO don't forget to remove alarms when completing them!
+** TODO back to back alarms don't update the due alarm dialog
 * DONE Fix AlarmReceiver
  + As per the docs, receivers are designed for short operations.
  + However, the AlarmReceiver calls ~findNextDueAlarm~, which is now a potentially
