@@ -15,6 +15,7 @@ import com.frankandrobot.reminderer.ui.fragments.IndividualFolderListFragment;
 
 /**
  * Use this activity to view individual folders
+ * Shows the folder's open tasks
  */
 public class IndividualFolderActivity extends ActionBarActivity
 {

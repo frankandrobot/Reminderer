@@ -30,7 +30,7 @@
             android:label="Add Task Activity">
         </activity>
         <activity
-            android:name=".ui.activities.OpenTasksActivity"
+            android:name=".ui.activities.AllOpenTasksActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.AppCompat.Light"
             android:parentActivityName=".ui.activities.AllFoldersActivity">

@@ -10,7 +10,7 @@ import android.view.MenuItem;
 
 import com.frankandrobot.reminderer.R;
 
-public class OpenTasksActivity extends ActionBarActivity
+public class AllOpenTasksActivity extends ActionBarActivity
 {
     /**
      * Called when the activity is first created.
@@ -53,7 +53,7 @@ public class OpenTasksActivity extends ActionBarActivity
 
     private void addTask()
     {
-        Intent intent = new Intent(OpenTasksActivity.this,
+        Intent intent = new Intent(AllOpenTasksActivity.this,
                                    AddTaskActivity.class);
         startActivity(intent);
     }
