@@ -8,6 +8,7 @@
 * UI
 ** TODO implement cartoon animation to swipe to delete
 * Bugs
+** TODO revert "repeat hourly" to correct behavior
 ** TODO alarm doesn't vibrate when phone set in vibrate mode
 ** TODO don't forget to remove alarms when completing them!
 ** TODO back to back alarms don't update the due alarm dialog
