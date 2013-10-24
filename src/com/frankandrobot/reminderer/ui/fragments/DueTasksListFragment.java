@@ -59,6 +59,16 @@ public class DueTasksListFragment extends ListFragment implements
         this.dueTime = dueTime;
     }
 
+    public void setupLoaderManager()
+    {
+        //reload database
+        LoaderBuilder builder = new LoaderBuilder();
+        builder.setLoaderId(TaskDatabaseFacade.CURSOR_LOAD_ALL_DUE_TASKS_ID)
+                .setDueTime(dueTime);
+
+        taskDatabaseFacade.load(builder, this, this);
+    }
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState)
     {
@@ -66,12 +76,7 @@ public class DueTasksListFragment extends ListFragment implements
 
         if (Logger.LOGD) Log.d(TAG, "dueTime: " + new DateTime(dueTime));
 
-        //reload database
-        LoaderBuilder builder = new LoaderBuilder();
-        builder.setLoaderId(TaskDatabaseFacade.CURSOR_LOAD_ALL_DUE_TASKS_ID)
-                .setDueTime(dueTime);
-
-        taskDatabaseFacade.load(builder, this, this);
+        setupLoaderManager();
     }
 
     @Override

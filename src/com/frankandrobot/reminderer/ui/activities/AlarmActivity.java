@@ -15,6 +15,7 @@ import android.widget.Button;
 import com.frankandrobot.reminderer.R;
 import com.frankandrobot.reminderer.R.id;
 import com.frankandrobot.reminderer.alarm.AlarmConstants;
+import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.ui.fragments.DueTasksListFragment;
 
@@ -84,13 +85,15 @@ public class AlarmActivity extends FragmentActivity
         setDueTime(dueTime);
     }
 
+    private DueTasksListFragment getFragment()
+    {
+        return (DueTasksListFragment) getSupportFragmentManager()
+                                              .findFragmentById(R.id.alarm_duelist_fragment);
+    }
+
     private void setDueTime(long dueTime)
     {
-        DueTasksListFragment fragment = (DueTasksListFragment)
-                                                getSupportFragmentManager()
-                                                .findFragmentById(R.id.alarm_duelist_fragment);
-        fragment.setDueTime(dueTime);
-
+        getFragment().setDueTime(dueTime);
     }
 
  /*   // Attempt to snooze this alert.
@@ -182,6 +185,8 @@ public class AlarmActivity extends FragmentActivity
         long dueTime = intent.getLongExtra(AlarmConstants.TASK_DUETIME, 0);
 
         setDueTime(dueTime);
+
+        getFragment().setupLoaderManager();
     }
 
     /**
