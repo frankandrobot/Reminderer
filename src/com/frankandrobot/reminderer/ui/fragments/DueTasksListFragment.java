@@ -39,6 +39,8 @@ public class DueTasksListFragment extends ListFragment implements
     {
         View view = super.onCreateView(inflater, container, savedInstanceState);
 
+        if (Logger.LOGV) Log.v(TAG, "onCreateView");
+
         taskDatabaseFacade = new TaskDatabaseFacade(this.getActivity());
 
         adapter = new SimpleTaskCursorAdapter(getActivity(),
@@ -54,19 +56,27 @@ public class DueTasksListFragment extends ListFragment implements
      * Called by the parent activity to set the due time
      * @param dueTime
      */
-    public void setDueTime(long dueTime)
+    public DueTasksListFragment setDueTime(long dueTime)
     {
         this.dueTime = dueTime;
+        return this;
     }
 
-    public void setupLoaderManager()
+    protected DueTasksListFragment setupLoaderManager()
     {
-        //reload database
+        Loader loader = getLoaderManager().getLoader(TaskDatabaseFacade.CURSOR_LOAD_ALL_DUE_TASKS_ID);
+
+        if (Logger.LOGD) Log.d(TAG, "Loader is null: "+(loader==null));
+
         LoaderBuilder builder = new LoaderBuilder();
         builder.setLoaderId(TaskDatabaseFacade.CURSOR_LOAD_ALL_DUE_TASKS_ID)
                 .setDueTime(dueTime);
 
         taskDatabaseFacade.load(builder, this, this);
+
+        if (loader != null) loader.forceLoad();
+
+        return this;
     }
 
     @Override
@@ -74,6 +84,7 @@ public class DueTasksListFragment extends ListFragment implements
     {
         super.onActivityCreated(savedInstanceState);
 
+        if (Logger.LOGV) Log.v(TAG, "onActivityCreated");
         if (Logger.LOGD) Log.d(TAG, "dueTime: " + new DateTime(dueTime));
 
         setupLoaderManager();

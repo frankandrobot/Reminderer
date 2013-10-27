@@ -18,8 +18,6 @@ import com.frankandrobot.reminderer.alarm.AlarmConstants;
 import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.ui.fragments.DueTasksListFragment;
 
-import org.joda.time.DateTime;
-
 /**
  * Alarm Clock alarm alert: pops visible indicator and plays alarm
  * tone. This activity is the full screen version which shows over the lock
@@ -63,7 +61,9 @@ public class AlarmActivity extends FragmentActivity
                      | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                      | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
-        updateLayout(getIntent());
+        setContentView(R.layout.alarm_activity);
+
+        setupFragment(getIntent());
 
         Button dismiss = (Button) findViewById(id.dimiss_button);
         dismiss.setOnClickListener(new OnClickListener() {
@@ -77,10 +77,8 @@ public class AlarmActivity extends FragmentActivity
         //registerReceiver(mReceiver, new IntentFilter(Alarms.ALARM_KILLED));
     }
 
-    private void updateLayout(Intent intent)
+    private void setupFragment(Intent intent)
     {
-        setContentView(R.layout.alarm_activity);
-
         long dueTime = intent.getLongExtra(AlarmConstants.TASK_DUETIME, 0);
 
         getFragment().setDueTime(dueTime);
@@ -178,14 +176,6 @@ public class AlarmActivity extends FragmentActivity
 
         if (Logger.LOGV) Log.v(TAG, "onNewIntent()");
 
-        long dueTime = intent.getLongExtra(AlarmConstants.TASK_DUETIME, 0);
-
-        if (Logger.LOGD) Log.d(TAG, "dueTime:"+new DateTime(dueTime));
-
-        getFragment()
-                .setDueTime(dueTime)
-                .setupLoaderManager()
-                .forceReload();
     }
 
     /**
