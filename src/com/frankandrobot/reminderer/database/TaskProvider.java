@@ -68,19 +68,19 @@ public class TaskProvider extends ContentProvider
     /**
      * Gives access to repeatable table
      */
-    public final static Uri REPEAT_URI = Uri.parse(baseUri + REPEATABLE_TABLE);
+    public final static Uri REPEAT_URI = Uri.parse(baseUri + TASK_TABLE + "/" + REPEATABLE_TABLE);
     /**
      * Provides a view that is a join of the task and repeat table
      */
-    public final static Uri TASK_JOIN_REPEAT_URI = Uri.parse(baseUri + "taskjoinrepeat");
+    public final static Uri TASK_JOIN_REPEAT_URI = Uri.parse(baseUri+TASK_TABLE+"/views/taskjoinrepeat");
     /**
      * Convenience Uri to get a view of open tasks
      */
-    public final static Uri LOAD_OPEN_TASKS_URI = Uri.parse(baseUri + "loadopentasks");
+    public final static Uri LOAD_OPEN_TASKS_URI = Uri.parse(baseUri+TASK_TABLE+"/views/loadopentasks");
     /**
-     * Convenience Uri to get the next _two_ due times
+     * Convenience Uri to get the next due times
      */
-    public final static Uri LOAD_DUE_TIMES_URI = Uri.parse(baseUri + "loadduetimes");
+    public final static Uri LOAD_DUE_TIMES_URI = Uri.parse(baseUri+TASK_TABLE+"/views/loadduetimes");
     /**
      * Gives access to the folders table
      */
@@ -88,7 +88,7 @@ public class TaskProvider extends ContentProvider
     /**
      * Provides a view that is the union of the task and the task/repeat join view
      */
-    public final static Uri TASK_UNION_REPEAT_URI = Uri.parse(baseUri + "taskunionrepeat");
+    public final static Uri TASK_UNION_REPEAT_URI = Uri.parse(baseUri+TASK_TABLE+"/views/taskunionrepeat");
 
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     private static final int TASKS_URI_ID = 0;
@@ -107,6 +107,13 @@ public class TaskProvider extends ContentProvider
         addUri(TASK_UNION_REPEAT_URI, new TaskUnionRepeatQuery(), false);
     }
 
+    /**
+     * The problem with using different Uris for different views of the same table
+     * is that updating registered observers doesn't work as expected
+     *
+     * Ex: chaing the task table means updating observers for all Uris of this table.
+     *
+     */
     public enum CompareOp
     {
         AFTER(">")
@@ -228,7 +235,9 @@ public class TaskProvider extends ContentProvider
         Uri newUrl = uriProvider.insert(mOpenHelper, url, initialValues);
 
         getContext().getContentResolver().notifyChange(newUrl, null);
-        getContext().getContentResolver().notifyChange(LOAD_OPEN_TASKS_URI, null);
+
+        if (url.getPath().startsWith("/"+TASK_TABLE))
+            getContext().getContentResolver().notifyChange(TASKS_URI, null);
 
         return newUrl;
     }
