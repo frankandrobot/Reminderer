@@ -24,9 +24,9 @@ import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.LoaderBuilder;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.helpers.Logger;
+import com.frankandrobot.reminderer.ui.fragments.OpenTaskListFragment.MainTaskViewHolder;
 import com.frankandrobot.reminderer.ui.gestures.LeftFlingListener;
 import com.frankandrobot.reminderer.ui.gestures.LeftFlingListener.IFlingListener;
-import com.frankandrobot.reminderer.ui.fragments.OpenTaskListFragment.MainTaskViewHolder;
 
 import java.util.Calendar;
 
@@ -94,11 +94,14 @@ public class SimpleTaskCursorAdapter extends SimpleCursorAdapter
             //ex: 11:20pm
             return String.format("%1$tl:%1$tM%1$tp", dueDate);
         }
+        // if same year but not same day
         else if (dueCal.get(Calendar.YEAR) == now.get(Calendar.YEAR))
         {
             //ex: Jun 1 11:20pm
             return String.format("%1$tb %1$te, %1$tl:%1$tM%1$tp", dueDate);
         }
+        // else different day/year
+        // ex: 12/31/78, 8:00pm
         return String.format("%1$tm/%1$te/%1$ty, %1$tl:%1$tM%1$tp", dueDate);
     }
     /**

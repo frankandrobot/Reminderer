@@ -228,6 +228,7 @@ public class TaskProvider extends ContentProvider
         Uri newUrl = uriProvider.insert(mOpenHelper, url, initialValues);
 
         getContext().getContentResolver().notifyChange(newUrl, null);
+        getContext().getContentResolver().notifyChange(LOAD_OPEN_TASKS_URI, null);
 
         return newUrl;
     }
@@ -242,8 +243,8 @@ public class TaskProvider extends ContentProvider
     /**
      * Required. Returns the MIME type of the Uri.
      *
-     * @param url
-     * @return
+     * @param url the url
+     * @return mime type
      */
     @Override
     public String getType(Uri url)
@@ -255,7 +256,7 @@ public class TaskProvider extends ContentProvider
             /*case TASK_ID_URI:
                 return "vnd.android.cursor.item/" + AUTHORITY_NAME + "." + TASK_TABLE;*/
             default:
-                throw new IllegalArgumentException("Unknown URII");
+                throw new IllegalArgumentException("Unknown URI");
         }
     }
 
@@ -315,9 +316,7 @@ public class TaskProvider extends ContentProvider
 
             if (Logger.LOGD) Log.d(TAG, "Added task rowId = " + taskId);
 
-            Uri newUrl = ContentUris.withAppendedId(TASKS_URI, taskId);
-
-            return newUrl;
+            return ContentUris.withAppendedId(TASKS_URI, taskId);
         }
 
         @Override
@@ -582,6 +581,7 @@ public class TaskProvider extends ContentProvider
                 for (String selectionArg : selectionArgs)
                     newSelectionArgs[len++] = selectionArg;
             }
+
             return db.rawQuery(rawQuery, newSelectionArgs);
         }
     }
@@ -604,9 +604,7 @@ public class TaskProvider extends ContentProvider
 
             if (Logger.LOGD) Log.d(TAG, "Added repeatable repeatId = " + repeatId);
 
-            Uri newUrl = ContentUris.withAppendedId(REPEAT_URI, repeatId);
-
-            return newUrl;
+            return ContentUris.withAppendedId(REPEAT_URI, repeatId);
         }
 
         @Override

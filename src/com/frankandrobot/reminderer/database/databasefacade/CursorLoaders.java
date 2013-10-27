@@ -33,7 +33,7 @@ abstract public class CursorLoaders
         }
     }
 
-    static class AllDueOpenTasksLoader extends CursorLoader
+    public static class AllDueOpenTasksLoader extends CursorLoader
     {
         public AllDueOpenTasksLoader(Context context, long dueTime)
         {
@@ -47,7 +47,7 @@ abstract public class CursorLoaders
                                                           TaskCol.TASK_ID,
                                                           TaskCol.TASK_DESC,
                                                           TaskCol.TASK_REPEAT_TYPE,
-                                                          TaskCol.TASK_DUE_DATE));
+                                                          RepeatsCol.REPEAT_NEXT_DUE_DATE));
             StringBuilder sel = new StringBuilder(100);
             sel.append(TaskCol.TASK_IS_COMPLETE + "=0");
             sel.append(" AND ");
@@ -58,7 +58,7 @@ abstract public class CursorLoaders
             sel.append(RepeatsCol.REPEAT_NEXT_DUE_DATE.colname() + CompareOp.ON + "?");
             this.setSelection(sel.toString());
             this.setSelectionArgs(new String[]{String.valueOf(dueTime)});
-            this.setSortOrder(TaskCol.TASK_DUE_DATE.colname());
+            this.setSortOrder(TaskCol.TASK_ID.colname());
         }
     }
 

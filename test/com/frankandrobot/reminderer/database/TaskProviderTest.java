@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 
 import com.frankandrobot.reminderer.database.TaskProvider.CompareOp;
+import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.AddTask;
 import com.frankandrobot.reminderer.datastructures.Task;
@@ -24,9 +25,16 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowContentResolver;
 
-import static com.frankandrobot.reminderer.database.TaskProvider.*;
-import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.*;
-import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.*;
+import static com.frankandrobot.reminderer.database.TaskProvider.AUTHORITY_NAME;
+import static com.frankandrobot.reminderer.database.TaskProvider.LOAD_DUE_TIMES_URI;
+import static com.frankandrobot.reminderer.database.TaskProvider.LOAD_OPEN_TASKS_URI;
+import static com.frankandrobot.reminderer.database.TaskProvider.TASK_JOIN_REPEAT_URI;
+import static com.frankandrobot.reminderer.database.TaskProvider.TaskUnionRepeatQuery;
+import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.REPEAT_NEXT_DUE_DATE;
+import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.REPEAT_TASK_ID_FK;
+import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.TASK_DESC;
+import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.TASK_DUE_DATE;
+import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.TASK_ID;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -232,11 +240,29 @@ public class TaskProviderTest
 
         taskProvider.insert(TaskProvider.REPEAT_URI, values);
 
-        Cursor cursor = taskProvider.query(TaskProvider.LOAD_DUE_TIMES_URI,
-                                           null,
-                                           CompareOp.ON_OR_AFTER.toString(),
-                                           new String[]{Long.toString(nextDueTime)},
-                                           TASK_DUE_DATE.colname());
+        StringBuilder sel = new StringBuilder(100);
+        sel.append(TaskCol.TASK_IS_COMPLETE + "=0");
+        sel.append(" AND ");
+        sel.append(TaskCol.TASK_DUE_DATE.colname() + CompareOp.ON + "?");
+        sel.append(TaskUnionRepeatQuery.SEPARATOR);
+        sel.append(TaskCol.TASK_IS_COMPLETE + "=0");
+        sel.append(" AND ");
+        sel.append(RepeatsCol.REPEAT_NEXT_DUE_DATE.colname() + CompareOp.ON + "?");
+
+        Cursor cursor = taskProvider.query(TaskProvider.TASK_UNION_REPEAT_URI,
+                                           new TaskTable().getColumns(TaskCol.TASK_ID,
+                                                                      TaskCol.TASK_DESC,
+                                                                      TaskCol.TASK_REPEAT_TYPE,
+                                                                      TaskCol.TASK_DUE_DATE,
+                                                                      //join
+                                                                      TaskCol.TASK_ID,
+                                                                      TaskCol.TASK_DESC,
+                                                                      TaskCol.TASK_REPEAT_TYPE,
+                                                                      RepeatsCol.REPEAT_NEXT_DUE_DATE),
+                                           sel.toString(),
+                                           new String[]{String.valueOf(nextDueTime)},
+                                           TaskCol.TASK_ID.colname());
+
         assert(cursor != null);
 
         boolean newRowFound = false;

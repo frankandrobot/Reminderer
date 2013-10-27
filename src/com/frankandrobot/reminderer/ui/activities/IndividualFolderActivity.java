@@ -10,7 +10,6 @@ import android.view.MenuItem;
 
 import com.frankandrobot.reminderer.R;
 import com.frankandrobot.reminderer.R.id;
-import com.frankandrobot.reminderer.R.layout;
 import com.frankandrobot.reminderer.ui.fragments.IndividualFolderListFragment;
 
 /**
@@ -19,6 +18,8 @@ import com.frankandrobot.reminderer.ui.fragments.IndividualFolderListFragment;
  */
 public class IndividualFolderActivity extends ActionBarActivity
 {
+    private static final String TAG = IndividualFolderActivity.class.getSimpleName();
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
