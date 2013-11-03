@@ -99,10 +99,10 @@ public class AlarmRingerService extends Service
                 {
                     //if the media player is already setup don't set it up again
                     if (mediaPlayerSetup == null)
-                    {
                         mediaPlayerSetup = new MediaPlayerSetup().setup();
-                    }
-                    mediaPlayerSetup.start();
+
+                    //mediaPlayerSetup might fail so still check for null
+                    if (mediaPlayerSetup != null) mediaPlayerSetup.start();
                 }
                 //enable vibrator
                 if (ringerMode == AudioManager.RINGER_MODE_NORMAL
@@ -184,6 +184,7 @@ public class AlarmRingerService extends Service
             catch (Exception e)
             {
                 Log.e(TAG, "Couldn't load ringer: " + e.toString());
+                Log.e(TAG, "Couldn't load ringer: the default ringtone may be corrupted");
                 mMediaPlayer.release();
                 mMediaPlayer = null;
                 return null;
