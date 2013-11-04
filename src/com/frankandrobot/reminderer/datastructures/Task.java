@@ -5,7 +5,6 @@ import android.database.Cursor;
 import android.util.Log;
 
 import com.frankandrobot.reminderer.database.TaskTable.Column;
-import com.frankandrobot.reminderer.database.TaskTable.FolderCol;
 import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.helpers.Logger;
@@ -224,8 +223,6 @@ public class Task extends DataStructure
                     //if still in the past then add an hour
                     if (nextDueDate.isBefore(System.currentTimeMillis()))
                         nextDueDate = nextDueDate.plusHours(1);
-
-                    nextDueDate = new DateTime().plusMinutes(1);
                     break;
                 case DAY:
                     int days = Days.daysBetween(dueDate, today).getDays();

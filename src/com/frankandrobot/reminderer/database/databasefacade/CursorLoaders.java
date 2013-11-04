@@ -93,9 +93,12 @@ abstract public class CursorLoaders
                     if (cursor != null)
                     {
                         cursor.moveToFirst();
+
                         if (Logger.LOGD) TaskDatabaseFacade.dumpCursor(cursor);
+
                         Task task = new Task(cursor);
                         task.set(Task_Boolean.isComplete, true);
+
                         if (Logger.LOGD) Log.d(TAG, task.toString());
 
                         resolver.update(TaskProvider.TASKS_URI,
