@@ -169,7 +169,8 @@ public class TaskProvider extends ContentProvider
     {
         if (Logger.LOGV) Log.v(TAG, "query() ");
 
-        UriProvider uriProvider = hmQueries.get(uriMatcher.match(url));
+        UriQueryProvider uriProvider = (UriQueryProvider)
+                                               hmQueries.get(uriMatcher.match(url));
 
         Cursor ret = uriProvider.query(mOpenHelper,
                                      url,
@@ -196,29 +197,11 @@ public class TaskProvider extends ContentProvider
                       String where,
                       String[] whereArgs)
     {
-        SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 
-        int count;
-        long rowId = 0;
+        UriUpdateProvider uriProvider = (UriUpdateProvider)
+                                                hmQueries.get(uriMatcher.match(url));
 
-        switch (uriMatcher.match(url))
-        {
-            case TASKS_URI_ID:
-            {
-                count = db.update(TaskTable.TASK_TABLE,
-                                  values,
-                                  where,
-                                  whereArgs);
-                break;
-            }
-            default:
-            {
-                throw new IllegalArgumentException("Cannot update URL: " + url);
-            }
-        }
-
-        if (Logger.LOGV) Log.v(TAG,
-                               "*** notifyChange() rowId: " + rowId + " url " + url + "count");
+        int count = uriProvider.update(mOpenHelper, url, values, where, whereArgs);
 
         getContext().getContentResolver().notifyChange(url, null);
 
@@ -230,7 +213,8 @@ public class TaskProvider extends ContentProvider
     {
         if (Logger.LOGD) Log.d(TAG, "Inserting values " + url.toString());
 
-        UriProvider uriProvider = hmQueries.get(uriMatcher.match(url));
+        UriInsertProvider uriProvider = (UriInsertProvider)
+                                                hmQueries.get(uriMatcher.match(url));
 
         Uri newUrl = uriProvider.insert(mOpenHelper, url, initialValues);
 
@@ -244,7 +228,8 @@ public class TaskProvider extends ContentProvider
 
     public int delete(Uri url, String where, String[] whereArgs)
     {
-        UriProvider uriProvider = hmQueries.get(uriMatcher.match(url));
+        UriDeleteProvider uriProvider = (UriDeleteProvider)
+                                                hmQueries.get(uriMatcher.match(url));
 
         return uriProvider.delete(mOpenHelper, url, where, whereArgs);
     }
@@ -269,33 +254,47 @@ public class TaskProvider extends ContentProvider
         }
     }
 
-    abstract static private class UriProvider
-    {
-        public Uri insert(SQLiteOpenHelper openHelper, Uri url, ContentValues initialValues)
-        {
-            throw new UnsupportedOperationException("You shouldn't be calling this");
-        }
+    interface UriProvider {}
 
+    interface UriUpdateProvider extends UriProvider
+    {
+        public int update(SQLiteOpenHelper openHelper,
+                          Uri url,
+                          ContentValues values,
+                          String where,
+                          String[] whereArgs);
+    }
+
+    interface UriInsertProvider extends UriProvider
+    {
+        public Uri insert(SQLiteOpenHelper openHelper,
+                          Uri url,
+                          ContentValues initialValues);
+    }
+
+    interface UriQueryProvider extends UriProvider
+    {
         public Cursor query(SQLiteOpenHelper openHelper,
                             Uri url,
                             String[] projectionIn,
                             String selection,
                             String[] selectionArgs,
-                            String sort)
-        {
-            throw new UnsupportedOperationException("You shouldn't be calling this");
-        }
-
-        public int delete(SQLiteOpenHelper openHelper,
-                           Uri url,
-                           String where,
-                           String[] whereArgs)
-        {
-            throw new UnsupportedOperationException("You shouldn't be calling this");
-        }
+                            String sort);
     }
 
-    static private class TaskUriProvider extends UriProvider
+    interface UriDeleteProvider extends UriProvider
+    {
+        public int delete(SQLiteOpenHelper openHelper,
+                          Uri url,
+                          String where,
+                          String[] whereArgs);
+    }
+
+    static private class TaskUriProvider
+            implements
+            UriUpdateProvider,
+            UriInsertProvider,
+            UriQueryProvider
     {
         @Override
         public Uri insert(SQLiteOpenHelper openHelper, Uri url, ContentValues initialValues)
@@ -348,12 +347,34 @@ public class TaskProvider extends ContentProvider
                             sort);
 
         }
+
+        @Override
+        public int update(SQLiteOpenHelper openHelper,
+                          Uri url,
+                          ContentValues values,
+                          String where,
+                          String[] whereArgs)
+        {
+            SQLiteDatabase db = openHelper.getWritableDatabase();
+
+            int count = db.update(TASK_TABLE,
+                                  values,
+                                  where,
+                                  whereArgs);
+
+            if (Logger.LOGV) Log.v(TAG,
+                                   "*** notifyChange() url " + url + "count " + count);
+
+            return count;
+        }
     }
 
     /**
      * Task query class for the task and repeat table join
      */
-    static protected class TaskJoinRepeatProvider extends UriProvider
+    static protected class TaskJoinRepeatProvider
+            implements
+            UriQueryProvider
     {
         /**
          * Does a join on the task and repeat table.
@@ -384,7 +405,9 @@ public class TaskProvider extends ContentProvider
     /**
      * Convenience class to return a view of open tasks.
      */
-    static private class LoadOpenTasksProvider extends UriProvider
+    static private class LoadOpenTasksProvider
+        implements
+        UriQueryProvider
     {
         /**
          * Uses the TaskUnionRepeatQuery class to return a view showing open tasks.
@@ -441,7 +464,9 @@ public class TaskProvider extends ContentProvider
      * @note returns no other columns except the due time
      *
      */
-    static private class LoadDueTimesProvider extends UriProvider
+    static private class LoadDueTimesProvider
+        implements
+        UriQueryProvider
     {
         /**
          * Convenience class to get a view of due tasks
@@ -499,7 +524,8 @@ public class TaskProvider extends ContentProvider
      *
      * @note the repeat table is actually a join with the task table!
      */
-    public static class TaskUnionRepeatQuery extends UriProvider
+    public static class TaskUnionRepeatQuery
+        implements UriQueryProvider
     {
         final static public String SEPARATOR = "###";
 
@@ -595,7 +621,10 @@ public class TaskProvider extends ContentProvider
         }
     }
 
-    static class RepeatUriProvider extends UriProvider
+    static class RepeatUriProvider
+        implements
+        UriInsertProvider,
+        UriQueryProvider
     {
         @Override
         public Uri insert(SQLiteOpenHelper openHelper, Uri url, ContentValues initialValues)
@@ -637,7 +666,9 @@ public class TaskProvider extends ContentProvider
         }
     }
 
-    static class SingleRowRepeatUriProvider extends UriProvider
+    static class SingleRowRepeatUriProvider
+            implements
+            UriDeleteProvider
     {
         @Override
         public int delete(SQLiteOpenHelper openHelper, Uri url, String where, String[] whereArgs)
@@ -657,8 +688,11 @@ public class TaskProvider extends ContentProvider
         }
     }
 
-    static class FoldersUriProvider extends UriProvider
+    static class FoldersUriProvider
+        implements
+        UriQueryProvider
     {
+        @Override
         public Cursor query(SQLiteOpenHelper openHelper,
                             Uri url,
                             String[] projectionIn,
