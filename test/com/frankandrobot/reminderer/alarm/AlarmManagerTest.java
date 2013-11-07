@@ -5,8 +5,7 @@ import android.database.Cursor;
 
 import com.frankandrobot.reminderer.database.TaskProvider;
 import com.frankandrobot.reminderer.database.TaskTable;
-import com.frankandrobot.reminderer.database.databasefacade.CursorNonQueryLoaders.AddTask;
-import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
+import com.frankandrobot.reminderer.database.databasefacade.AddTaskTest;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.datastructures.TaskCalendar;
 
@@ -56,8 +55,7 @@ public class AlarmManagerTest
         task2.get(Task_Parser_Calendar.dueDate).setTomorrow();
 
         //add the task
-        AddTask addTask2 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
-        addTask2.loadInBackground();
+        AddTaskTest.addTask(activity, task2);
 
         //add the second one
         Task task1 = new Task();
@@ -65,8 +63,7 @@ public class AlarmManagerTest
         task1.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
 
         //add the task
-        AddTask addTask1 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
-        addTask1.loadInBackground();
+        AddTaskTest.addTask(activity, task2);
 
         assertThat(new AlarmManager().findAndEnableNextTasksDue(activity,
                 task1.get(Task_Parser_Calendar.dueDate).getDate().getTime(),
@@ -87,8 +84,7 @@ public class AlarmManagerTest
         long dueTime2 = task2.calculateNextDueDate();
 
         //add the task
-        AddTask addTask2 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
-        addTask2.loadInBackground();
+        AddTaskTest.addTask(activity, task2);
 
         //add the second one
         Task task1 = new Task();
@@ -98,8 +94,7 @@ public class AlarmManagerTest
         task1.calculateNextDueDate();
 
         //add the task
-        AddTask addTask1 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
-        addTask1.loadInBackground();
+        AddTaskTest.addTask(activity, task2);
 
         long dueTime = new AlarmManager().findAndEnableNextTasksDue(activity,
                                                                     now.getMillis(),
@@ -168,8 +163,8 @@ public class AlarmManagerTest
             task.set(Task_Int.repeatsType, repeatType.getType());
             taskDueTime = task.calculateNextDueDate();
         }
-        AddTask addTask = new AddTask(activity, task);
-        addTask.loadInBackground();
+
+        AddTaskTest.addTask(activity, task);
         return taskDueTime;
     }
 

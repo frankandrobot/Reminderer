@@ -9,7 +9,7 @@ import android.net.Uri;
 import com.frankandrobot.reminderer.database.TaskProvider.CompareOp;
 import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
-import com.frankandrobot.reminderer.database.databasefacade.CursorNonQueryLoaders.AddTask;
+import com.frankandrobot.reminderer.database.databasefacade.AddTaskTest;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Boolean;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Int;
@@ -82,8 +82,7 @@ public class TaskProviderTest
             task.set(Task_Int.repeatsType, repeatType.getType());
             taskDueTime = task.calculateNextDueDate();
         }
-        AddTask addTask = new AddTask(activity, task);
-        addTask.loadInBackground();
+        AddTaskTest.addTask(activity, task);
         return taskDueTime;
     }
 

@@ -6,8 +6,7 @@ import android.database.Cursor;
 
 import com.frankandrobot.reminderer.alarm.AlarmManager;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
-import com.frankandrobot.reminderer.database.databasefacade.CursorNonQueryLoaders.AddTask;
-import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
+import com.frankandrobot.reminderer.database.databasefacade.AddTaskTest;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Parser_Calendar;
 import com.frankandrobot.reminderer.datastructures.Task.Task_String;
@@ -48,8 +47,7 @@ public class TaskDatabaseFacadeTest
         task.set(Task_String.desc, "hello world");
         task.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
 
-        AddTask addTask = new TaskDatabaseFacade(activity).getAddTaskLoader(task);
-        addTask.loadInBackground();
+        AddTaskTest.addTask(activity, task);
 
         ContentResolver resolver = activity.getContentResolver();
 
@@ -76,8 +74,7 @@ public class TaskDatabaseFacadeTest
         task2.get(Task_Parser_Calendar.dueDate).setTomorrow();
 
         //add the task
-        AddTask addTask2 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
-        addTask2.loadInBackground();
+        AddTaskTest.addTask(activity, task2);
 
         //add the second one
         Task task1 = new Task();
@@ -85,8 +82,7 @@ public class TaskDatabaseFacadeTest
         task1.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
 
         //add the task
-        AddTask addTask1 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
-        addTask1.loadInBackground();
+        AddTaskTest.addTask(activity, task1);
 
         assertThat(new AlarmManager().findAndEnableNextTasksDue(activity,
                                                                task1.get(Task_Parser_Calendar.dueDate).getDate().getTime(),

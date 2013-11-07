@@ -10,8 +10,7 @@ import com.frankandrobot.reminderer.database.TaskProvider;
 import com.frankandrobot.reminderer.database.TaskTable;
 import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
-import com.frankandrobot.reminderer.database.databasefacade.CursorNonQueryLoaders.AddTask;
-import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
+import com.frankandrobot.reminderer.database.databasefacade.AddTaskTest;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Alarm_Calendar;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Boolean;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Ids;
@@ -209,8 +208,7 @@ public class TaskTest
         setupDb();
 
         //run insert
-        AddTask addTask = new TaskDatabaseFacade(activity).getAddTaskLoader(task);
-        addTask.loadInBackground();
+        AddTaskTest.addTask(activity, task);
 
         ContentResolver resolver = activity.getContentResolver();
         Cursor cursor = resolver.query(TaskProvider.TASKS_URI,
@@ -410,8 +408,7 @@ public class TaskTest
         setupDb();
 
         //run insert
-        AddTask addTask = new TaskDatabaseFacade(activity).getAddTaskLoader(task);
-        addTask.loadInBackground();
+        AddTaskTest.addTask(activity, task);
 
         ContentResolver resolver = activity.getContentResolver();
         Cursor cursor = resolver.query(TaskProvider.TASK_JOIN_REPEAT_URI,
