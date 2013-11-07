@@ -22,6 +22,7 @@ import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.Folder
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import static com.frankandrobot.reminderer.database.TaskProvider.CompareOp;
@@ -46,12 +47,101 @@ public class TaskDatabaseFacade
     final static public int CURSOR_LOAD_FOLDER_ID = 7;
 
     private Context context;
-    private TaskLoaderListener<Cursor> loaderListener;
+    /**
+     * Cache to store loaders
+     */
+    private HashMap<Integer,TaskLoaderArgs> hmCache = new HashMap<Integer, TaskLoaderArgs>();
 
-    public interface TaskLoaderListener<T>
+    public TaskDatabaseFacade(Context context)
     {
-        public void onLoadFinished(Loader<T> loader, T data);
-        public void onLoaderReset(Loader<T> loader);
+        this.context = context;
+    }
+
+    /**
+     * Forces a load of the Loader.
+     * You probably want to use this only for updates/inserts/deletions---
+     * things that need to be done immediately.
+     *
+     * @return this
+     */
+    public TaskDatabaseFacade forceLoad(int loaderId)
+    {
+        TaskLoaderArgs args = hmCache.get(loaderId);
+
+        if (args == null)
+            throw new IllegalStateException("loaderId "+loaderId+" was never initialized");
+
+        if (args.activityOrFragment instanceof FragmentActivity)
+        {
+            ((FragmentActivity) args.activityOrFragment).getSupportLoaderManager()
+                    .restartLoader(args.loaderBuilder.loaderId,
+                                   args.bundle,
+                                   new LoaderCallback(args.loaderListener))
+                    .forceLoad();
+        }
+        else
+        {
+            ((Fragment) args.activityOrFragment).getLoaderManager()
+                    .restartLoader(args.loaderBuilder.loaderId,
+                                   args.bundle,
+                                   new LoaderCallback(args.loaderListener))
+                    .forceLoad();
+        }
+
+        return this;
+    }
+
+    public TaskDatabaseFacade load(final int loaderId,
+                                   Object activityOrFragment,
+                                   TaskLoaderListener<Cursor> loaderListener)
+    {
+        LoaderBuilder builder = new LoaderBuilder();
+        builder.loaderId = loaderId;
+
+        return load(builder, activityOrFragment, loaderListener);
+    }
+
+    public TaskDatabaseFacade load(LoaderBuilder builder,
+                                   Object activityOrFragment,
+                                   TaskLoaderListener<Cursor> loaderListener)
+    {
+        if (!(activityOrFragment instanceof FragmentActivity)
+                    && !(activityOrFragment instanceof Fragment))
+            throw new IllegalArgumentException(activityOrFragment.getClass().getSimpleName()
+                                                       + " must be a Fragment or FragmentActivity");
+
+        Bundle args = new Bundle();
+        args.putLong("dueTime", builder.dueTime);
+        args.putLong("taskId", builder.taskId);
+        args.putLong("repeatId", builder.repeatId);
+        args.putLong("folderId", builder.folderId);
+
+        if (activityOrFragment instanceof FragmentActivity)
+        {
+            this.context = ((FragmentActivity) activityOrFragment);
+            ((FragmentActivity) activityOrFragment).getSupportLoaderManager()
+                    .restartLoader(builder.loaderId,
+                                   args,
+                                   new LoaderCallback(loaderListener));
+        }
+        else
+        {
+            this.context = ((Fragment) activityOrFragment).getActivity();
+            ((Fragment) activityOrFragment).getLoaderManager()
+                    .restartLoader(builder.loaderId,
+                                   args,
+                                   new LoaderCallback(loaderListener));
+        }
+
+        hmCache.put(builder.loaderId,
+                    new TaskLoaderArgs(builder, activityOrFragment, loaderListener, args));
+
+        return this;
+    }
+
+    public TaskLoaderArgs getLoaderArgs(int loaderId)
+    {
+        return hmCache.get(loaderId);
     }
 
     public static class LoaderBuilder
@@ -93,114 +183,39 @@ public class TaskDatabaseFacade
         }
     }
 
-    public TaskDatabaseFacade(Context context)
+    public interface TaskLoaderListener<T>
     {
-        this.context = context;
+        public void onLoadFinished(Loader<T> loader, T data);
+        public void onLoaderReset(Loader<T> loader);
     }
 
-    /**
-     * @deprecated use {@link #load}
-     *
-     * @param loaderId
-     * @param activity
-     * @param loaderListener
-     * @return
-     */
-    public TaskDatabaseFacade forceLoad(final int loaderId,
-                                        Object activity,
-                                        TaskLoaderListener<Cursor> loaderListener)
+    static public class TaskLoaderArgs
     {
-        LoaderBuilder builder = new LoaderBuilder();
-        builder.loaderId = loaderId;
+        public LoaderBuilder loaderBuilder;
+        public Object activityOrFragment;
+        public TaskLoaderListener<Cursor> loaderListener;
+        public Bundle bundle;
 
-        return forceLoad(builder, activity, loaderListener);
-    }
-
-    /**
-     * @deprecated  use {@link #load}
-     *
-     * @param builder
-     * @param activity
-     * @param loaderListener
-     * @return
-     */
-    public TaskDatabaseFacade forceLoad(LoaderBuilder builder,
-                                        Object activity,
-                                        TaskLoaderListener<Cursor> loaderListener)
-    {
-        if (!(activity instanceof FragmentActivity)
-                    && !(activity instanceof Fragment))
-            throw new IllegalArgumentException(activity.getClass().getSimpleName()
-                                                       + " must be a Fragment or FragmentActivity");
-
-        this.loaderListener = loaderListener;
-
-        Bundle args = new Bundle();
-        args.putLong("dueTime", builder.dueTime);
-        args.putLong("taskId", builder.taskId);
-        args.putLong("repeatId", builder.repeatId);
-
-        if (activity instanceof FragmentActivity)
+        public TaskLoaderArgs(LoaderBuilder loaderBuilder,
+                              Object activityOrFragment,
+                              TaskLoaderListener<Cursor> loaderListener,
+                              Bundle bundle)
         {
-            this.context = ((FragmentActivity) activity);
-            ((FragmentActivity) activity).getSupportLoaderManager()
-                    .restartLoader(builder.loaderId, args, new LoaderCallback()).forceLoad();
+            this.loaderBuilder = loaderBuilder;
+            this.activityOrFragment = activityOrFragment;
+            this.loaderListener = loaderListener;
+            this.bundle = bundle;
         }
-        else
-        {
-            this.context = ((Fragment) activity).getActivity();
-            ((Fragment) activity).getLoaderManager()
-                    .restartLoader(builder.loaderId, args, new LoaderCallback()).forceLoad();
-        }
-
-        return this;
-    }
-
-    public TaskDatabaseFacade load(final int loaderId,
-                                   Object activity,
-                                   TaskLoaderListener<Cursor> loaderListener)
-    {
-        LoaderBuilder builder = new LoaderBuilder();
-        builder.loaderId = loaderId;
-
-        return load(builder, activity, loaderListener);
-    }
-
-    public TaskDatabaseFacade load(LoaderBuilder builder,
-                                   Object activity,
-                                   TaskLoaderListener<Cursor> loaderListener)
-    {
-        if (!(activity instanceof FragmentActivity)
-                    && !(activity instanceof Fragment))
-            throw new IllegalArgumentException(activity.getClass().getSimpleName()
-                                                       + " must be a Fragment or FragmentActivity");
-
-        this.loaderListener = loaderListener;
-
-        Bundle args = new Bundle();
-        args.putLong("dueTime", builder.dueTime);
-        args.putLong("taskId", builder.taskId);
-        args.putLong("repeatId", builder.repeatId);
-        args.putLong("folderId", builder.folderId);
-
-        if (activity instanceof FragmentActivity)
-        {
-            this.context = ((FragmentActivity) activity);
-            ((FragmentActivity) activity).getSupportLoaderManager()
-                    .restartLoader(builder.loaderId, args, new LoaderCallback());
-        }
-        else
-        {
-            this.context = ((Fragment) activity).getActivity();
-            ((Fragment) activity).getLoaderManager()
-                    .restartLoader(builder.loaderId, args, new LoaderCallback());
-        }
-
-        return this;
     }
 
     private class LoaderCallback implements LoaderCallbacks<Cursor>
     {
+        private TaskLoaderListener<Cursor> loaderListener;
+
+        public LoaderCallback(TaskLoaderListener<Cursor> loaderListener)
+        {
+            this.loaderListener = loaderListener;
+        }
 
         @Override
         public Loader<Cursor> onCreateLoader(int loaderId, Bundle args)
@@ -226,15 +241,15 @@ public class TaskDatabaseFacade
         }
 
         @Override
-        public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor)
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data)
         {
-            loaderListener.onLoadFinished(cursorLoader, cursor);
+            loaderListener.onLoadFinished(loader, data);
         }
 
         @Override
-        public void onLoaderReset(Loader<Cursor> cursorLoader)
+        public void onLoaderReset(Loader<Cursor> loader)
         {
-            loaderListener.onLoaderReset(cursorLoader);
+            loaderListener.onLoaderReset(loader);
         }
     }
 

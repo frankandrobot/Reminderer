@@ -203,7 +203,7 @@ public class TaskProvider extends ContentProvider
 
         int count = uriProvider.update(mOpenHelper, url, values, where, whereArgs);
 
-        getContext().getContentResolver().notifyChange(url, null);
+        //getContext().getContentResolver().notifyChange(url, null);
 
         return count;
     }
@@ -363,7 +363,7 @@ public class TaskProvider extends ContentProvider
                                   whereArgs);
 
             if (Logger.LOGV) Log.v(TAG,
-                                   "*** notifyChange() url " + url + "count " + count);
+                                   "*** notifyChange() url " + url + ", count " + count);
 
             return count;
         }

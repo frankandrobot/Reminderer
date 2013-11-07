@@ -117,6 +117,12 @@ abstract public class CursorLoaders
 
             return null;
         }
+
+        @Override
+        protected void onStartLoading()
+        {
+            forceLoad();
+        }
     }
 
     static class AllFoldersLoader extends CursorLoader

@@ -30,8 +30,8 @@ public class OpenTaskListFragment extends ListFragment implements
         taskDatabaseFacade = new TaskDatabaseFacade(this.getActivity());
 
         adapter = new TaskCursorAdapter(getActivity(),
-                                            this,
-                                            taskDatabaseFacade);
+                                        this,
+                                        taskDatabaseFacade);
 
         setListAdapter(adapter);
         setListShown(false);

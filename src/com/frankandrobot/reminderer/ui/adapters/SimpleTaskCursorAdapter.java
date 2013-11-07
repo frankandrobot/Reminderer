@@ -22,6 +22,7 @@ import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.database.databasefacade.CursorDeleteProxy;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.LoaderBuilder;
+import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderArgs;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.ui.fragments.OpenTaskListFragment.MainTaskViewHolder;
@@ -170,6 +171,7 @@ public class SimpleTaskCursorAdapter extends SimpleCursorAdapter
                 //save the task to delete before "deleting" from cursor
                 getCursor().moveToPosition(positionToRemove);
                 long taskToCompleteId = getCursor().getLong(getCursor().getColumnIndex(TaskCol.TASK_ID.colname()));
+                //task may not have a repeating counter part (when repeatId = -1)
                 long repeatIdToComplete = !getCursor().isNull(getCursor().getColumnIndex(RepeatsCol.REPEAT_ID.colname()))
                                                   ? getCursor().getLong(getCursor().getColumnIndex(RepeatsCol.REPEAT_ID.colname()))
                                                   : -1;
@@ -189,19 +191,26 @@ public class SimpleTaskCursorAdapter extends SimpleCursorAdapter
                         .setTaskId(taskToCompleteId)
                         .setRepeatId(repeatIdToComplete);
 
-                taskDatabaseFacade.forceLoad(builder,
-                                             listFragment,
+                TaskLoaderArgs loaderArgs = taskDatabaseFacade.getLoaderArgs(TaskDatabaseFacade.CURSOR_LOAD_ALL_OPEN_TASKS_ID);
+                taskDatabaseFacade.load(builder,
+                                        loaderArgs.activityOrFragment,
+                                        //loaderArgs.loaderListener)
+                                        new TaskLoaderListener<Cursor>(){
 
-                                             new TaskLoadListenerAdapter()
-                                             {
-                                                 @Override
-                                                 public void onLoadFinished(Loader<Cursor> loader,
-                                                                            Cursor data)
-                                                 {
-                                                     //((SimpleCursorAdapter)listFragment.getListAdapter()).swapCursor(data);
-                                                 }
-                                             });
+                                            @Override
+                                            public void onLoadFinished(Loader<Cursor> loader,
+                                                                       Cursor data)
+                                            {
 
+                                            }
+
+                                            @Override
+                                            public void onLoaderReset(Loader<Cursor> loader)
+                                            {
+
+                                            }
+                                        });
+                                  //.forceLoad(TaskDatabaseFacade.CURSOR_COMPLETE_TASK_ID);
 
                 return true;
             }
