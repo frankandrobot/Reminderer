@@ -9,7 +9,7 @@ import android.net.Uri;
 import com.frankandrobot.reminderer.database.TaskProvider.CompareOp;
 import com.frankandrobot.reminderer.database.TaskTable.RepeatsCol;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
-import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.AddTask;
+import com.frankandrobot.reminderer.database.databasefacade.CursorNonQueryLoaders.AddTask;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Boolean;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Int;

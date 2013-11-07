@@ -6,8 +6,8 @@ import android.database.Cursor;
 
 import com.frankandrobot.reminderer.alarm.AlarmManager;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
+import com.frankandrobot.reminderer.database.databasefacade.CursorNonQueryLoaders.AddTask;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
-import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.AddTask;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.datastructures.Task.Task_Parser_Calendar;
 import com.frankandrobot.reminderer.datastructures.Task.Task_String;

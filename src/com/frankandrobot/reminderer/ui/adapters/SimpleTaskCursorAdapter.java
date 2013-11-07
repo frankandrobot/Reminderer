@@ -22,7 +22,6 @@ import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
 import com.frankandrobot.reminderer.database.databasefacade.CursorDeleteProxy;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.LoaderBuilder;
-import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderArgs;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.ui.fragments.OpenTaskListFragment.MainTaskViewHolder;
@@ -191,33 +190,16 @@ public class SimpleTaskCursorAdapter extends SimpleCursorAdapter
                         .setTaskId(taskToCompleteId)
                         .setRepeatId(repeatIdToComplete);
 
-                TaskLoaderArgs loaderArgs = taskDatabaseFacade.getLoaderArgs(TaskDatabaseFacade.CURSOR_LOAD_ALL_OPEN_TASKS_ID);
                 taskDatabaseFacade.load(builder,
-                                        loaderArgs.activityOrFragment,
-                                        //loaderArgs.loaderListener)
-                                        new TaskLoaderListener<Cursor>(){
-
-                                            @Override
-                                            public void onLoadFinished(Loader<Cursor> loader,
-                                                                       Cursor data)
-                                            {
-
-                                            }
-
-                                            @Override
-                                            public void onLoaderReset(Loader<Cursor> loader)
-                                            {
-
-                                            }
-                                        });
-                                  //.forceLoad(TaskDatabaseFacade.CURSOR_COMPLETE_TASK_ID);
+                                        SimpleTaskCursorAdapter.this.listFragment,
+                                        new EmptyTaskLoadListenerAdapter());
 
                 return true;
             }
         });
     }
 
-    private static class TaskLoadListenerAdapter implements TaskLoaderListener<Cursor>
+    private static class EmptyTaskLoadListenerAdapter implements TaskLoaderListener<Cursor>
     {
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {}

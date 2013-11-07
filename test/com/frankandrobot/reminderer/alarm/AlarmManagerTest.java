@@ -5,6 +5,7 @@ import android.database.Cursor;
 
 import com.frankandrobot.reminderer.database.TaskProvider;
 import com.frankandrobot.reminderer.database.TaskTable;
+import com.frankandrobot.reminderer.database.databasefacade.CursorNonQueryLoaders.AddTask;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.datastructures.TaskCalendar;
@@ -17,11 +18,14 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowContentResolver;
 
-import static com.frankandrobot.reminderer.alarm.AlarmManager.*;
-import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.*;
-import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.*;
-import static com.frankandrobot.reminderer.datastructures.Task.*;
-import static com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.*;
+import static com.frankandrobot.reminderer.alarm.AlarmManager.GetNextAlarm;
+import static com.frankandrobot.reminderer.database.TaskTable.RepeatsCol.REPEAT_NEXT_DUE_DATE;
+import static com.frankandrobot.reminderer.database.TaskTable.TaskCol.TASK_ID;
+import static com.frankandrobot.reminderer.datastructures.Task.Task_Boolean;
+import static com.frankandrobot.reminderer.datastructures.Task.Task_Int;
+import static com.frankandrobot.reminderer.datastructures.Task.Task_Parser_Calendar;
+import static com.frankandrobot.reminderer.datastructures.Task.Task_String;
+import static com.frankandrobot.reminderer.parser.GrammarRule.RepeatsToken.Type;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -52,7 +56,7 @@ public class AlarmManagerTest
         task2.get(Task_Parser_Calendar.dueDate).setTomorrow();
 
         //add the task
-        TaskDatabaseFacade.AddTask addTask2 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
+        AddTask addTask2 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
         addTask2.loadInBackground();
 
         //add the second one
@@ -61,7 +65,7 @@ public class AlarmManagerTest
         task1.set(Task_Parser_Calendar.dueDate, new TaskCalendar());
 
         //add the task
-        TaskDatabaseFacade.AddTask addTask1 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
+        AddTask addTask1 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
         addTask1.loadInBackground();
 
         assertThat(new AlarmManager().findAndEnableNextTasksDue(activity,
@@ -83,7 +87,7 @@ public class AlarmManagerTest
         long dueTime2 = task2.calculateNextDueDate();
 
         //add the task
-        TaskDatabaseFacade.AddTask addTask2 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
+        AddTask addTask2 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
         addTask2.loadInBackground();
 
         //add the second one
@@ -94,7 +98,7 @@ public class AlarmManagerTest
         task1.calculateNextDueDate();
 
         //add the task
-        TaskDatabaseFacade.AddTask addTask1 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
+        AddTask addTask1 = new TaskDatabaseFacade(activity).getAddTaskLoader(task2);
         addTask1.loadInBackground();
 
         long dueTime = new AlarmManager().findAndEnableNextTasksDue(activity,
@@ -164,7 +168,7 @@ public class AlarmManagerTest
             task.set(Task_Int.repeatsType, repeatType.getType());
             taskDueTime = task.calculateNextDueDate();
         }
-        TaskDatabaseFacade.AddTask addTask = new TaskDatabaseFacade.AddTask(activity, task);
+        AddTask addTask = new AddTask(activity, task);
         addTask.loadInBackground();
         return taskDueTime;
     }

@@ -1,6 +1,5 @@
 package com.frankandrobot.reminderer.database.databasefacade;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -11,21 +10,18 @@ import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
 
-import com.frankandrobot.reminderer.alarm.AlarmManager;
 import com.frankandrobot.reminderer.database.TaskProvider;
 import com.frankandrobot.reminderer.database.TaskTable.TaskCol;
-import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.AllDueOpenTasksLoader;
-import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.AllFoldersLoader;
-import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.AllOpenTasksLoader;
-import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.CompleteTaskLoader;
-import com.frankandrobot.reminderer.database.databasefacade.CursorLoaders.FolderLoader;
+import com.frankandrobot.reminderer.database.databasefacade.CursorNonQueryLoaders.AddTask;
+import com.frankandrobot.reminderer.database.databasefacade.CursorNonQueryLoaders.CompleteTaskLoader;
+import com.frankandrobot.reminderer.database.databasefacade.CursorQueryLoaders.AllDueOpenTasksLoader;
+import com.frankandrobot.reminderer.database.databasefacade.CursorQueryLoaders.AllFoldersLoader;
+import com.frankandrobot.reminderer.database.databasefacade.CursorQueryLoaders.AllOpenTasksLoader;
+import com.frankandrobot.reminderer.database.databasefacade.CursorQueryLoaders.FolderLoader;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
 
-import java.util.HashMap;
 import java.util.LinkedList;
-
-import static com.frankandrobot.reminderer.database.TaskProvider.CompareOp;
 
 /**
  * The app-specific interface to the database.
@@ -47,48 +43,10 @@ public class TaskDatabaseFacade
     final static public int CURSOR_LOAD_FOLDER_ID = 7;
 
     private Context context;
-    /**
-     * Cache to store loaders
-     */
-    private HashMap<Integer,TaskLoaderArgs> hmCache = new HashMap<Integer, TaskLoaderArgs>();
 
     public TaskDatabaseFacade(Context context)
     {
         this.context = context;
-    }
-
-    /**
-     * Forces a load of the Loader.
-     * You probably want to use this only for updates/inserts/deletions---
-     * things that need to be done immediately.
-     *
-     * @return this
-     */
-    public TaskDatabaseFacade forceLoad(int loaderId)
-    {
-        TaskLoaderArgs args = hmCache.get(loaderId);
-
-        if (args == null)
-            throw new IllegalStateException("loaderId "+loaderId+" was never initialized");
-
-        if (args.activityOrFragment instanceof FragmentActivity)
-        {
-            ((FragmentActivity) args.activityOrFragment).getSupportLoaderManager()
-                    .restartLoader(args.loaderBuilder.loaderId,
-                                   args.bundle,
-                                   new LoaderCallback(args.loaderListener))
-                    .forceLoad();
-        }
-        else
-        {
-            ((Fragment) args.activityOrFragment).getLoaderManager()
-                    .restartLoader(args.loaderBuilder.loaderId,
-                                   args.bundle,
-                                   new LoaderCallback(args.loaderListener))
-                    .forceLoad();
-        }
-
-        return this;
     }
 
     public TaskDatabaseFacade load(final int loaderId,
@@ -110,11 +68,8 @@ public class TaskDatabaseFacade
             throw new IllegalArgumentException(activityOrFragment.getClass().getSimpleName()
                                                        + " must be a Fragment or FragmentActivity");
 
-        Bundle args = new Bundle();
-        args.putLong("dueTime", builder.dueTime);
-        args.putLong("taskId", builder.taskId);
-        args.putLong("repeatId", builder.repeatId);
-        args.putLong("folderId", builder.folderId);
+        Bundle args = builder.buildBundle();
+        Task optionalTask = builder.task;
 
         if (activityOrFragment instanceof FragmentActivity)
         {
@@ -122,7 +77,7 @@ public class TaskDatabaseFacade
             ((FragmentActivity) activityOrFragment).getSupportLoaderManager()
                     .restartLoader(builder.loaderId,
                                    args,
-                                   new LoaderCallback(loaderListener));
+                                   new LoaderCallback(loaderListener, optionalTask));
         }
         else
         {
@@ -130,18 +85,10 @@ public class TaskDatabaseFacade
             ((Fragment) activityOrFragment).getLoaderManager()
                     .restartLoader(builder.loaderId,
                                    args,
-                                   new LoaderCallback(loaderListener));
+                                   new LoaderCallback(loaderListener, optionalTask));
         }
 
-        hmCache.put(builder.loaderId,
-                    new TaskLoaderArgs(builder, activityOrFragment, loaderListener, args));
-
         return this;
-    }
-
-    public TaskLoaderArgs getLoaderArgs(int loaderId)
-    {
-        return hmCache.get(loaderId);
     }
 
     public static class LoaderBuilder
@@ -151,6 +98,7 @@ public class TaskDatabaseFacade
         private long taskId;
         private long repeatId;
         private long folderId;
+        private Task task;
 
         public LoaderBuilder setLoaderId(int loaderId)
         {
@@ -181,6 +129,22 @@ public class TaskDatabaseFacade
             this.folderId = folderId;
             return this;
         }
+
+        public LoaderBuilder setTask(Task task)
+        {
+            this.task = task;
+            return this;
+        }
+
+        public Bundle buildBundle()
+        {
+            Bundle args = new Bundle();
+            args.putLong("dueTime", dueTime);
+            args.putLong("taskId", taskId);
+            args.putLong("repeatId", repeatId);
+            args.putLong("folderId", folderId);
+            return args;
+        }
     }
 
     public interface TaskLoaderListener<T>
@@ -189,32 +153,21 @@ public class TaskDatabaseFacade
         public void onLoaderReset(Loader<T> loader);
     }
 
-    static public class TaskLoaderArgs
-    {
-        public LoaderBuilder loaderBuilder;
-        public Object activityOrFragment;
-        public TaskLoaderListener<Cursor> loaderListener;
-        public Bundle bundle;
-
-        public TaskLoaderArgs(LoaderBuilder loaderBuilder,
-                              Object activityOrFragment,
-                              TaskLoaderListener<Cursor> loaderListener,
-                              Bundle bundle)
-        {
-            this.loaderBuilder = loaderBuilder;
-            this.activityOrFragment = activityOrFragment;
-            this.loaderListener = loaderListener;
-            this.bundle = bundle;
-        }
-    }
-
     private class LoaderCallback implements LoaderCallbacks<Cursor>
     {
         private TaskLoaderListener<Cursor> loaderListener;
+        private Task task;
 
-        public LoaderCallback(TaskLoaderListener<Cursor> loaderListener)
+        /**
+         * The existence of this method is because I don't want to implement Parcelable (for Task)
+         *
+         * @param loaderListener loader listener
+         * @param task (optional) task
+         */
+        public LoaderCallback(TaskLoaderListener<Cursor> loaderListener, Task task)
         {
             this.loaderListener = loaderListener;
+            this.task = task;
         }
 
         @Override
@@ -236,6 +189,9 @@ public class TaskDatabaseFacade
                 case CURSOR_LOAD_FOLDER_ID:
                     long folderId = args.getLong("folderId");
                     return new FolderLoader(context, String.valueOf(folderId));
+                case ADD_TASK_LOADER_ID:
+                    if (task == null) throw new IllegalArgumentException("Need a task damnit!");
+                    return new AddTask(context, task);
             }
             return null;
         }
@@ -258,48 +214,18 @@ public class TaskDatabaseFacade
         return new AddTask(context, task);
     }
 
+    /**
+     * @deprecated use this framework
+     * @return LoadAllTasks
+     */
     public LoadAllTasks getLoadAllTasksLoader()
     {
         return new LoadAllTasks(context);
     }
 
-    public static class AddTask extends AsyncTaskLoader<Void>
-    {
-        private Task task;
-        private AlarmManager alarmHelper = new AlarmManager();
-
-        public AddTask(Context context, Task task) {
-            super(context);
-
-            this.task = task;
-
-        }
-
-        @Override
-        public Void loadInBackground()
-        {
-            if (Logger.LOGV)
-            {
-                Log.v(TAG, "Saving task:\n" + task);
-            }
-
-            if (task != null)
-            {
-                ContentResolver resolver = getContext().getContentResolver();
-                long now = System.currentTimeMillis();
-
-                task.calculateNextDueDate();
-
-                resolver.insert(TaskProvider.TASKS_URI,
-                                task.getContentValuesForInsert());
-                alarmHelper.findAndEnableNextTasksDue(getContext(),
-                                                      now,
-                                                      CompareOp.ON_OR_AFTER);
-            }
-            return null;
-        }
-    }
-
+    /**
+     * @deprecated use {@link com.frankandrobot.reminderer.database.databasefacade.CursorQueryLoaders}
+     */
     static private class LoadAllTasks extends AsyncTaskLoader<String[]>
     {
         public LoadAllTasks(Context context)

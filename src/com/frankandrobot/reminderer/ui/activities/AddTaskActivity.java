@@ -1,9 +1,9 @@
 package com.frankandrobot.reminderer.ui.activities;
 
 import android.content.ContentProviderResult;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.View;
@@ -15,6 +15,8 @@ import android.widget.Toast;
 import com.frankandrobot.reminderer.R;
 import com.frankandrobot.reminderer.database.TaskDAOService;
 import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade;
+import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.LoaderBuilder;
+import com.frankandrobot.reminderer.database.databasefacade.TaskDatabaseFacade.TaskLoaderListener;
 import com.frankandrobot.reminderer.datastructures.Task;
 import com.frankandrobot.reminderer.helpers.Logger;
 import com.frankandrobot.reminderer.parser.ContextFreeGrammar;
@@ -25,7 +27,7 @@ public class AddTaskActivity extends FragmentActivity
 
     Task mTask;
     TaskDatabaseFacade taskDatabase;
-    LoaderManager.LoaderCallbacks<Void> taskSaver = new TaskSaver();
+    TaskSaver taskSaver = new TaskSaver();
 
     /**
      * Called when the activity is first created.
@@ -35,6 +37,8 @@ public class AddTaskActivity extends FragmentActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_task);
+
+        taskDatabase = new TaskDatabaseFacade(this);
 
         Button add = (Button) this.findViewById(R.id.add_new_button);
         add.setOnClickListener(new View.OnClickListener()
@@ -66,12 +70,14 @@ public class AddTaskActivity extends FragmentActivity
             {
                 if (mTask != null)
                 {
-                    if (Logger.LOGV)
-                        Log.v(TAG, "clicked() ");
+                    if (Logger.LOGV) Log.v(TAG, "clicked() ");
 
-                    getSupportLoaderManager().restartLoader(TaskDatabaseFacade.ADD_TASK_LOADER_ID,
-                                                            null,
-                                                            taskSaver).forceLoad();
+                    LoaderBuilder builder = new LoaderBuilder();
+                    builder.setTask(mTask);
+
+                    taskDatabase.load(TaskDatabaseFacade.ADD_TASK_LOADER_ID,
+                                      builder,
+                                      taskSaver);
                 }
             }
 
@@ -89,32 +95,23 @@ public class AddTaskActivity extends FragmentActivity
             }
 
         });
-
-        taskDatabase = new TaskDatabaseFacade(this);
-
-        getSupportLoaderManager().initLoader(TaskDatabaseFacade.ADD_TASK_LOADER_ID,
-                                             null,
-                                             taskSaver);
     }
 
-    class TaskSaver implements LoaderManager.LoaderCallbacks<Void>
+    class TaskSaver implements TaskLoaderListener<Cursor>
     {
         @Override
-        public Loader<Void> onCreateLoader(int i, Bundle bundle) {
-            return taskDatabase.getAddTaskLoader(mTask);
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data)
+        {
+            Toast.makeText(AddTaskActivity.this, "Task added", Toast.LENGTH_SHORT)
+                    .show();
+
         }
 
         @Override
-        public void onLoadFinished(Loader<Void> booleanLoader, Void aBoolean) {
-            Toast.makeText(AddTaskActivity.this, "Task added",
-                    Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        public void onLoaderReset(Loader<Void> booleanLoader) {
+        public void onLoaderReset(Loader<Cursor> loader)
+        {
 
         }
-
     }
 
     class AddHandler extends TaskDAOService.DatabaseHandler
